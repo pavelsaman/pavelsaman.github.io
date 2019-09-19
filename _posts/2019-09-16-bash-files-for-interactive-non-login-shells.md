@@ -125,4 +125,6 @@ So in the end, my `~/.bashrc` is excuted even for interactive login shells.
 
 Instead of cluttering my `~/.bashrc` with many export and aliases, I keep them separated in the two files. To me, this looks a bit more organised.
 
+One more picture to summarize interactive and login shells and the files that are executed when these shells are started: ![image](/images/bash_files.png)
+
 **Note:** contents of the files presented in this article could, and likely will, differ in other distributions. You need to understand the logic and apply it on your particular distro.

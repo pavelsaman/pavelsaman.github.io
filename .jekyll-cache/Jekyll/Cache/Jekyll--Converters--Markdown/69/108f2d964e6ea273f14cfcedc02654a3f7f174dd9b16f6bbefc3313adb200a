@@ -1,4 +1,4 @@
-I"Q.<p>Bash allows for various files that are read and executed upon bash invocation. It could be a bit tricky to navigate these files, especially when edited to personal needs. I’ll share a quick post about my setup, I think it helps keep things neat and tidy.</p>
+I"/<p>Bash allows for various files that are read and executed upon bash invocation. It could be a bit tricky to navigate these files, especially when edited to personal needs. I’ll share a quick post about my setup, I think it helps keep things neat and tidy.</p>
 
 <p>First of all, when you start digging into files like <code class="highlighter-rouge">/etc/profile</code>, <code class="highlighter-rouge">~/.bash_profile</code>, <code class="highlighter-rouge">~/.bash_login</code>, <code class="highlighter-rouge">~/.profile</code>, <code class="highlighter-rouge">~/.bashrc</code>, you first read something like:</p>
 
@@ -113,6 +113,8 @@ When an interactive login shell exits, or a non-interactive login shell executes
 <p>So in the end, my <code class="highlighter-rouge">~/.bashrc</code> is excuted even for interactive login shells.</p>
 
 <p>Instead of cluttering my <code class="highlighter-rouge">~/.bashrc</code> with many export and aliases, I keep them separated in the two files. To me, this looks a bit more organised.</p>
+
+<p>One more picture to summarize interactive and login shells and the files that are executed when these shells are started: <img src="/images/bash_files.png" alt="image" /></p>
 
 <p><strong>Note:</strong> contents of the files presented in this article could, and likely will, differ in other distributions. You need to understand the logic and apply it on your particular distro.</p>
 :ET
