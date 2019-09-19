@@ -1,0 +1,24 @@
+I"]<p>Lightdm is a light desktop manager that could be configured in a few ways. One of the things I want to change regularly is the lightdm greeter background, so I get a new picture on my login screen every week.</p>
+
+<p>When I have a look into lightdm settings, I can see I can easily change its background: <img src="/images/lightdm_greeter_settings.png" alt="image" /></p>
+
+<p>On the other hand, I have more than just one picture I like and I’d like to rotate them every now and then, let’s say once a week.</p>
+
+<p>The way I approached this is a small bash script that I’m now going to share in this post.</p>
+
+<p>First off, we need to find out where is a config file of the lightdm greeter. I’d try <code class="highlighter-rouge">man lightdm</code> and scrol down to the FILES section:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>FILES
+       /etc/lightdm/lightdm.conf
+              Configuration
+
+       /etc/lightdm/users.conf
+              User list configuration <span class="o">(</span><span class="k">if </span>not using Accounts Service<span class="o">)</span>
+
+       /etc/lightdm/keys.conf
+              XDMCP keys
+</code></pre></div></div>
+
+<p>I don’t really see anything relating to lightdm greeter, but directory <code class="highlighter-rouge">/etc/lightdm/</code> looks promising.</p>
+
+:ET

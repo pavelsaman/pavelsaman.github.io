@@ -1,0 +1,106 @@
+I"�!<p>Lightdm is a light desktop manager that could be configured in a few ways. One of the things I want to change regularly is the lightdm greeter background, so I get a new picture on my login screen every week.</p>
+
+<p>When I have a look into lightdm settings, I can see I can easily change its background: <img src="/images/lightdm_greeter_settings.png" alt="image" /></p>
+
+<p>On the other hand, I have more than just one picture I like and I’d like to rotate them every now and then, let’s say once a week.</p>
+
+<p>The way I approached this is a small bash script that I’m now going to share in this post.</p>
+
+<p>First off, we need to find out where is a config file of the lightdm greeter. I’d try <code class="highlighter-rouge">man lightdm</code> and scroll down to the FILES section:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>FILES
+       /etc/lightdm/lightdm.conf
+              Configuration
+
+       /etc/lightdm/users.conf
+              User list configuration <span class="o">(</span><span class="k">if </span>not using Accounts Service<span class="o">)</span>
+
+       /etc/lightdm/keys.conf
+              XDMCP keys
+</code></pre></div></div>
+
+<p>I don’t really see anything related to lightdm greeter, but directory <code class="highlighter-rouge">/etc/lightdm/</code> looks promising.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">ls</span> <span class="nt">-l</span> /etc/lightdm/
+total 28
+<span class="nt">-rw-r--r--</span> 1 root root   40 May 17 16:59 keys.conf
+<span class="nt">-rw-r--r--</span> 1 root root 7061 Sep  7 21:39 lightdm.conf
+<span class="nt">-rw-r--r--</span> 1 root root  468 Sep 19 21:49 lightdm-gtk-greeter.conf
+<span class="nt">-rw-r--r--</span> 1 root root  477 Sep 19 21:49 lightdm-gtk-greeter.conf.bak
+<span class="nt">-rw-r--r--</span> 1 root root  465 May 17 16:59 users.conf
+<span class="nt">-rwxr-xr-x</span> 1 root root 1439 May 17 16:59 Xsession
+</code></pre></div></div>
+
+<p>It seems I’m getting somewhere here since I see file <code class="highlighter-rouge">lightdm-gtk-greeter.conf</code>, that’s exactly what I need. Let’s have a look inside:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">cat</span> /etc/lightdm/lightdm-gtk-greeter.conf.bak 
+<span class="o">[</span>greeter]
+background <span class="o">=</span> /usr/share/backgrounds/illyria-default-lockscreen.jpg
+font-name <span class="o">=</span> Cantarell Bold 12
+xft-antialias <span class="o">=</span> <span class="nb">true
+</span>icon-theme-name <span class="o">=</span> Adapta-Papirus-Maia
+screensaver-timeout <span class="o">=</span> 60
+theme-name <span class="o">=</span> Adapta-Eta-Maia
+cursor-theme-name <span class="o">=</span> xcursor-breeze
+show-clock <span class="o">=</span> <span class="nb">false
+</span>default-user-image <span class="o">=</span> <span class="c">#avatar-default</span>
+xft-hintstyle <span class="o">=</span> hintfull
+position <span class="o">=</span> 50%,center 50%,center
+clock-format <span class="o">=</span> %d/%m/%Y, %H:%M:%S
+panel-position <span class="o">=</span> bottom
+indicators <span class="o">=</span> ~host<span class="p">;</span>~spacer<span class="p">;</span>~clock<span class="p">;</span>~spacer<span class="p">;</span>~power
+</code></pre></div></div>
+
+<p>I’ve already change the default setting a bit, so you might see a different content. However, the interesting part is <code class="highlighter-rouge">background = </code>. In order to change the background, I need to change this line, and do it regularly. But let’s take is step by step and find out first what I need:</p>
+<ol>
+  <li>a backup would be nice if I happen to break/delete the file, therefore I create <code class="highlighter-rouge">/etc/lightdm/lightdm-gtk-greeter.conf.bak</code> (you can already see this above)</li>
+  <li>I need to change <code class="highlighter-rouge">background = </code> line in <code class="highlighter-rouge">/etc/lightdm/lightdm-gtk-greeter.conf</code>. I’ll go for bash and some text processing tool for changing what I said in 1.</li>
+  <li>I need a directory with pictures I want to use for the rotation</li>
+  <li>I need to run 1. regularly, say once a week; I’ll do this in cron</li>
+</ol>
+
+<p>When it comes down to the bash script, I came up with the following one:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#!/usr/bin/env bash</span>
+
+<span class="nb">dir</span><span class="o">=</span><span class="s2">"/usr/share/backgrounds/greeter"</span>
+<span class="c"># file to change</span>
+<span class="nv">config_file</span><span class="o">=</span><span class="s2">"/etc/lightdm/lightdm-gtk-greeter.conf"</span>
+<span class="c"># alwas hae a backup</span>
+<span class="nv">bak_file</span><span class="o">=</span><span class="s2">"/etc/lightdm/lightdm-gtk-greeter.conf.bak"</span>
+
+<span class="c"># get all background pic</span>
+<span class="k">function </span>get_all_pictures <span class="o">{</span>
+	<span class="nv">all_pictures</span><span class="o">=(</span><span class="k">${</span><span class="nv">dir</span><span class="k">}</span>/<span class="k">*</span><span class="o">)</span>
+<span class="o">}</span>
+
+<span class="c"># choose one</span>
+<span class="k">function </span>choose_random <span class="o">{</span>
+	<span class="nv">new_pic_index</span><span class="o">=</span><span class="k">$((</span><span class="m">0</span> <span class="o">+</span> RANDOM <span class="o">%</span> <span class="k">${#</span><span class="nv">all_pictures</span><span class="p">[@]</span><span class="k">}))</span>
+<span class="o">}</span>
+
+<span class="c"># change the line</span>
+<span class="k">function </span>change <span class="o">{</span>
+	<span class="nb">awk</span> <span class="nt">-F</span><span class="s1">'='</span> <span class="nt">-v</span> <span class="nv">NEW_PIC</span><span class="o">=</span><span class="k">${</span><span class="nv">all_pictures</span><span class="p">[</span><span class="k">${</span><span class="nv">new_pic_index</span><span class="k">}</span><span class="p">]</span><span class="k">}</span> <span class="s1">'{ if ($1 == "background ") {print "background = "NEW_PIC} else {print} }'</span> <span class="s2">"</span><span class="k">${</span><span class="nv">bak_file</span><span class="k">}</span><span class="s2">"</span> <span class="o">&gt;</span> <span class="s2">"</span><span class="k">${</span><span class="nv">config_file</span><span class="k">}</span><span class="s2">"</span> 
+<span class="o">}</span>
+
+get_all_pictures <span class="o">||</span> <span class="nb">exit </span>1
+choose_random <span class="o">||</span> <span class="nb">exit </span>1
+change <span class="o">&amp;&amp;</span> <span class="nb">exit </span>0 <span class="o">||</span> <span class="nb">exit </span>1
+</code></pre></div></div>
+
+<p>As you can see, I first define some variables for the config file as well as for the backup file that’s used here for reading from it. I’ve also chosen a particular directory where I put all my pictures I want to rotate, they will go inside <code class="highlighter-rouge">/usr/share/backgrounds/greeter</code>. Then I just get names of all pictures inside the directory (function <code class="highlighter-rouge">get_all_pictures</code>) and choose one at random (function <code class="highlighter-rouge">choose_random</code>). If any of these functions fail from whatever reason, I terminate the script with exit code 1. The last part is running an awk script where I read lines from the config file and change the one starting with <code class="highlighter-rouge">background = </code>.</p>
+
+<p>You can test the script now (after backing up the config file first in order to be on the safe side).</p>
+
+<p>The last part is to set up a crontab, in my case, it looks like this:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">sudo </span>crontab <span class="nt">-l</span>
+<span class="c"># change greeter background every Saturday</span>
+0 19 <span class="k">*</span> <span class="k">*</span> 6 /usr/bin/change_greeter_background.bash
+</code></pre></div></div>
+
+<p>That line means I change it every Saturday at 7 p.m.</p>
+
+<p>You can also get the script from <a href="https://github.com/pavelsaman/BashWorkspace.git">this repository</a>.</p>
+:ET

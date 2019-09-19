@@ -1,4 +1,106 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.0.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2019-09-19T20:45:13+02:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">pavelsaman</title><subtitle>Personal blog about technology, mostly Linux and testing.</subtitle><entry><title type="html">SSD and Trim Operation on Linux</title><link href="http://localhost:4000/ssd-disk-and-trim-operation-on-linux.html" rel="alternate" type="text/html" title="SSD and Trim Operation on Linux" /><published>2019-09-19T16:07:19+02:00</published><updated>2019-09-19T16:07:19+02:00</updated><id>http://localhost:4000/ssd-disk-and-trim-operation-on-linux</id><content type="html" xml:base="http://localhost:4000/ssd-disk-and-trim-operation-on-linux.html">&lt;p&gt;I’ve recently stumbled upon the following topic that seems interesting enough, so after some playing around with it, I’ve decided to summarize my own thoughts and write this article.&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.0.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2019-09-19T22:32:05+02:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">pavelsaman</title><subtitle>Personal blog about technology, mostly Linux and testing.</subtitle><entry><title type="html">Change Lightdm Greeter Background with Bash and Cron</title><link href="http://localhost:4000/change-lightdm-greeter-background-with-cron.html" rel="alternate" type="text/html" title="Change Lightdm Greeter Background with Bash and Cron" /><published>2019-09-19T22:07:19+02:00</published><updated>2019-09-19T22:07:19+02:00</updated><id>http://localhost:4000/change-lightdm-greeter-background-with-cron</id><content type="html" xml:base="http://localhost:4000/change-lightdm-greeter-background-with-cron.html">&lt;p&gt;Lightdm is a light desktop manager that could be configured in a few ways. One of the things I want to change regularly is the lightdm greeter background, so I get a new picture on my login screen every week.&lt;/p&gt;
+
+&lt;p&gt;When I have a look into lightdm settings, I can see I can easily change its background: &lt;img src=&quot;/images/lightdm_greeter_settings.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;On the other hand, I have more than just one picture I like and I’d like to rotate them every now and then, let’s say once a week.&lt;/p&gt;
+
+&lt;p&gt;The way I approached this is a small bash script that I’m now going to share in this post.&lt;/p&gt;
+
+&lt;p&gt;First off, we need to find out where is a config file of the lightdm greeter. I’d try &lt;code class=&quot;highlighter-rouge&quot;&gt;man lightdm&lt;/code&gt; and scroll down to the FILES section:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;FILES
+       /etc/lightdm/lightdm.conf
+              Configuration
+
+       /etc/lightdm/users.conf
+              User list configuration &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;if &lt;/span&gt;not using Accounts Service&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+
+       /etc/lightdm/keys.conf
+              XDMCP keys
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;I don’t really see anything related to lightdm greeter, but directory &lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/lightdm/&lt;/code&gt; looks promising.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;ls&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-l&lt;/span&gt; /etc/lightdm/
+total 28
+&lt;span class=&quot;nt&quot;&gt;-rw-r--r--&lt;/span&gt; 1 root root   40 May 17 16:59 keys.conf
+&lt;span class=&quot;nt&quot;&gt;-rw-r--r--&lt;/span&gt; 1 root root 7061 Sep  7 21:39 lightdm.conf
+&lt;span class=&quot;nt&quot;&gt;-rw-r--r--&lt;/span&gt; 1 root root  468 Sep 19 21:49 lightdm-gtk-greeter.conf
+&lt;span class=&quot;nt&quot;&gt;-rw-r--r--&lt;/span&gt; 1 root root  477 Sep 19 21:49 lightdm-gtk-greeter.conf.bak
+&lt;span class=&quot;nt&quot;&gt;-rw-r--r--&lt;/span&gt; 1 root root  465 May 17 16:59 users.conf
+&lt;span class=&quot;nt&quot;&gt;-rwxr-xr-x&lt;/span&gt; 1 root root 1439 May 17 16:59 Xsession
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;It seems I’m getting somewhere here since I see file &lt;code class=&quot;highlighter-rouge&quot;&gt;lightdm-gtk-greeter.conf&lt;/code&gt;, that’s exactly what I need. Let’s have a look inside:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; /etc/lightdm/lightdm-gtk-greeter.conf.bak 
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;greeter]
+background &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; /usr/share/backgrounds/illyria-default-lockscreen.jpg
+font-name &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; Cantarell Bold 12
+xft-antialias &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;true
+&lt;/span&gt;icon-theme-name &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; Adapta-Papirus-Maia
+screensaver-timeout &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; 60
+theme-name &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; Adapta-Eta-Maia
+cursor-theme-name &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; xcursor-breeze
+show-clock &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;false
+&lt;/span&gt;default-user-image &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;c&quot;&gt;#avatar-default&lt;/span&gt;
+xft-hintstyle &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; hintfull
+position &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; 50%,center 50%,center
+clock-format &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; %d/%m/%Y, %H:%M:%S
+panel-position &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; bottom
+indicators &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; ~host&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;~spacer&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;~clock&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;~spacer&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;~power
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;I’ve already changed the default setting a bit, so you might see a different content. However, the interesting part is &lt;code class=&quot;highlighter-rouge&quot;&gt;background = &lt;/code&gt;. In order to change the background, I need to change this line, and do it regularly. But let’s take is step by step and find out first what I need:&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;a backup would be nice if I happen to break/delete the file, therefore I’ll create &lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/lightdm/lightdm-gtk-greeter.conf.bak&lt;/code&gt; (you can already see this above)&lt;/li&gt;
+  &lt;li&gt;I need to change &lt;code class=&quot;highlighter-rouge&quot;&gt;background = &lt;/code&gt; line in &lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/lightdm/lightdm-gtk-greeter.conf&lt;/code&gt;. I’ll go for bash and some text processing tool for changing what I said in 1.&lt;/li&gt;
+  &lt;li&gt;I need a directory with pictures I want to use for the rotation&lt;/li&gt;
+  &lt;li&gt;I need to run 1. regularly, say once a week; I’ll do this in cron&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;When it comes down to the bash script, I came up with the following one:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;#!/usr/bin/env bash&lt;/span&gt;
+
+&lt;span class=&quot;nb&quot;&gt;dir&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;/usr/share/backgrounds/greeter&quot;&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# file to change&lt;/span&gt;
+&lt;span class=&quot;nv&quot;&gt;config_file&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;/etc/lightdm/lightdm-gtk-greeter.conf&quot;&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# alwas hae a backup&lt;/span&gt;
+&lt;span class=&quot;nv&quot;&gt;bak_file&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;/etc/lightdm/lightdm-gtk-greeter.conf.bak&quot;&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# get all background pic&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;function &lt;/span&gt;get_all_pictures &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+	&lt;span class=&quot;nv&quot;&gt;all_pictures&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;dir&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;/&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# choose one&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;function &lt;/span&gt;choose_random &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+	&lt;span class=&quot;nv&quot;&gt;new_pic_index&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;$((&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; RANDOM &lt;span class=&quot;o&quot;&gt;%&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;${#&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;all_pictures&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[@]&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}))&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# change the line&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;function &lt;/span&gt;change &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+	&lt;span class=&quot;nb&quot;&gt;awk&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-F&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'='&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;NEW_PIC&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;all_pictures&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;new_pic_index&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'{ if ($1 == &quot;background &quot;) {print &quot;background = &quot;NEW_PIC} else {print} }'&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;bak_file&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;config_file&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; 
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+get_all_pictures &lt;span class=&quot;o&quot;&gt;||&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;exit &lt;/span&gt;1
+choose_random &lt;span class=&quot;o&quot;&gt;||&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;exit &lt;/span&gt;1
+change &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;exit &lt;/span&gt;0 &lt;span class=&quot;o&quot;&gt;||&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;exit &lt;/span&gt;1
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;As you can see, I first define some variables for the config file as well as for the backup file that’s used here for reading from it. I’ve also chosen a particular directory where I put all my pictures I want to rotate, they will go inside &lt;code class=&quot;highlighter-rouge&quot;&gt;/usr/share/backgrounds/greeter&lt;/code&gt;. Then I just get names of all pictures inside the directory (function &lt;code class=&quot;highlighter-rouge&quot;&gt;get_all_pictures&lt;/code&gt;) and choose one at random (function &lt;code class=&quot;highlighter-rouge&quot;&gt;choose_random&lt;/code&gt;). If any of these functions fail from whatever reason, I terminate the script with exit code 1. The last part is running an awk script where I read lines from the config file and change the one starting with &lt;code class=&quot;highlighter-rouge&quot;&gt;background = &lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;The last part is to set up a crontab, in my case, it looks like this:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;crontab &lt;span class=&quot;nt&quot;&gt;-l&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# change greeter background every Saturday&lt;/span&gt;
+0 19 &lt;span class=&quot;k&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;*&lt;/span&gt; 6 /usr/bin/change_greeter_background.bash
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;That line means I change it every Saturday at 7 p.m.&lt;/p&gt;
+
+&lt;p&gt;You can also get the script from &lt;a href=&quot;https://github.com/pavelsaman/BashWorkspace.git&quot;&gt;this repository&lt;/a&gt;.&lt;/p&gt;</content><author><name>Pavel Saman</name></author><summary type="html">Lightdm is a light desktop manager that could be configured in a few ways. One of the things I want to change regularly is the lightdm greeter background, so I get a new picture on my login screen every week.</summary></entry><entry><title type="html">SSD and Trim Operation on Linux</title><link href="http://localhost:4000/ssd-disk-and-trim-operation-on-linux.html" rel="alternate" type="text/html" title="SSD and Trim Operation on Linux" /><published>2019-09-19T16:07:19+02:00</published><updated>2019-09-19T16:07:19+02:00</updated><id>http://localhost:4000/ssd-disk-and-trim-operation-on-linux</id><content type="html" xml:base="http://localhost:4000/ssd-disk-and-trim-operation-on-linux.html">&lt;p&gt;I’ve recently stumbled upon the following topic that seems interesting enough, so after some playing around with it, I’ve decided to summarize my own thoughts and write this article.&lt;/p&gt;
 
 &lt;h3 id=&quot;hardware&quot;&gt;Hardware&lt;/h3&gt;
 &lt;p&gt;Many modern laptops and other computers don’t have a classis hard drive with mechanical parts anymore. The reason is simple, we already have newer technology that enables us to write and retrieve data faster. Yes, I’m talking about SSD, solid state drives. How exactly does it work? Are there some limitations? Can a SSD become worse over time? If so, how can we prolong the period when it works fast?&lt;/p&gt;
@@ -543,7 +645,7 @@ When an interactive login shell exits, or a non-interactive login shell executes
 
 &lt;p&gt;While criticised a lot by mostly non-linux users, I find it much nicer. And there are many options to choose from. You can have GNOME, KDE, LXDE, Cinnamon, MATE, Xfce, LXQt all the way down to some really light environments like Openbox.&lt;/p&gt;
 
-&lt;p&gt;Furthermore, any desktop nvironment could be further tweaked and changed to the needs of every user.&lt;/p&gt;
+&lt;p&gt;Furthermore, any desktop environment could be further tweaked and changed to the needs of every user.&lt;/p&gt;
 
 &lt;p&gt;However, try to add a custom clock format on a panel in Windows. You have to go into registry! What a thing!&lt;/p&gt;
 
