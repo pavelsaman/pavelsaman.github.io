@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: page
 title:  "Bash Files for Interactive Non Login Shells"
 date:   2019-09-16 18:07:19 +0200
 categories: linux

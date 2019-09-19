@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: page
 title:  "Log Out From Console after Certain Time"
 date:   2019-09-18 17:00:19 +0200
 categories: linux

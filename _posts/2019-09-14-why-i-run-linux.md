@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: page
 title:  "Why I run Linux"
 date:   2019-09-14 16:07:19 +0200
 categories: linux

@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: page
 title:  "SSD and Trim Operation on Linux"
 date:   2019-09-19 16:07:19 +0200
 categories: linux

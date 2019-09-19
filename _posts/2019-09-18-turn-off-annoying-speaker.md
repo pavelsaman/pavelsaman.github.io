@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: page
 title:  "Turn Off Annoying Speaker"
 date:   2019-09-18 20:07:19 +0200
 categories: linux

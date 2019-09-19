@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: page
 title:  "Find Out Cookies For Current Session"
 date:   2019-09-17 21:07:19 +0200
 categories: browser
