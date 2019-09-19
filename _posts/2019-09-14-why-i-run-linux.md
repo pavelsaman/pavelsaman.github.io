@@ -25,7 +25,7 @@ I can also look at the topic from the point of view of the system. It doesn't co
 
 While criticised a lot by mostly non-linux users, I find it much nicer. And there are many options to choose from. You can have GNOME, KDE, LXDE, Cinnamon, MATE, Xfce, LXQt all the way down to some really light environments like Openbox.
 
-Furthermore, any desktop nvironment could be further tweaked and changed to the needs of every user.
+Furthermore, any desktop environment could be further tweaked and changed to the needs of every user.
 
 However, try to add a custom clock format on a panel in Windows. You have to go into registry! What a thing!
 
