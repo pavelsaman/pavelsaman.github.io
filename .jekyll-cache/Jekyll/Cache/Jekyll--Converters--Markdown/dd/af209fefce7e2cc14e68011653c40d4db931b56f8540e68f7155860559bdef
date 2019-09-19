@@ -1,0 +1,85 @@
+I"�<p>It is possible to forget to log out from a console, which might be a security risk. It would be nice to have a way to log out automatically if this happens.</p>
+
+<h3 id="etcprofile-and-etcprofiled"><code class="highlighter-rouge">/etc/profile</code> and <code class="highlighter-rouge">/etc/profile.d/</code></h3>
+
+<p>As it turns out, we can do such a thing with just a few lines of shell code. Let’s write this:</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">TMOUT</span><span class="o">=</span>30
+
+<span class="k">case</span> <span class="si">$(</span> /usr/bin/tty <span class="si">)</span> <span class="k">in</span>
+	/dev/tty[0-9]<span class="k">*</span><span class="p">)</span>
+		<span class="nb">export </span>TMOUT
+		<span class="p">;;</span>
+<span class="k">esac</span>
+</code></pre></div></div>
+
+<p>Variable <code class="highlighter-rouge">TMOUT</code> could be used to log out a user after a specified number of seconds. If set to <code class="highlighter-rouge">30</code> like in my example, it’ll log out a user after 30 seconds of innactivity.</p>
+
+<p>The only question now is where to put such a script?</p>
+
+<p>Let’s have a look at <code class="highlighter-rouge">/etc/profile</code>:</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># /etc/profile</span>
+
+<span class="c"># Set our umask</span>
+<span class="nb">umask </span>022
+
+<span class="c"># Append our default paths</span>
+appendpath <span class="o">()</span> <span class="o">{</span>
+    <span class="k">case</span> <span class="s2">":</span><span class="nv">$PATH</span><span class="s2">:"</span> <span class="k">in</span>
+        <span class="k">*</span>:<span class="s2">"</span><span class="nv">$1</span><span class="s2">"</span>:<span class="k">*</span><span class="p">)</span>
+            <span class="p">;;</span>
+        <span class="k">*</span><span class="p">)</span>
+            <span class="nv">PATH</span><span class="o">=</span><span class="s2">"</span><span class="k">${</span><span class="nv">PATH</span>:+<span class="nv">$PATH</span>:<span class="k">}</span><span class="nv">$1</span><span class="s2">"</span>
+    <span class="k">esac</span>
+<span class="o">}</span>
+
+appendpath <span class="s1">'/usr/local/sbin'</span>
+appendpath <span class="s1">'/usr/local/bin'</span>
+appendpath <span class="s1">'/usr/bin'</span>
+<span class="nb">unset </span>appendpath
+
+<span class="nb">export </span>PATH
+
+<span class="c"># Load profiles from /etc/profile.d</span>
+<span class="k">if </span><span class="nb">test</span> <span class="nt">-d</span> /etc/profile.d/<span class="p">;</span> <span class="k">then
+	for </span>profile <span class="k">in</span> /etc/profile.d/<span class="k">*</span>.sh<span class="p">;</span> <span class="k">do
+		</span><span class="nb">test</span> <span class="nt">-r</span> <span class="s2">"</span><span class="nv">$profile</span><span class="s2">"</span> <span class="o">&amp;&amp;</span> <span class="nb">.</span> <span class="s2">"</span><span class="nv">$profile</span><span class="s2">"</span>
+	<span class="k">done
+	</span><span class="nb">unset </span>profile
+<span class="k">fi</span>
+
+<span class="c"># Source global bash config</span>
+<span class="k">if </span><span class="nb">test</span> <span class="s2">"</span><span class="nv">$PS1</span><span class="s2">"</span> <span class="o">&amp;&amp;</span> <span class="nb">test</span> <span class="s2">"</span><span class="nv">$BASH</span><span class="s2">"</span> <span class="o">&amp;&amp;</span> <span class="nb">test</span> <span class="nt">-z</span> <span class="k">${</span><span class="nv">POSIXLY_CORRECT</span><span class="p">+x</span><span class="k">}</span> <span class="o">&amp;&amp;</span> <span class="nb">test</span> <span class="nt">-r</span> /etc/bash.bashrc<span class="p">;</span> <span class="k">then</span>
+	<span class="nb">.</span> /etc/bash.bashrc
+<span class="k">fi</span>
+
+<span class="c"># Termcap is outdated, old, and crusty, kill it.</span>
+<span class="nb">unset </span>TERMCAP
+
+<span class="c"># Man is much better than us at figuring this out</span>
+<span class="nb">unset </span>MANPATH
+</code></pre></div></div>
+
+<p>This is a standard content of the file on Manjaro Linux. This file gets read by bash when it’s invoked as a login shell, so it’s a good place to set up some global config for all users (just like here setting <code class="highlighter-rouge">PATH</code> and <code class="highlighter-rouge">umask</code> for example).</p>
+
+<p>One particular piece I’m interested in is:</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Load profiles from /etc/profile.d</span>
+<span class="k">if </span><span class="nb">test</span> <span class="nt">-d</span> /etc/profile.d/<span class="p">;</span> <span class="k">then
+	for </span>profile <span class="k">in</span> /etc/profile.d/<span class="k">*</span>.sh<span class="p">;</span> <span class="k">do
+		</span><span class="nb">test</span> <span class="nt">-r</span> <span class="s2">"</span><span class="nv">$profile</span><span class="s2">"</span> <span class="o">&amp;&amp;</span> <span class="nb">.</span> <span class="s2">"</span><span class="nv">$profile</span><span class="s2">"</span>
+	<span class="k">done
+	</span><span class="nb">unset </span>profile
+<span class="k">fi</span>
+</code></pre></div></div>
+
+<p>This part works with every file in <code class="highlighter-rouge">/etc/profile.d/</code> that ends with <code class="highlighter-rouge">.sh</code>. If such a file exists and read permissions are granted, it will execute such a file. That’s exactly what we need for our tiny script from the beginning.</p>
+
+<p>Let’s save our script as <code class="highlighter-rouge">shell-timeout.sh</code>:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">ls</span> <span class="nt">-l</span> shell-timeout.sh 
+<span class="nt">-rw-r--r--</span> 1 root root 77 Sep 17 16:12 shell-timeout.sh
+</code></pre></div></div>
+
+<p>Now it’s a good time to test it. Log into a console (tty, not pts) and just wait for 30 seconds. After the time period, the user should be logged out automatically.</p>
+:ET

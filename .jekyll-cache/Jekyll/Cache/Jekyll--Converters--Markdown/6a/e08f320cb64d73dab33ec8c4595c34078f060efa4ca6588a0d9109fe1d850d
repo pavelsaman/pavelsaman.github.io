@@ -1,0 +1,118 @@
+I"Q.<p>Bash allows for various files that are read and executed upon bash invocation. It could be a bit tricky to navigate these files, especially when edited to personal needs. I’ll share a quick post about my setup, I think it helps keep things neat and tidy.</p>
+
+<p>First of all, when you start digging into files like <code class="highlighter-rouge">/etc/profile</code>, <code class="highlighter-rouge">~/.bash_profile</code>, <code class="highlighter-rouge">~/.bash_login</code>, <code class="highlighter-rouge">~/.profile</code>, <code class="highlighter-rouge">~/.bashrc</code>, you first read something like:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>When  bash is invoked as an interactive login shell, or as a non-interactive shell with the --login option, it first reads and executes commands from the
+file /etc/profile, if that file exists.  After reading that file, it looks for ~/.bash_profile, ~/.bash_login, and ~/.profile, in that order,  and  reads
+and  executes  commands from the first one that exists and is readable.  The --noprofile option may be used when the shell is started to inhibit this be‐
+havior.
+
+When an interactive login shell exits, or a non-interactive login shell executes the exit builtin command, bash reads and executes commands from the file
+~/.bash_logout, if it exists.
+</code></pre></div></div>
+
+<p>But what the hell is login, interactive and non-interactive shell?</p>
+
+<p><strong>Interactive shell</strong> is simply the one you type your commands into. <strong>Non-interactive</strong> shell is your scripts you just execute and then wait for the recult code, the commands inside your script are run by a non-interactive shell. <strong>Login shells</strong> are usually interactive, they are those shells that you use for logging into a console (F2 etc.), trough SSH, or via <code class="highlighter-rouge">su -</code>.</p>
+
+<p>Having said that, there’re different files that get read and executed for these shells.</p>
+
+<p>Let’s have a look at an interactive non login shell. The man page for bash say:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>When an interactive shell that is not a login shell is started, bash reads and executes commands from ~/.bashrc,
+</code></pre></div></div>
+
+<p>I also think that interactive non login shell is the most common for home users. Such a shell will probably be started more often than any other shell, so let’s stick to this option to show how I organise the files that get executed after this shell is started.</p>
+
+<p><code class="highlighter-rouge">~/.bashrc</code> could be really long, but the point is that when you want to add some other commands (tweak your command prompt etc.), it should most likely go into this file. As you add more commands, it can grow so much that you lose yourself in it. That’s where some organisation comes in.</p>
+
+<p>I simply create <code class="highlighter-rouge">~/.bash_aliases</code> and <code class="highlighter-rouge">~/.bash_export</code> files. It could be already obvious what I put in them, but let’s have a look at oth of them:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">cat</span> .bash_aliases 
+<span class="c"># some more ls aliases</span>
+<span class="nb">alias ls</span><span class="o">=</span><span class="s1">'ls --color=auto'</span>
+<span class="nb">alias grep</span><span class="o">=</span><span class="s1">'grep --colour=auto'</span>
+<span class="nb">alias </span><span class="nv">egrep</span><span class="o">=</span><span class="s1">'egrep --colour=auto'</span>
+<span class="nb">alias </span><span class="nv">fgrep</span><span class="o">=</span><span class="s1">'fgrep --colour=auto'</span>
+<span class="nb">alias </span><span class="nv">ll</span><span class="o">=</span><span class="s1">'ls -lah'</span>
+<span class="nb">alias </span><span class="nv">la</span><span class="o">=</span><span class="s1">'ls -lha'</span>
+<span class="nb">alias </span><span class="nv">l</span><span class="o">=</span><span class="s1">'ls -l'</span>
+<span class="nb">alias </span><span class="nv">em</span><span class="o">=</span><span class="s1">'emacs -nw'</span>
+<span class="nb">alias dd</span><span class="o">=</span><span class="s1">'dd status=progress'</span>
+<span class="nb">alias </span><span class="nv">_</span><span class="o">=</span><span class="s1">'sudo'</span>
+<span class="nb">alias </span><span class="nv">_i</span><span class="o">=</span><span class="s1">'sudo -i'</span>
+<span class="nb">alias </span><span class="nv">cls</span><span class="o">=</span><span class="s1">'clear'</span>
+<span class="nb">alias </span><span class="nv">note</span><span class="o">=</span><span class="s1">'/home/pavel/.local/bin/NixNote2-x86_64.AppImage'</span>
+<span class="nb">alias </span><span class="nv">rst</span><span class="o">=</span><span class="s1">'reset'</span>
+<span class="nb">alias </span>cd..<span class="o">=</span><span class="s1">'cd ..'</span>
+<span class="nb">alias df</span><span class="o">=</span><span class="s1">'df -h'</span>                          <span class="c"># human-readable sizes</span>
+<span class="nb">alias </span><span class="nv">free</span><span class="o">=</span><span class="s1">'free -m'</span>                      <span class="c"># show sizes in MB</span>
+<span class="nb">alias </span><span class="nv">more</span><span class="o">=</span>less
+<span class="nb">alias </span><span class="nv">lock</span><span class="o">=</span>xflock4
+<span class="nb">alias </span><span class="nv">g</span><span class="o">=</span>giggle
+<span class="nb">alias </span><span class="nv">s</span><span class="o">=</span><span class="s2">"xfce4-screenshooter -r -c -s ~/Pictures/screenshots &gt;/dev/null 2&gt;&amp;1"</span>
+<span class="nb">alias </span><span class="nv">lspic</span><span class="o">=</span>viewnior
+<span class="nb">alias </span><span class="nv">running_services</span><span class="o">=</span><span class="s2">"systemctl list-units --type service --state running"</span>
+<span class="nb">alias </span><span class="nv">enabled_services</span><span class="o">=</span><span class="s2">"systemctl list-unit-files --type service --state enabled"</span>
+<span class="nb">alias </span><span class="nv">all_services</span><span class="o">=</span><span class="s2">"systemctl list-unit-files --type service"</span>
+<span class="nb">alias </span><span class="nv">failed_services</span><span class="o">=</span><span class="s2">"systemctl list-units --type service --state failed"</span>
+<span class="c">#alias start_docker="systemctl start docker.service"</span>
+<span class="c">#alias stop_docker="systemctl stop docker.service"</span>
+<span class="nb">alias rm</span><span class="o">=</span><span class="s2">"rm -v"</span>
+<span class="nb">alias </span><span class="nv">which</span><span class="o">=</span><span class="s2">"which -a"</span>
+<span class="nb">alias </span><span class="nv">selenium_server</span><span class="o">=</span><span class="s2">"java -jar ~/selenium-standalone-servers/selenium-server-standalone-3.141.59.jar -host 127.0.0.1"</span>
+<span class="nb">alias </span><span class="nv">swappiness</span><span class="o">=</span><span class="s2">"cat /proc/sys/vm/swappiness"</span>
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">cat</span> .bash_export 
+<span class="nb">export </span><span class="nv">EDITOR</span><span class="o">=</span><span class="s2">"vim"</span>
+<span class="nb">export </span><span class="nv">VISUAL</span><span class="o">=</span><span class="s2">"vim"</span>
+<span class="nb">export </span><span class="nv">SYSTEMD_EDITOR</span><span class="o">=</span><span class="s2">"vim"</span>
+<span class="nb">export </span><span class="nv">PATH</span><span class="o">=</span><span class="s2">"</span><span class="k">${</span><span class="nv">PATH</span><span class="k">}</span><span class="s2">:/home/pavel/.local/bin:</span><span class="si">$(</span>ruby <span class="nt">-e</span> <span class="s1">'puts Gem.user_dir'</span><span class="si">)</span><span class="s2">/bin"</span>
+</code></pre></div></div>
+
+<p>Nice and clean. When I need to add a new alias, I simply add a new line into <code class="highlighter-rouge">~/.bash_aliases</code>.</p>
+
+<p>One more thing to do. These files do not get read by an interactive non login shell, nor by any other. In order to change that, I need to edit <code class="highlighter-rouge">~/.bashrc</code>:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># aliases</span>
+<span class="k">if</span> <span class="o">[[</span> <span class="nt">-f</span> ~/.bash_aliases <span class="o">]]</span><span class="p">;</span> <span class="k">then</span>
+	<span class="nb">.</span> ~/.bash_aliases
+<span class="k">fi</span>
+
+<span class="c"># export variables</span>
+<span class="k">if</span> <span class="o">[[</span> <span class="nt">-f</span> ~/.bash_export <span class="o">]]</span><span class="p">;</span> <span class="k">then</span>
+	<span class="nb">.</span> ~/.bash_export
+<span class="k">fi</span>
+</code></pre></div></div>
+
+<p>As for a login shell, it’s about different files:</p>
+<ol>
+  <li><code class="highlighter-rouge">/etc/profile</code></li>
+  <li><code class="highlighter-rouge">~/.bash_profile</code></li>
+  <li><code class="highlighter-rouge">~/.bash_login</code></li>
+  <li><code class="highlighter-rouge">~/.profile</code></li>
+</ol>
+
+<p>Furthermore, the files are executed in this order. Plus when I have a look into <code class="highlighter-rouge">/etc/profile</code>, it also looks for <code class="highlighter-rouge">/etc/bash.bashrc</code> under certain conditions:</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Source global bash config</span>
+<span class="k">if </span><span class="nb">test</span> <span class="s2">"</span><span class="nv">$PS1</span><span class="s2">"</span> <span class="o">&amp;&amp;</span> <span class="nb">test</span> <span class="s2">"</span><span class="nv">$BASH</span><span class="s2">"</span> <span class="o">&amp;&amp;</span> <span class="nb">test</span> <span class="nt">-z</span> <span class="k">${</span><span class="nv">POSIXLY_CORRECT</span><span class="p">+x</span><span class="k">}</span> <span class="o">&amp;&amp;</span> <span class="nb">test</span> <span class="nt">-r</span> /etc/bash.bashrc<span class="p">;</span> <span class="k">then</span>
+	<span class="nb">.</span> /etc/bash.bashrc
+<span class="k">fi</span>
+</code></pre></div></div>
+
+<p>And when I have a look into <code class="highlighter-rouge">~/.bash_profile</code>, I can see:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">cat</span> .bash_profile 
+<span class="c">#</span>
+<span class="c"># ~/.bash_profile</span>
+<span class="c">#</span>
+
+<span class="o">[[</span> <span class="nt">-f</span> ~/.bashrc <span class="o">]]</span> <span class="o">&amp;&amp;</span> <span class="nb">.</span> ~/.bashrc
+</code></pre></div></div>
+
+<p>So in the end, my <code class="highlighter-rouge">~/.bashrc</code> is excuted even for interactive login shells.</p>
+
+<p>Instead of cluttering my <code class="highlighter-rouge">~/.bashrc</code> with many export and aliases, I keep them separated in the two files. To me, this looks a bit more organised.</p>
+
+<p><strong>Note:</strong> contents of the files presented in this article could, and likely will, differ in other distributions. You need to understand the logic and apply it on your particular distro.</p>
+:ET

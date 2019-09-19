@@ -1,0 +1,26 @@
+I"l<p>Have you ever experienced this annoying beep sound your PC speaker makes on error, in console and possibly on other places? This is the single most annoying thing I wanted to get rid off system-wide and for good. If you want to do the same, this short blog post might come in handy.</p>
+
+<p>There are a few different places where this could be disabled, but I wanted to do it system-wide, so I don’t need to worry about all the places where to turn it off.</p>
+
+<p>It turns out that the speaker functions because of <code class="highlighter-rouge">pcspkr</code> kernel module. Knowing this, I only created a new file in <code class="highlighter-rouge">/etc/modprobe.d/</code> with the following content:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">cat </span>blacklist-mine.conf 
+blacklist pcspkr
+</code></pre></div></div>
+
+<p>This will not load the kernel module on next boot, thus silencing the PC speaker :)</p>
+
+<p>Of course, the same method could be used if you don’t want to load some other kernel modules. One way to find out what piece of hardware uses what kernel module is command <code class="highlighter-rouge">lspci -v</code>, the output looks like this:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>lspci <span class="nt">-v</span>
+00:00.0 Host bridge: Intel Corporation Broadwell-U Host Bridge <span class="nt">-OPI</span> <span class="o">(</span>rev 09<span class="o">)</span>
+	Subsystem: Dell Broadwell-U Host Bridge <span class="nt">-OPI</span>
+	Flags: bus master, fast devsel, latency 0
+	Capabilities: &lt;access denied&gt;
+	Kernel driver <span class="k">in </span>use: bdw_uncore
+......
+......
+</code></pre></div></div>
+
+<p>The last line with no dots shows what kernel module is used.</p>
+:ET

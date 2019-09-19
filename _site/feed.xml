@@ -1,0 +1,548 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.0.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2019-09-19T20:16:44+02:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">pavelsam</title><subtitle>Personal blog about technology, mostly Linux and testing.</subtitle><entry><title type="html">SSD and Trim Operation on Linux</title><link href="http://localhost:4000/ssd-disk-and-trim-operation-on-linux.html" rel="alternate" type="text/html" title="SSD and Trim Operation on Linux" /><published>2019-09-19T16:07:19+02:00</published><updated>2019-09-19T16:07:19+02:00</updated><id>http://localhost:4000/ssd-disk-and-trim-operation-on-linux</id><content type="html" xml:base="http://localhost:4000/ssd-disk-and-trim-operation-on-linux.html">&lt;p&gt;I’ve recently stumbled upon the following topic that seems interesting enough, so after some playing around with it, I’ve decided to summarize my own thoughts and write this article.&lt;/p&gt;
+
+&lt;h3 id=&quot;hardware&quot;&gt;Hardware&lt;/h3&gt;
+&lt;p&gt;Many modern laptops and other computers don’t have a classis hard drive with mechanical parts anymore. The reason is simple, we already have newer technology that enables us to write and retrieve data faster. Yes, I’m talking about SSD, solid state drives. How exactly does it work? Are there some limitations? Can a SSD become worse over time? If so, how can we prolong the period when it works fast?&lt;/p&gt;
+
+&lt;p&gt;The high level model of a SSD could be as follows: &lt;img src=&quot;/images/block.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The smallest unit (not shown in the picture) is a single cell, multiple cells form one page and when we put a bunch of pages together, we get the whole grid as in the picture, which is one block. Of course, there are many blocks inside one SSD. These are the innards of a SSD.&lt;/p&gt;
+
+&lt;p&gt;However, one of the problems or limitations of SSDs is, while you can read data on the page level, you can erase data only on the block level. The reason for that is the erase operation requires higher voltage that stresses individual cells around the cells that are being erased. This is already too low-level, so I won’t follow this line of thinking anymore.&lt;/p&gt;
+
+&lt;p&gt;Having said that, when a disk is new with enough empty blocks, write operations are fast. However, consider the following situation. Some data from a block are deleted: &lt;img src=&quot;/images/block_1.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Pages A to D do not contain any valid data anymore. We also can’t just write new data in there, because the pages have to be erased first and for that we need the whole block to be empty (remember we cannot erase single pages, but only whole blocks). So we are in a situation when some already deleted data are blocking some space on the SSD.&lt;/p&gt;
+
+&lt;p&gt;What has to happen next is we need to read all the valid (not stale) data from the block and copy it into a new block, erase this one and only then we can write into this block. So it’s not only one write operation anymore.&lt;/p&gt;
+
+&lt;p&gt;Fortunatelly, there is a background process called &lt;strong&gt;garbage collection&lt;/strong&gt;. This process does what I just described and by doing so, it tries to keep as many blocks completely empty for fast write operations. However, there’s still a catch.&lt;/p&gt;
+
+&lt;p&gt;The catch is when a file is deleted, it’s not really deleted from the disk, it’s just not visible for the operating system. This is why there are so many tools that can help you recover deleted files. The data is still on the disk and when the garbage collector on the SSD controller kicks in, it still works even with this data we already deleted on the operating system level. Therefore, it hapilly reads and writes data we already deleted.&lt;/p&gt;
+
+&lt;p&gt;That’s not very efficient and it’s believed to wear the SSD more than it’s necessary. Therefore, there’s a &lt;strong&gt;TRIM command&lt;/strong&gt; that helps to remedy the situation.&lt;/p&gt;
+
+&lt;p&gt;The TRIM command propagates the information about deleted data from the operation system to the SSD. Therefore, the SSD does know what data are no longed needed and the garbage collector can leave them behind and erase them. The TRIM command doesn’t need to be used, but with it, the whole business of freeing up space is more efficient because not as many data is copied to new blocks.&lt;/p&gt;
+
+&lt;h3 id=&quot;software&quot;&gt;Software&lt;/h3&gt;
+
+&lt;p&gt;Alright, this is a quick introduction into the hardware part, let’s now have a look into what options we have in terms of software. For that, I’ll use my Manjaro Linux distribution:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;uname&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-r&lt;/span&gt;
+4.19.69-1-MANJARO
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; /etc/lsb-release
+&lt;span class=&quot;nv&quot;&gt;DISTRIB_ID&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;ManjaroLinux
+&lt;span class=&quot;nv&quot;&gt;DISTRIB_RELEASE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;18.1.0
+&lt;span class=&quot;nv&quot;&gt;DISTRIB_CODENAME&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;Juhraya
+&lt;span class=&quot;nv&quot;&gt;DISTRIB_DESCRIPTION&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;Manjaro Linux&quot;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;The first file we’ll have a look at is &lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/fstab&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ cat /etc/fstab
+UUID=69CD-94C3                            /boot/efi      vfat    defaults,noatime 0 2
+UUID=ba8edea0-5acc-42eb-83b4-a902870f12c4 swap           swap    defaults,noatime,discard 0 2
+UUID=900c0943-fd01-481f-9fe6-fae3311a8c72 /              ext4    defaults,noatime 0 1
+/dev/mapper/luks-11e54aef-4128-4301-9e9a-230c7dbfe1a9 /home          ext4    defaults,noatime 0 2
+tmpfs                                     /tmp           tmpfs   rw,size=3G,noexec,nodev,nosuid,nouser,noatime,auto,async,mode=1700 0 0
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;This is actually not a default installation, but I’ll get into that. Two things to notice here are:&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;discard&lt;/code&gt; option&lt;/li&gt;
+  &lt;li&gt;LUKS partition&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Since there’s a LUKS partition, we also need to have a look into &lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/crypttab&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; /etc/crypttab
+luks-11e54aef-4128-4301-9e9a-230c7dbfe1a9 &lt;span class=&quot;nv&quot;&gt;UUID&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;11e54aef-4128-4301-9e9a-230c7dbfe1a9     - luks,discard,timeout&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;0,tries&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;5
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Here, we can again see the &lt;code class=&quot;highlighter-rouge&quot;&gt;discard&lt;/code&gt; option.&lt;/p&gt;
+
+&lt;p&gt;As it turns out, this &lt;code class=&quot;highlighter-rouge&quot;&gt;discard&lt;/code&gt; option allows for the TRIM command to be executed and therefore pass the information about deleted data down to the disk.&lt;/p&gt;
+
+&lt;h4 id=&quot;continuous-trim-and-periodic-trim&quot;&gt;Continuous TRIM and Periodic TRIM&lt;/h4&gt;
+
+&lt;p&gt;Continuous TRIM works in a way that every time data is deleted, the TRIM command is executed. Periodic TRIM is not executed after every deletion, but is usually run via cron, anacron or systemd service. I’ll later show how to set it up via systemd units.&lt;/p&gt;
+
+&lt;p&gt;Knowing all this, lets run a few more commands to verify it’s true and it works the way I explained:&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;let’s create a file
+    &lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;yes&lt;/span&gt; | &lt;span class=&quot;nb&quot;&gt;dd &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;iflag&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;fullblock &lt;span class=&quot;nv&quot;&gt;bs&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;1M &lt;span class=&quot;nv&quot;&gt;count&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;1 &lt;span class=&quot;nv&quot;&gt;of&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;trim.test 
+1+0 records &lt;span class=&quot;k&quot;&gt;in
+&lt;/span&gt;1+0 records out
+1048576 bytes &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;1.0 MB, 1.0 MiB&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; copied, 0.00320383 s, 327 MB/s
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+    &lt;p&gt;The content of the file is just letter y and newline and it’s repeted until 1M in size.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;get more info about the file, especially the offset, length, and number of bytes
+    &lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;filefrag &lt;span class=&quot;nt&quot;&gt;-s&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt; trim.test
+Filesystem &lt;span class=&quot;nb&quot;&gt;type &lt;/span&gt;is: ef53
+File size of trim.test is 1048576 &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;256 blocks of 4096 bytes&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+ ext:     logical_offset:        physical_offset: length:   expected: flags:
+0:        0..     255:   44077824..  44078079:    256:             last,eof
+trim.test: 1 extent found
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+  &lt;li&gt;let’s get the mount point for the file:
+    &lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;df &lt;/span&gt;trim.test
+Filesystem                                             Size  Used Avail Use% Mounted on
+/dev/mapper/luks-11e54aef-4128-4301-9e9a-230c7dbfe1a9  365G   11G  336G   3% /home
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+  &lt;li&gt;let’s read directly from that address:
+    &lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;sudo dd &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;bs&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;4096 &lt;span class=&quot;nv&quot;&gt;skip&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;44077824 &lt;span class=&quot;nv&quot;&gt;count&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;256 &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/dev/mapper/luks-11e54aef-4128-4301-9e9a-230c7dbfe1a9 | hexdump &lt;span class=&quot;nt&quot;&gt;-C&lt;/span&gt;
+00000000  79 0a 79 0a 79 0a 79 0a  79 0a 79 0a 79 0a 79 0a  |y.y.y.y.y.y.y.y.|
+&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;
+256+0 records &lt;span class=&quot;k&quot;&gt;in
+&lt;/span&gt;256+0 records out
+1048576 bytes &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;1.0 MB, 1.0 MiB&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; copied, 0.00726108 s, 144 MB/s
+00100000
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+    &lt;p&gt;We can actually see the data from the file here. There’s only one line, but the &lt;code class=&quot;highlighter-rouge&quot;&gt;*&lt;/code&gt; symbolizes the same data just repeats.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;I’ll delete the file, perform some synchonization and run 4. command again:
+    &lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;trim.test 
+removed &lt;span class=&quot;s1&quot;&gt;'trim.test'&lt;/span&gt;
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sync&lt;/span&gt;
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;echo &lt;/span&gt;1 &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; /proc/sys/vm/drop_caches
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sudo dd &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;bs&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;4096 &lt;span class=&quot;nv&quot;&gt;skip&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;44077824 &lt;span class=&quot;nv&quot;&gt;count&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;256 &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/dev/mapper/luks-11e54aef-4128-4301-9e9a-230c7dbfe1a9 | hexdump &lt;span class=&quot;nt&quot;&gt;-C&lt;/span&gt;
+00000000  79 0a 79 0a 79 0a 79 0a  79 0a 79 0a 79 0a 79 0a  |y.y.y.y.y.y.y.y.|
+&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;
+256+0 records &lt;span class=&quot;k&quot;&gt;in
+&lt;/span&gt;256+0 records out
+1048576 bytes &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;1.0 MB, 1.0 MiB&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; copied, 0.00240065 s, 437 MB/s
+00100000
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+    &lt;p&gt;&lt;strong&gt;As you can see, I’ve deleted the file first, but I’m still reading the same data from the device.&lt;/strong&gt; How come? That’s exactly because I have turned off continuous trimming. How? There’s no &lt;code class=&quot;highlighter-rouge&quot;&gt;discard&lt;/code&gt; option for this filesystem in &lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/fstab&lt;/code&gt;.&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;In order for the continuous trim to be enabled, &lt;code class=&quot;highlighter-rouge&quot;&gt;discard&lt;/code&gt; option has to be put in for those partitions in &lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/fstab&lt;/code&gt; for which you want to enable the command. If you’re working with encrypted , you need to consider &lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/crypttab&lt;/code&gt; as well and put in the &lt;code class=&quot;highlighter-rouge&quot;&gt;discard&lt;/code&gt; option there as well.
+I’ll do the change now, reboot and simulate this scenario again.&lt;/p&gt;
+
+&lt;p&gt;When I delete the file and read from the address with &lt;code class=&quot;highlighter-rouge&quot;&gt;dd&lt;/code&gt; command, I get a different output this time:&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;sudo dd &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;bs&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;4096 &lt;span class=&quot;nv&quot;&gt;skip&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;44077824 &lt;span class=&quot;nv&quot;&gt;count&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;256 &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/dev/mapper/luks-11e54aef-4128-4301-9e9a-230c7dbfe1a9 | hexdump &lt;span class=&quot;nt&quot;&gt;-C&lt;/span&gt;
+00000000  3b bb 20 24 d8 0d e0 86  d1 9b 2a 87 d3 cc 85 46  |&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$.&lt;/span&gt;.....&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;....F|
+00000010  22 bb 7e 2a e9 06 f1 d8  24 7a 44 9f c4 e7 0e cf  |&lt;span class=&quot;s2&quot;&gt;&quot;.~*....&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$zD&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;.....|
+00000020  42 fe ca 3a 9a 7e c2 e4  4d b8 b9 ea e3 2f 32 d1  |B..:.~..M..../2.|
+00000030  95 5d 80 54 66 9e 0c 33  5e e7 b4 a4 76 dd 68 17  |.].Tf..3^...v.h.|
+00000040  5d ab 5c 66 25 2e 46 0d  c0 8e 7a b2 24 1b df 1c  |].&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\f&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;%.F...z.&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$.&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;..|
+00000050  18 10 07 ce b3 1b 2a ef  68 52 d1 07 16 36 67 10  |......*.hR...6g.|
+00000060  a4 cb 14 29 0e 1e 17 fb  76 9e 15 88 9e b3 a1 32  |...)....v......2|
+00000070  78 2c dd 9e 25 26 99 fd  d6 8b 34 cd cf f3 21 ad  |x,..%&amp;amp;....4...!.|
+00000080  7f cd 07 57 39 6d 90 07  87 c2 3f cb aa 80 3f 15  |...W9m....?...?.|
+00000090  29 e8 a6 18 09 72 d4 c4  2f 58 04 50 5c 99 52 e0  |)....r../X.P&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\.&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;R.|
+000000a0  42 56 ce 28 d0 37 f4 f7  28 f1 4d 9e a7 78 dc 1f  |BV.(.7..(.M..x..|
+000000b0  8a 6f 5f 4f 85 22 23 66  da 04 17 59 c9 37 22 86  |.o_O.&quot;&lt;/span&gt;&lt;span class=&quot;c&quot;&gt;#f...Y.7&quot;.|&lt;/span&gt;
+000000c0  50 61 d3 6b 0b 55 3c b0  &lt;span class=&quot;nb&quot;&gt;df &lt;/span&gt;fd 52 bc d0 59 27 &lt;span class=&quot;nb&quot;&gt;df&lt;/span&gt;  |Pa.k.U&amp;lt;...R..Y&lt;span class=&quot;s1&quot;&gt;'.|
+# and much more random data
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The TRIM command was executed, the SSD already knows about the deleted data.&lt;/p&gt;
+
+&lt;p&gt;If you want to find out what filesystems have continuous trimming enabled, run &lt;code class=&quot;highlighter-rouge&quot;&gt;findmnt -O discard&lt;/code&gt;.&lt;/p&gt;
+
+&lt;h4 id=&quot;periodic-trim-as-systemd-unit&quot;&gt;Periodic TRIM as Systemd Unit&lt;/h4&gt;
+
+&lt;p&gt;I have continuous trim disabled, but I still want the TRIM command to tell my SSD what data are useless and should not be copied anywhere else. To do that, I’ve set up (not really, because it’s present by default in Manjaro) two systemd units, &lt;code class=&quot;highlighter-rouge&quot;&gt;fstrim.timer&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;fstrim.service&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Again, there’ll be some slight variations in my example since I’ve tweaked the default settings a bit. Anyway, let’s have a look at the timer first:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;systemctl &lt;span class=&quot;nb&quot;&gt;cat &lt;/span&gt;fstrim.timer
+&lt;span class=&quot;c&quot;&gt;# /etc/systemd/system/fstrim.timer&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;Unit]
+&lt;span class=&quot;nv&quot;&gt;Description&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;Discard unused blocks once a week
+&lt;span class=&quot;nv&quot;&gt;Documentation&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;man:fstrim
+
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;Timer]
+&lt;span class=&quot;nv&quot;&gt;OnCalendar&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;Wed,Sat
+&lt;span class=&quot;nv&quot;&gt;AccuracySec&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;1h
+&lt;span class=&quot;nv&quot;&gt;Persistent&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;true&lt;/span&gt;
+
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;Install]
+&lt;span class=&quot;nv&quot;&gt;WantedBy&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;timers.target
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;By default, the timer is disabled because continuous trim is enabled. In such a situation it doesn’t really make sense to have the periodic TRIM run as well.
+If enabled (&lt;code class=&quot;highlighter-rouge&quot;&gt;sudo systemctl enable fstrim.timer&lt;/code&gt;), it runs by default once a week (&lt;code class=&quot;highlighter-rouge&quot;&gt;OnCalendar=weekly&lt;/code&gt;). My change is I run it on Wednesday and Saturday.&lt;/p&gt;
+
+&lt;p&gt;Then there’s &lt;code class=&quot;highlighter-rouge&quot;&gt;fstrim.service&lt;/code&gt; systemd unit without which the timer would do absolutely nothing:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;# /usr/lib/systemd/system/fstrim.service&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;Unit]
+&lt;span class=&quot;nv&quot;&gt;Description&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;Discard unused blocks on filesystems from /etc/fstab
+&lt;span class=&quot;nv&quot;&gt;Documentation&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;man:fstrim&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;8&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;Service]
+&lt;span class=&quot;nv&quot;&gt;Type&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;oneshot
+&lt;span class=&quot;nv&quot;&gt;ExecStart&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/sbin/fstrim &lt;span class=&quot;nt&quot;&gt;--fstab&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--verbose&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--quiet&lt;/span&gt;
+&lt;span class=&quot;nv&quot;&gt;ProtectSystem&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;strict
+&lt;span class=&quot;nv&quot;&gt;ProtectHome&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;yes
+&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;PrivateDevices&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;no
+&lt;span class=&quot;nv&quot;&gt;PrivateNetwork&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;yes
+&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;PrivateUsers&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;no
+&lt;span class=&quot;nv&quot;&gt;ProtectKernelTunables&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;yes
+&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;ProtectKernelModules&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;yes
+&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;ProtectControlGroups&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;yes
+&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;MemoryDenyWriteExecute&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;yes
+&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;SystemCallFilter&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;@default @file-system @basic-io @system-service
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;fstrim&lt;/code&gt; command can take &lt;code class=&quot;highlighter-rouge&quot;&gt;--dry-run&lt;/code&gt; option, so you can actually run in without eny real effect and just check what it does:&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;sudo&lt;/span&gt; /sbin/fstrim &lt;span class=&quot;nt&quot;&gt;--fstab&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--verbose&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--quiet&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--dry-run&lt;/span&gt;
+/home: 0 B &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;dry run&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; trimmed on /dev/mapper/luks-11e54aef-4128-4301-9e9a-230c7dbfe1a9
+/: 0 B &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;dry run&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; trimmed on /dev/sda3
+/boot/efi: 0 B &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;dry run&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; trimmed on /dev/sda1
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;It seems it’s working. It simply looks into &lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/fstab&lt;/code&gt; and trims all mounted filesystems mentioned in &lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/fstab&lt;/code&gt; on devices that support the discard operation. A good idea is to have a look what mounted filesystems support it:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;lsblk &lt;span class=&quot;nt&quot;&gt;--discard&lt;/span&gt;
+NAME                                          DISC-ALN DISC-GRAN DISC-MAX DISC-ZERO
+sda                                                  0      512B       2G         0
+├─sda1                                               0      512B       2G         0
+├─sda2                                               0      512B       2G         0
+├─sda3                                               0      512B       2G         0
+└─sda4                                               0      512B       2G         0
+  └─luks-11e54aef-4128-4301-9e9a-230c7dbfe1a9        0      512B       2G         0
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;All I’m interested in is &lt;code class=&quot;highlighter-rouge&quot;&gt;DISC-GRAN&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;DISC-MAX&lt;/code&gt; columns. If both are with non-zero values, just a filesystem supports trimming. Make sure that if you want to disable continuous trim for LUKS partition, there should be no &lt;code class=&quot;highlighter-rouge&quot;&gt;discard&lt;/code&gt; option for such a partition in &lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/fstab&lt;/code&gt;, but there should be &lt;code class=&quot;highlighter-rouge&quot;&gt;discard&lt;/code&gt; option for the LUKS partition in &lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/crypttab&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;We have confirmed there’s no problem, so let’s run the command as a service now:&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;systemctl start fstrim.service
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;systemctl status fstrim.service
+● fstrim.service - Discard unused blocks on filesystems from /etc/fstab
+       Loaded: loaded &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;/usr/lib/systemd/system/fstrim.service&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; static&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; vendor preset: disabled&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+       Active: inactive &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;dead&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; since Wed 2019-09-18 15:29:32 CEST&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; 9min ago
+         Docs: man:fstrim&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;8&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+      Process: 1445 &lt;span class=&quot;nv&quot;&gt;ExecStart&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/sbin/fstrim &lt;span class=&quot;nt&quot;&gt;--fstab&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--verbose&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--quiet&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;code&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;exited, &lt;span class=&quot;nv&quot;&gt;status&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;0/SUCCESS&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+     Main PID: 1445 &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;code&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;exited, &lt;span class=&quot;nv&quot;&gt;status&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;0/SUCCESS&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+    
+    Sep 18 15:29:31 pavel-pc systemd[1]: Starting Discard unused blocks on filesystems from /etc/fstab...
+    Sep 18 15:29:32 pavel-pc fstrim[1445]: /: 0 B &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;0 bytes&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; trimmed on /dev/sda3
+    Sep 18 15:29:32 pavel-pc fstrim[1445]: /boot/efi: 510.7 MiB &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;535519232 bytes&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; trimmed on /dev/sda1
+    Sep 18 15:29:32 pavel-pc systemd[1]: fstrim.service: Succeeded.
+    Sep 18 15:29:32 pavel-pc systemd[1]: Started Discard unused blocks on filesystems from /etc/fstab.
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The service has run successfully, but there’s one small detail. Can you see it?&lt;/p&gt;
+
+&lt;p&gt;When run as a command, &lt;code class=&quot;highlighter-rouge&quot;&gt;fstrim&lt;/code&gt; reported, it can trim &lt;code class=&quot;highlighter-rouge&quot;&gt;/home&lt;/code&gt; as well, but there’s no &lt;code class=&quot;highlighter-rouge&quot;&gt;/home&lt;/code&gt; when we run it as a service.&lt;/p&gt;
+
+&lt;p&gt;We can even have more into the log:&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;journalctl &lt;span class=&quot;nt&quot;&gt;-b&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--no-pager&lt;/span&gt; | &lt;span class=&quot;nb&quot;&gt;grep &lt;/span&gt;fstrim
+Sep 18 15:29:31 pavel-pc &lt;span class=&quot;nb&quot;&gt;sudo&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;1442]:    pavel : &lt;span class=&quot;nv&quot;&gt;TTY&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;pts/0 &lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;PWD&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/home/pavel &lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;USER&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;root &lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;COMMAND&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/usr/bin/systemctl start fstrim.service
+Sep 18 15:29:32 pavel-pc fstrim[1445]: /: 0 B &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;0 bytes&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; trimmed on /dev/sda3
+Sep 18 15:29:32 pavel-pc fstrim[1445]: /boot/efi: 510.7 MiB &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;535519232 bytes&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; trimmed on /dev/sda1
+Sep 18 15:29:32 pavel-pc systemd[1]: fstrim.service: Succeeded.
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Nothing.&lt;/p&gt;
+
+&lt;p&gt;Well, the problem really is in the systemd service unit, there’s a line that says &lt;code class=&quot;highlighter-rouge&quot;&gt;ProtectHome=yes&lt;/code&gt;, therefore the &lt;code class=&quot;highlighter-rouge&quot;&gt;fstrim&lt;/code&gt; command was not run for &lt;code class=&quot;highlighter-rouge&quot;&gt;/home&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Having said that, let’s change it:&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;systemctl edit &lt;span class=&quot;nt&quot;&gt;--full&lt;/span&gt; fstrim.service
+&lt;span class=&quot;c&quot;&gt;# change it in your text editor and save it&lt;/span&gt;
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;systemctl &lt;span class=&quot;nb&quot;&gt;cat &lt;/span&gt;fstrim.service
+&lt;span class=&quot;c&quot;&gt;# /etc/systemd/system/fstrim.service&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;Unit]
+&lt;span class=&quot;nv&quot;&gt;Description&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;Discard unused blocks on filesystems from /etc/fstab
+&lt;span class=&quot;nv&quot;&gt;Documentation&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;man:fstrim&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;8&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;Service]
+&lt;span class=&quot;nv&quot;&gt;Type&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;oneshot
+&lt;span class=&quot;nv&quot;&gt;ExecStart&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/sbin/fstrim &lt;span class=&quot;nt&quot;&gt;--fstab&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--verbose&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--quiet&lt;/span&gt;
+&lt;span class=&quot;nv&quot;&gt;ProtectSystem&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;strict
+&lt;span class=&quot;nv&quot;&gt;ProtectHome&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;no
+&lt;span class=&quot;nv&quot;&gt;PrivateDevices&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;no
+&lt;span class=&quot;nv&quot;&gt;PrivateNetwork&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;yes
+&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;PrivateUsers&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;no
+&lt;span class=&quot;nv&quot;&gt;ProtectKernelTunables&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;yes
+&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;ProtectKernelModules&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;yes
+&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;ProtectControlGroups&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;yes
+&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;MemoryDenyWriteExecute&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;yes
+&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;SystemCallFilter&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;@default @file-system @basic-io @system-service
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;When run now, it takes &lt;code class=&quot;highlighter-rouge&quot;&gt;/home&lt;/code&gt; into consideration and performes trimming on it as well:&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Sep 18 15:47:29 pavel-pc &lt;span class=&quot;nb&quot;&gt;sudo&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;2576]:    pavel : &lt;span class=&quot;nv&quot;&gt;TTY&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;pts/1 &lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;PWD&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/home/pavel &lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;USER&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;root &lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;COMMAND&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/usr/bin/systemctl start fstrim.service
+Sep 18 15:47:31 pavel-pc fstrim[2579]: /home: 846.6 MiB &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;887713792 bytes&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; trimmed on /dev/mapper/luks-11e54aef-4128-4301-9e9a-230c7dbfe1a9
+Sep 18 15:47:31 pavel-pc fstrim[2579]: /: 287.2 MiB &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;301125632 bytes&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; trimmed on /dev/sda3
+Sep 18 15:47:31 pavel-pc fstrim[2579]: /boot/efi: 510.7 MiB &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;535519232 bytes&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; trimmed on /dev/sda1
+Sep 18 15:47:31 pavel-pc systemd[1]: fstrim.service: Succeeded.
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h3&gt;
+
+&lt;p&gt;That wraps up this article. It’s not really anything difficult, but it requires a little bit of reading and digging around in some files on the system. Once set up, it can run with no manual input whatsoever.&lt;/p&gt;
+
+&lt;p&gt;If you need more info, you can always check man pages or Google. I hope I’ve covered the most important parts of this topic and that my article could be used as a good reference when facing the same need to set this up. When reading about this topic, I particularly liked Arch wiki pages where this is also described. The rest was just looking into a few forum threads and piecing the bits together.&lt;/p&gt;</content><author><name>Pavel Saman</name></author><summary type="html">I’ve recently stumbled upon the following topic that seems interesting enough, so after some playing around with it, I’ve decided to summarize my own thoughts and write this article.</summary></entry><entry><title type="html">Turn Off Annoying Speaker</title><link href="http://localhost:4000/turn-off-annoying-speaker.html" rel="alternate" type="text/html" title="Turn Off Annoying Speaker" /><published>2019-09-18T20:07:19+02:00</published><updated>2019-09-18T20:07:19+02:00</updated><id>http://localhost:4000/turn-off-annoying-speaker</id><content type="html" xml:base="http://localhost:4000/turn-off-annoying-speaker.html">&lt;p&gt;Have you ever experienced this annoying beep sound your PC speaker makes on error, in console and possibly on other places? This is the single most annoying thing I wanted to get rid off system-wide and for good. If you want to do the same, this short blog post might come in handy.&lt;/p&gt;
+
+&lt;p&gt;There are a few different places where this could be disabled, but I wanted to do it system-wide, so I don’t need to worry about all the places where to turn it off.&lt;/p&gt;
+
+&lt;p&gt;It turns out that the speaker functions because of &lt;code class=&quot;highlighter-rouge&quot;&gt;pcspkr&lt;/code&gt; kernel module. Knowing this, I only created a new file in &lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/modprobe.d/&lt;/code&gt; with the following content:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cat &lt;/span&gt;blacklist-mine.conf 
+blacklist pcspkr
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;This will not load the kernel module on next boot, thus silencing the PC speaker :)&lt;/p&gt;
+
+&lt;p&gt;Of course, the same method could be used if you don’t want to load some other kernel modules. One way to find out what piece of hardware uses what kernel module is command &lt;code class=&quot;highlighter-rouge&quot;&gt;lspci -v&lt;/code&gt;, the output looks like this:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;lspci &lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt;
+00:00.0 Host bridge: Intel Corporation Broadwell-U Host Bridge &lt;span class=&quot;nt&quot;&gt;-OPI&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;rev 09&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+	Subsystem: Dell Broadwell-U Host Bridge &lt;span class=&quot;nt&quot;&gt;-OPI&lt;/span&gt;
+	Flags: bus master, fast devsel, latency 0
+	Capabilities: &amp;lt;access denied&amp;gt;
+	Kernel driver &lt;span class=&quot;k&quot;&gt;in &lt;/span&gt;use: bdw_uncore
+......
+......
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The last line with no dots shows what kernel module is used.&lt;/p&gt;</content><author><name>Pavel Saman</name></author><summary type="html">Have you ever experienced this annoying beep sound your PC speaker makes on error, in console and possibly on other places? This is the single most annoying thing I wanted to get rid off system-wide and for good. If you want to do the same, this short blog post might come in handy.</summary></entry><entry><title type="html">Log Out From Console after Certain Time</title><link href="http://localhost:4000/log-out-from-console-after-certain-time.html" rel="alternate" type="text/html" title="Log Out From Console after Certain Time" /><published>2019-09-18T17:00:19+02:00</published><updated>2019-09-18T17:00:19+02:00</updated><id>http://localhost:4000/log-out-from-console-after-certain-time</id><content type="html" xml:base="http://localhost:4000/log-out-from-console-after-certain-time.html">&lt;p&gt;It is possible to forget to log out from a console, which might be a security risk. It would be nice to have a way to log out automatically if this happens.&lt;/p&gt;
+
+&lt;h3 id=&quot;etcprofile-and-etcprofiled&quot;&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/profile&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/profile.d/&lt;/code&gt;&lt;/h3&gt;
+
+&lt;p&gt;As it turns out, we can do such a thing with just a few lines of shell code. Let’s write this:&lt;/p&gt;
+
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;TMOUT&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;30
+
+&lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;si&quot;&gt;$(&lt;/span&gt; /usr/bin/tty &lt;span class=&quot;si&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt;
+	/dev/tty[0-9]&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+		&lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;TMOUT
+		&lt;span class=&quot;p&quot;&gt;;;&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;esac&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Variable &lt;code class=&quot;highlighter-rouge&quot;&gt;TMOUT&lt;/code&gt; could be used to log out a user after a specified number of seconds. If set to &lt;code class=&quot;highlighter-rouge&quot;&gt;30&lt;/code&gt; like in my example, it’ll log out a user after 30 seconds of innactivity.&lt;/p&gt;
+
+&lt;p&gt;The only question now is where to put such a script?&lt;/p&gt;
+
+&lt;p&gt;Let’s have a look at &lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/profile&lt;/code&gt;:&lt;/p&gt;
+
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;# /etc/profile&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# Set our umask&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;umask &lt;/span&gt;022
+
+&lt;span class=&quot;c&quot;&gt;# Append our default paths&lt;/span&gt;
+appendpath &lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;:&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$PATH&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;:&quot;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;:&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$1&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;:&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;;;&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;nv&quot;&gt;PATH&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;PATH&lt;/span&gt;:+&lt;span class=&quot;nv&quot;&gt;$PATH&lt;/span&gt;:&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$1&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;esac&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+appendpath &lt;span class=&quot;s1&quot;&gt;'/usr/local/sbin'&lt;/span&gt;
+appendpath &lt;span class=&quot;s1&quot;&gt;'/usr/local/bin'&lt;/span&gt;
+appendpath &lt;span class=&quot;s1&quot;&gt;'/usr/bin'&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;unset &lt;/span&gt;appendpath
+
+&lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;PATH
+
+&lt;span class=&quot;c&quot;&gt;# Load profiles from /etc/profile.d&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;if &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;test&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-d&lt;/span&gt; /etc/profile.d/&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;then
+	for &lt;/span&gt;profile &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; /etc/profile.d/&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;.sh&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do
+		&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;test&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-r&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$profile&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$profile&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
+	&lt;span class=&quot;k&quot;&gt;done
+	&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;unset &lt;/span&gt;profile
+&lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# Source global bash config&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;if &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;test&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$PS1&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;test&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$BASH&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;test&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-z&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;POSIXLY_CORRECT&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;+x&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;test&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-r&lt;/span&gt; /etc/bash.bashrc&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+	&lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt; /etc/bash.bashrc
+&lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# Termcap is outdated, old, and crusty, kill it.&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;unset &lt;/span&gt;TERMCAP
+
+&lt;span class=&quot;c&quot;&gt;# Man is much better than us at figuring this out&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;unset &lt;/span&gt;MANPATH
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;This is a standard content of the file on Manjaro Linux. This file gets read by bash when it’s invoked as a login shell, so it’s a good place to set up some global config for all users (just like here setting &lt;code class=&quot;highlighter-rouge&quot;&gt;PATH&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;umask&lt;/code&gt; for example).&lt;/p&gt;
+
+&lt;p&gt;One particular piece I’m interested in is:&lt;/p&gt;
+
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;# Load profiles from /etc/profile.d&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;if &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;test&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-d&lt;/span&gt; /etc/profile.d/&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;then
+	for &lt;/span&gt;profile &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; /etc/profile.d/&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;.sh&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do
+		&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;test&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-r&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$profile&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$profile&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
+	&lt;span class=&quot;k&quot;&gt;done
+	&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;unset &lt;/span&gt;profile
+&lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;This part works with every file in &lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/profile.d/&lt;/code&gt; that ends with &lt;code class=&quot;highlighter-rouge&quot;&gt;.sh&lt;/code&gt;. If such a file exists and read permissions are granted, it will execute such a file. That’s exactly what we need for our tiny script from the beginning.&lt;/p&gt;
+
+&lt;p&gt;Let’s save our script as &lt;code class=&quot;highlighter-rouge&quot;&gt;shell-timeout.sh&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;ls&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-l&lt;/span&gt; shell-timeout.sh 
+&lt;span class=&quot;nt&quot;&gt;-rw-r--r--&lt;/span&gt; 1 root root 77 Sep 17 16:12 shell-timeout.sh
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now it’s a good time to test it. Log into a console (tty, not pts) and just wait for 30 seconds. After the time period, the user should be logged out automatically.&lt;/p&gt;</content><author><name>Pavel Saman</name></author><summary type="html">It is possible to forget to log out from a console, which might be a security risk. It would be nice to have a way to log out automatically if this happens.</summary></entry><entry><title type="html">Find Out Cookies For Current Session</title><link href="http://localhost:4000/find-out-cookies-for-current-session.html" rel="alternate" type="text/html" title="Find Out Cookies For Current Session" /><published>2019-09-17T21:07:19+02:00</published><updated>2019-09-17T21:07:19+02:00</updated><id>http://localhost:4000/find-out-cookies-for-current-session</id><content type="html" xml:base="http://localhost:4000/find-out-cookies-for-current-session.html">&lt;p&gt;When working with web applications, I sometimes need, or I’m just curious, to find what cookies the app is using. There are a few ways how to get hold of them. Let’s have a look at how to use dev tools in a browser.&lt;/p&gt;
+
+&lt;p&gt;When you go into your browser, you can most likely press &lt;code class=&quot;highlighter-rouge&quot;&gt;F12&lt;/code&gt; and get a new section like this:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/dev_tools.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Many different things could be done from here. For example, there’s a console:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/dev_tools_2.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;This console could be used to execute some Javascript. Then it’s only one Google search away from finding out how to show all cookies for the current session:&lt;/p&gt;
+
+&lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;document&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;cookie&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;And here we go:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/dev_tools_3.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;No need to install any addon like Cookie editor if you just need to check what cookies you got.&lt;/p&gt;</content><author><name>Pavel Saman</name></author><summary type="html">When working with web applications, I sometimes need, or I’m just curious, to find what cookies the app is using. There are a few ways how to get hold of them. Let’s have a look at how to use dev tools in a browser.</summary></entry><entry><title type="html">Bash Files for Interactive Non Login Shells</title><link href="http://localhost:4000/bash-files-for-interactive-non-login-shells.html" rel="alternate" type="text/html" title="Bash Files for Interactive Non Login Shells" /><published>2019-09-16T18:07:19+02:00</published><updated>2019-09-16T18:07:19+02:00</updated><id>http://localhost:4000/bash-files-for-interactive-non-login-shells</id><content type="html" xml:base="http://localhost:4000/bash-files-for-interactive-non-login-shells.html">&lt;p&gt;Bash allows for various files that are read and executed upon bash invocation. It could be a bit tricky to navigate these files, especially when edited to personal needs. I’ll share a quick post about my setup, I think it helps keep things neat and tidy.&lt;/p&gt;
+
+&lt;p&gt;First of all, when you start digging into files like &lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/profile&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;~/.bash_profile&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;~/.bash_login&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;~/.profile&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;~/.bashrc&lt;/code&gt;, you first read something like:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;When  bash is invoked as an interactive login shell, or as a non-interactive shell with the --login option, it first reads and executes commands from the
+file /etc/profile, if that file exists.  After reading that file, it looks for ~/.bash_profile, ~/.bash_login, and ~/.profile, in that order,  and  reads
+and  executes  commands from the first one that exists and is readable.  The --noprofile option may be used when the shell is started to inhibit this be‐
+havior.
+
+When an interactive login shell exits, or a non-interactive login shell executes the exit builtin command, bash reads and executes commands from the file
+~/.bash_logout, if it exists.
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;But what the hell is login, interactive and non-interactive shell?&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Interactive shell&lt;/strong&gt; is simply the one you type your commands into. &lt;strong&gt;Non-interactive&lt;/strong&gt; shell is your scripts you just execute and then wait for the recult code, the commands inside your script are run by a non-interactive shell. &lt;strong&gt;Login shells&lt;/strong&gt; are usually interactive, they are those shells that you use for logging into a console (F2 etc.), trough SSH, or via &lt;code class=&quot;highlighter-rouge&quot;&gt;su -&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Having said that, there’re different files that get read and executed for these shells.&lt;/p&gt;
+
+&lt;p&gt;Let’s have a look at an interactive non login shell. The man page for bash say:&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;When an interactive shell that is not a login shell is started, bash reads and executes commands from ~/.bashrc,
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;I also think that interactive non login shell is the most common for home users. Such a shell will probably be started more often than any other shell, so let’s stick to this option to show how I organise the files that get executed after this shell is started.&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;~/.bashrc&lt;/code&gt; could be really long, but the point is that when you want to add some other commands (tweak your command prompt etc.), it should most likely go into this file. As you add more commands, it can grow so much that you lose yourself in it. That’s where some organisation comes in.&lt;/p&gt;
+
+&lt;p&gt;I simply create &lt;code class=&quot;highlighter-rouge&quot;&gt;~/.bash_aliases&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;~/.bash_export&lt;/code&gt; files. It could be already obvious what I put in them, but let’s have a look at oth of them:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; .bash_aliases 
+&lt;span class=&quot;c&quot;&gt;# some more ls aliases&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;alias ls&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'ls --color=auto'&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;alias grep&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'grep --colour=auto'&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;egrep&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'egrep --colour=auto'&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;fgrep&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'fgrep --colour=auto'&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;ll&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'ls -lah'&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;la&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'ls -lha'&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'ls -l'&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;em&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'emacs -nw'&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;alias dd&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'dd status=progress'&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;_&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'sudo'&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;_i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'sudo -i'&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;cls&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'clear'&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;note&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'/home/pavel/.local/bin/NixNote2-x86_64.AppImage'&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;rst&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'reset'&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;cd..&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'cd ..'&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;alias df&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'df -h'&lt;/span&gt;                          &lt;span class=&quot;c&quot;&gt;# human-readable sizes&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;free&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'free -m'&lt;/span&gt;                      &lt;span class=&quot;c&quot;&gt;# show sizes in MB&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;more&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;less
+&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;lock&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;xflock4
+&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;g&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;giggle
+&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;xfce4-screenshooter -r -c -s ~/Pictures/screenshots &amp;gt;/dev/null 2&amp;gt;&amp;amp;1&quot;&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;lspic&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;viewnior
+&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;running_services&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;systemctl list-units --type service --state running&quot;&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;enabled_services&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;systemctl list-unit-files --type service --state enabled&quot;&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;all_services&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;systemctl list-unit-files --type service&quot;&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;failed_services&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;systemctl list-units --type service --state failed&quot;&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#alias start_docker=&quot;systemctl start docker.service&quot;&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#alias stop_docker=&quot;systemctl stop docker.service&quot;&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;alias rm&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;rm -v&quot;&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;which&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;which -a&quot;&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;selenium_server&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;java -jar ~/selenium-standalone-servers/selenium-server-standalone-3.141.59.jar -host 127.0.0.1&quot;&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;swappiness&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;cat /proc/sys/vm/swappiness&quot;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; .bash_export 
+&lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;EDITOR&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;vim&quot;&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;VISUAL&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;vim&quot;&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;SYSTEMD_EDITOR&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;vim&quot;&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;PATH&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;PATH&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;:/home/pavel/.local/bin:&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;$(&lt;/span&gt;ruby &lt;span class=&quot;nt&quot;&gt;-e&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'puts Gem.user_dir'&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;/bin&quot;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Nice and clean. When I need to add a new alias, I simply add a new line into &lt;code class=&quot;highlighter-rouge&quot;&gt;~/.bash_aliases&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;One more thing to do. These files do not get read by an interactive non login shell, nor by any other. In order to change that, I need to edit &lt;code class=&quot;highlighter-rouge&quot;&gt;~/.bashrc&lt;/code&gt;:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;# aliases&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[[&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; ~/.bash_aliases &lt;span class=&quot;o&quot;&gt;]]&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+	&lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt; ~/.bash_aliases
+&lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# export variables&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[[&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; ~/.bash_export &lt;span class=&quot;o&quot;&gt;]]&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+	&lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt; ~/.bash_export
+&lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;As for a login shell, it’s about different files:&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/profile&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;~/.bash_profile&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;~/.bash_login&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;~/.profile&lt;/code&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Furthermore, the files are executed in this order. Plus when I have a look into &lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/profile&lt;/code&gt;, it also looks for &lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/bash.bashrc&lt;/code&gt; under certain conditions:&lt;/p&gt;
+
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;# Source global bash config&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;if &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;test&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$PS1&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;test&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$BASH&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;test&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-z&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;POSIXLY_CORRECT&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;+x&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;test&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-r&lt;/span&gt; /etc/bash.bashrc&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+	&lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt; /etc/bash.bashrc
+&lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;And when I have a look into &lt;code class=&quot;highlighter-rouge&quot;&gt;~/.bash_profile&lt;/code&gt;, I can see:&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; .bash_profile 
+&lt;span class=&quot;c&quot;&gt;#&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# ~/.bash_profile&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#&lt;/span&gt;
+
+&lt;span class=&quot;o&quot;&gt;[[&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; ~/.bashrc &lt;span class=&quot;o&quot;&gt;]]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt; ~/.bashrc
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;So in the end, my &lt;code class=&quot;highlighter-rouge&quot;&gt;~/.bashrc&lt;/code&gt; is excuted even for interactive login shells.&lt;/p&gt;
+
+&lt;p&gt;Instead of cluttering my &lt;code class=&quot;highlighter-rouge&quot;&gt;~/.bashrc&lt;/code&gt; with many export and aliases, I keep them separated in the two files. To me, this looks a bit more organised.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Note:&lt;/strong&gt; contents of the files presented in this article could, and likely will, differ in other distributions. You need to understand the logic and apply it on your particular distro.&lt;/p&gt;</content><author><name>Pavel Saman</name></author><summary type="html">Bash allows for various files that are read and executed upon bash invocation. It could be a bit tricky to navigate these files, especially when edited to personal needs. I’ll share a quick post about my setup, I think it helps keep things neat and tidy.</summary></entry><entry><title type="html">Why I run Linux</title><link href="http://localhost:4000/why-i-run-linux.html" rel="alternate" type="text/html" title="Why I run Linux" /><published>2019-09-14T16:07:19+02:00</published><updated>2019-09-14T16:07:19+02:00</updated><id>http://localhost:4000/why-i-run-linux</id><content type="html" xml:base="http://localhost:4000/why-i-run-linux.html">&lt;p&gt;I want to express just a few reasons why I go for Linux as my main operating system. It’s not an attempt on an exhaustive list, just a few items off the top of my head.&lt;/p&gt;
+
+&lt;h3 id=&quot;learning&quot;&gt;Learning&lt;/h3&gt;
+&lt;p&gt;The most important reason for me is Linux allows me to learn more about different parts of the system, config files, data formats, tools etc.&lt;/p&gt;
+
+&lt;p&gt;A lot of things could be set up in Linux, even details that I didn’t thought possible when coming from the Windows platform. It might be a bit overwhelming at the beginning, but it also means a lot of new things could be learnt. As a result, I understand more IT stuff and that’s a big plus since it happens to be my job as well.&lt;/p&gt;
+
+&lt;h3 id=&quot;settings&quot;&gt;Settings&lt;/h3&gt;
+
+&lt;p&gt;It directly follows the previous point. Linux could be tweaked to the smallest detail. Both user interface and many stuff that run in the background and are not directly visible to the user. If something is acting up, the high changes are I can find it out with not so much effort.&lt;/p&gt;
+
+&lt;h3 id=&quot;efficiency&quot;&gt;Efficiency&lt;/h3&gt;
+
+&lt;p&gt;It might not come across as the most obvious reason at first, but I actually think using command line environment is more efficient than using a mouse. Using pipes, running various programs by just typing a few characters are simply faster, and it means a lot to me.&lt;/p&gt;
+
+&lt;p&gt;I can also look at the topic from the point of view of the system. It doesn’t consume many resources. When I don’t work on my machine, everything on the system is quiet, the CPU usage is low, RAM is free, when I have a look at the network interface, there’s no traffic etc. Whereas on my Windows machine, it’s always on like 70 % of RAM capacity, the same with the CPU and disk, and the machine is always talking to the outside world via its network interface. I guess some of these things could be turned off, but just the default behaviour scares me. Why not turn off almost everything and let the user decide what to use?&lt;/p&gt;
+
+&lt;h3 id=&quot;gui&quot;&gt;GUI&lt;/h3&gt;
+
+&lt;p&gt;While criticised a lot by mostly non-linux users, I find it much nicer. And there are many options to choose from. You can have GNOME, KDE, LXDE, Cinnamon, MATE, Xfce, LXQt all the way down to some really light environments like Openbox.&lt;/p&gt;
+
+&lt;p&gt;Furthermore, any desktop nvironment could be further tweaked and changed to the needs of every user.&lt;/p&gt;
+
+&lt;p&gt;However, try to add a custom clock format on a panel in Windows. You have to go into registry! What a thing!&lt;/p&gt;
+
+&lt;p&gt;These are my reasons for using Linux. I could find out more as I learn more about the system, but even now after just half a year of using Linux everyday as my main system, I can’t but say it was definitely a good choice to switch to this platform.&lt;/p&gt;</content><author><name>Pavel Saman</name></author><summary type="html">I want to express just a few reasons why I go for Linux as my main operating system. It’s not an attempt on an exhaustive list, just a few items off the top of my head.</summary></entry></feed>

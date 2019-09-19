@@ -1,0 +1,282 @@
+I"�j<p>I’ve recently stumbled upon the following topic that seems interesting enough, so after some playing around with it, I’ve decided to summarize my own thoughts and write this article.</p>
+
+<h3 id="hardware">Hardware</h3>
+<p>Many modern laptops and other computers don’t have a classis hard drive with mechanical parts anymore. The reason is simple, we already have newer technology that enables us to write and retrieve data faster. Yes, I’m talking about SSD, solid state drives. How exactly does it work? Are there some limitations? Can a SSD become worse over time? If so, how can we prolong the period when it works fast?</p>
+
+<p>The high level model of a SSD could be as follows: <img src="/images/block.png" alt="image" /></p>
+
+<p>The smallest unit (not shown in the picture) is a single cell, multiple cells form one page and when we put a bunch of pages together, we get the whole grid as in the picture, which is one block. Of course, there are many blocks inside one SSD. These are the innards of a SSD.</p>
+
+<p>However, one of the problems or limitations of SSDs is, while you can read data on the page level, you can erase data only on the block level. The reason for that is the erase operation requires higher voltage that stresses individual cells around the cells that are being erased. This is already too low-level, so I won’t follow this line of thinking anymore.</p>
+
+<p>Having said that, when a disk is new with enough empty blocks, write operations are fast. However, consider the following situation. Some data from a block are deleted: <img src="/images/block_1.png" alt="image" /></p>
+
+<p>Pages A to D do not contain any valid data anymore. We also can’t just write new data in there, because the pages have to be erased first and for that we need the whole block to be empty (remember we cannot erase single pages, but only whole blocks). So we are in a situation when some already deleted data are blocking some space on the SSD.</p>
+
+<p>What has to happen next is we need to read all the valid (not stale) data from the block and copy it into a new block, erase this one and only then we can write into this block. So it’s not only one write operation anymore.</p>
+
+<p>Fortunatelly, there is a background process called <strong>garbage collection</strong>. This process does what I just described and by doing so, it tries to keep as many blocks completely empty for fast write operations. However, there’s still a catch.</p>
+
+<p>The catch is when a file is deleted, it’s not really deleted from the disk, it’s just not visible for the operating system. This is why there are so many tools that can help you recover deleted files. The data is still on the disk and when the garbage collector on the SSD controller kicks in, it still works even with this data we already deleted on the operating system level. Therefore, it hapilly reads and writes data we already deleted.</p>
+
+<p>That’s not very efficient and it’s believed to wear the SSD more than it’s necessary. Therefore, there’s a <strong>TRIM command</strong> that helps to remedy the situation.</p>
+
+<p>The TRIM command propagates the information about deleted data from the operation system to the SSD. Therefore, the SSD does know what data are no longed needed and the garbage collector can leave them behind and erase them. The TRIM command doesn’t need to be used, but with it, the whole business of freeing up space is more efficient because not as many data is copied to new blocks.</p>
+
+<h3 id="software">Software</h3>
+
+<p>Alright, this is a quick introduction into the hardware part, let’s now have a look into what options we have in terms of software. For that, I’ll use my Manjaro Linux distribution:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">uname</span> <span class="nt">-r</span>
+4.19.69-1-MANJARO
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">cat</span> /etc/lsb-release
+<span class="nv">DISTRIB_ID</span><span class="o">=</span>ManjaroLinux
+<span class="nv">DISTRIB_RELEASE</span><span class="o">=</span>18.1.0
+<span class="nv">DISTRIB_CODENAME</span><span class="o">=</span>Juhraya
+<span class="nv">DISTRIB_DESCRIPTION</span><span class="o">=</span><span class="s2">"Manjaro Linux"</span>
+</code></pre></div></div>
+<p>The first file we’ll have a look at is <code class="highlighter-rouge">/etc/fstab</code>:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ cat /etc/fstab
+UUID=69CD-94C3                            /boot/efi      vfat    defaults,noatime 0 2
+UUID=ba8edea0-5acc-42eb-83b4-a902870f12c4 swap           swap    defaults,noatime,discard 0 2
+UUID=900c0943-fd01-481f-9fe6-fae3311a8c72 /              ext4    defaults,noatime 0 1
+/dev/mapper/luks-11e54aef-4128-4301-9e9a-230c7dbfe1a9 /home          ext4    defaults,noatime 0 2
+tmpfs                                     /tmp           tmpfs   rw,size=3G,noexec,nodev,nosuid,nouser,noatime,auto,async,mode=1700 0 0
+</code></pre></div></div>
+<p>This is actually not a default installation, but I’ll get into that. Two things to notice here are:</p>
+<ol>
+  <li><code class="highlighter-rouge">discard</code> option</li>
+  <li>LUKS partition</li>
+</ol>
+
+<p>Since there’s a LUKS partition, we also need to have a look into <code class="highlighter-rouge">/etc/crypttab</code>:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">cat</span> /etc/crypttab
+luks-11e54aef-4128-4301-9e9a-230c7dbfe1a9 <span class="nv">UUID</span><span class="o">=</span>11e54aef-4128-4301-9e9a-230c7dbfe1a9     - luks,discard,timeout<span class="o">=</span>0,tries<span class="o">=</span>5
+</code></pre></div></div>
+
+<p>Here, we can again see the <code class="highlighter-rouge">discard</code> option.</p>
+
+<p>As it turns out, this <code class="highlighter-rouge">discard</code> option allows for the TRIM command to be executed and therefore pass the information about deleted data down to the disk.</p>
+
+<h4 id="continuous-trim-and-periodic-trim">Continuous TRIM and Periodic TRIM</h4>
+
+<p>Continuous TRIM works in a way that every time data is deleted, the TRIM command is executed. Periodic TRIM is not executed after every deletion, but is usually run via cron, anacron or systemd service. I’ll later show how to set it up via systemd units.</p>
+
+<p>Knowing all this, lets run a few more commands to verify it’s true and it works the way I explained:</p>
+<ol>
+  <li>let’s create a file
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">yes</span> | <span class="nb">dd </span><span class="nv">iflag</span><span class="o">=</span>fullblock <span class="nv">bs</span><span class="o">=</span>1M <span class="nv">count</span><span class="o">=</span>1 <span class="nv">of</span><span class="o">=</span>trim.test 
+1+0 records <span class="k">in
+</span>1+0 records out
+1048576 bytes <span class="o">(</span>1.0 MB, 1.0 MiB<span class="o">)</span> copied, 0.00320383 s, 327 MB/s
+</code></pre></div>    </div>
+    <p>The content of the file is just letter y and newline and it’s repeted until 1M in size.</p>
+  </li>
+  <li>get more info about the file, especially the offset, length, and number of bytes
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>filefrag <span class="nt">-s</span> <span class="nt">-v</span> trim.test
+Filesystem <span class="nb">type </span>is: ef53
+File size of trim.test is 1048576 <span class="o">(</span>256 blocks of 4096 bytes<span class="o">)</span>
+ ext:     logical_offset:        physical_offset: length:   expected: flags:
+0:        0..     255:   44077824..  44078079:    256:             last,eof
+trim.test: 1 extent found
+</code></pre></div>    </div>
+  </li>
+  <li>let’s get the mount point for the file:
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">df </span>trim.test
+Filesystem                                             Size  Used Avail Use% Mounted on
+/dev/mapper/luks-11e54aef-4128-4301-9e9a-230c7dbfe1a9  365G   11G  336G   3% /home
+</code></pre></div>    </div>
+  </li>
+  <li>let’s read directly from that address:
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo dd </span><span class="nv">bs</span><span class="o">=</span>4096 <span class="nv">skip</span><span class="o">=</span>44077824 <span class="nv">count</span><span class="o">=</span>256 <span class="k">if</span><span class="o">=</span>/dev/mapper/luks-11e54aef-4128-4301-9e9a-230c7dbfe1a9 | hexdump <span class="nt">-C</span>
+00000000  79 0a 79 0a 79 0a 79 0a  79 0a 79 0a 79 0a 79 0a  |y.y.y.y.y.y.y.y.|
+<span class="k">*</span>
+256+0 records <span class="k">in
+</span>256+0 records out
+1048576 bytes <span class="o">(</span>1.0 MB, 1.0 MiB<span class="o">)</span> copied, 0.00726108 s, 144 MB/s
+00100000
+</code></pre></div>    </div>
+    <p>We can actually see the data from the file here. There’s only one line, but the <code class="highlighter-rouge">*</code> symbolizes the same data just repeats.</p>
+  </li>
+  <li>I’ll delete the file, perform some synchonization and run 4. command again:
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>trim.test 
+removed <span class="s1">'trim.test'</span>
+<span class="nv">$ </span><span class="nb">sync</span>
+<span class="nv">$ </span><span class="nb">echo </span>1 <span class="o">&gt;</span> /proc/sys/vm/drop_caches
+<span class="nv">$ </span><span class="nb">sudo dd </span><span class="nv">bs</span><span class="o">=</span>4096 <span class="nv">skip</span><span class="o">=</span>44077824 <span class="nv">count</span><span class="o">=</span>256 <span class="k">if</span><span class="o">=</span>/dev/mapper/luks-11e54aef-4128-4301-9e9a-230c7dbfe1a9 | hexdump <span class="nt">-C</span>
+00000000  79 0a 79 0a 79 0a 79 0a  79 0a 79 0a 79 0a 79 0a  |y.y.y.y.y.y.y.y.|
+<span class="k">*</span>
+256+0 records <span class="k">in
+</span>256+0 records out
+1048576 bytes <span class="o">(</span>1.0 MB, 1.0 MiB<span class="o">)</span> copied, 0.00240065 s, 437 MB/s
+00100000
+</code></pre></div>    </div>
+    <p><strong>As you can see, I’ve deleted the file first, but I’m still reading the same data from the device.</strong> How come? That’s exactly because I have turned off continuous trimming. How? There’s no <code class="highlighter-rouge">discard</code> option for this filesystem in <code class="highlighter-rouge">/etc/fstab</code>.</p>
+  </li>
+</ol>
+
+<p>In order for the continuous trim to be enabled, <code class="highlighter-rouge">discard</code> option has to be put in for those partitions in <code class="highlighter-rouge">/etc/fstab</code> for which you want to enable the command. If you’re working with encrypted , you need to consider <code class="highlighter-rouge">/etc/crypttab</code> as well and put in the <code class="highlighter-rouge">discard</code> option there as well.
+I’ll do the change now, reboot and simulate this scenario again.</p>
+
+<p>When I delete the file and read from the address with <code class="highlighter-rouge">dd</code> command, I get a different output this time:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo dd </span><span class="nv">bs</span><span class="o">=</span>4096 <span class="nv">skip</span><span class="o">=</span>44077824 <span class="nv">count</span><span class="o">=</span>256 <span class="k">if</span><span class="o">=</span>/dev/mapper/luks-11e54aef-4128-4301-9e9a-230c7dbfe1a9 | hexdump <span class="nt">-C</span>
+00000000  3b bb 20 24 d8 0d e0 86  d1 9b 2a 87 d3 cc 85 46  |<span class="p">;</span><span class="nb">.</span> <span class="nv">$.</span>.....<span class="k">*</span>....F|
+00000010  22 bb 7e 2a e9 06 f1 d8  24 7a 44 9f c4 e7 0e cf  |<span class="s2">".~*....</span><span class="nv">$zD</span><span class="s2">.....|
+00000020  42 fe ca 3a 9a 7e c2 e4  4d b8 b9 ea e3 2f 32 d1  |B..:.~..M..../2.|
+00000030  95 5d 80 54 66 9e 0c 33  5e e7 b4 a4 76 dd 68 17  |.].Tf..3^...v.h.|
+00000040  5d ab 5c 66 25 2e 46 0d  c0 8e 7a b2 24 1b df 1c  |].</span><span class="se">\f</span><span class="s2">%.F...z.</span><span class="nv">$.</span><span class="s2">..|
+00000050  18 10 07 ce b3 1b 2a ef  68 52 d1 07 16 36 67 10  |......*.hR...6g.|
+00000060  a4 cb 14 29 0e 1e 17 fb  76 9e 15 88 9e b3 a1 32  |...)....v......2|
+00000070  78 2c dd 9e 25 26 99 fd  d6 8b 34 cd cf f3 21 ad  |x,..%&amp;....4...!.|
+00000080  7f cd 07 57 39 6d 90 07  87 c2 3f cb aa 80 3f 15  |...W9m....?...?.|
+00000090  29 e8 a6 18 09 72 d4 c4  2f 58 04 50 5c 99 52 e0  |)....r../X.P</span><span class="se">\.</span><span class="s2">R.|
+000000a0  42 56 ce 28 d0 37 f4 f7  28 f1 4d 9e a7 78 dc 1f  |BV.(.7..(.M..x..|
+000000b0  8a 6f 5f 4f 85 22 23 66  da 04 17 59 c9 37 22 86  |.o_O."</span><span class="c">#f...Y.7".|</span>
+000000c0  50 61 d3 6b 0b 55 3c b0  <span class="nb">df </span>fd 52 bc d0 59 27 <span class="nb">df</span>  |Pa.k.U&lt;...R..Y<span class="s1">'.|
+# and much more random data
+</span></code></pre></div></div>
+
+<p>The TRIM command was executed, the SSD already knows about the deleted data.</p>
+
+<p>If you want to find out what filesystems have continuous trimming enabled, run <code class="highlighter-rouge">findmnt -O discard</code>.</p>
+
+<h4 id="periodic-trim-as-systemd-unit">Periodic TRIM as Systemd Unit</h4>
+
+<p>I have continuous trim disabled, but I still want the TRIM command to tell my SSD what data are useless and should not be copied anywhere else. To do that, I’ve set up (not really, because it’s present by default in Manjaro) two systemd units, <code class="highlighter-rouge">fstrim.timer</code> and <code class="highlighter-rouge">fstrim.service</code>.</p>
+
+<p>Again, there’ll be some slight variations in my example since I’ve tweaked the default settings a bit. Anyway, let’s have a look at the timer first:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>systemctl <span class="nb">cat </span>fstrim.timer
+<span class="c"># /etc/systemd/system/fstrim.timer</span>
+<span class="o">[</span>Unit]
+<span class="nv">Description</span><span class="o">=</span>Discard unused blocks once a week
+<span class="nv">Documentation</span><span class="o">=</span>man:fstrim
+
+<span class="o">[</span>Timer]
+<span class="nv">OnCalendar</span><span class="o">=</span>Wed,Sat
+<span class="nv">AccuracySec</span><span class="o">=</span>1h
+<span class="nv">Persistent</span><span class="o">=</span><span class="nb">true</span>
+
+<span class="o">[</span>Install]
+<span class="nv">WantedBy</span><span class="o">=</span>timers.target
+</code></pre></div></div>
+
+<p>By default, the timer is disabled because continuous trim is enabled. In such a situation it doesn’t really make sense to have the periodic TRIM run as well.
+If enabled (<code class="highlighter-rouge">sudo systemctl enable fstrim.timer</code>), it runs by default once a week (<code class="highlighter-rouge">OnCalendar=weekly</code>). My change is I run it on Wednesday and Saturday.</p>
+
+<p>Then there’s <code class="highlighter-rouge">fstrim.service</code> systemd unit without which the timer would do absolutely nothing:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># /usr/lib/systemd/system/fstrim.service</span>
+<span class="o">[</span>Unit]
+<span class="nv">Description</span><span class="o">=</span>Discard unused blocks on filesystems from /etc/fstab
+<span class="nv">Documentation</span><span class="o">=</span>man:fstrim<span class="o">(</span>8<span class="o">)</span>
+
+<span class="o">[</span>Service]
+<span class="nv">Type</span><span class="o">=</span>oneshot
+<span class="nv">ExecStart</span><span class="o">=</span>/sbin/fstrim <span class="nt">--fstab</span> <span class="nt">--verbose</span> <span class="nt">--quiet</span>
+<span class="nv">ProtectSystem</span><span class="o">=</span>strict
+<span class="nv">ProtectHome</span><span class="o">=</span><span class="nb">yes
+</span><span class="nv">PrivateDevices</span><span class="o">=</span>no
+<span class="nv">PrivateNetwork</span><span class="o">=</span><span class="nb">yes
+</span><span class="nv">PrivateUsers</span><span class="o">=</span>no
+<span class="nv">ProtectKernelTunables</span><span class="o">=</span><span class="nb">yes
+</span><span class="nv">ProtectKernelModules</span><span class="o">=</span><span class="nb">yes
+</span><span class="nv">ProtectControlGroups</span><span class="o">=</span><span class="nb">yes
+</span><span class="nv">MemoryDenyWriteExecute</span><span class="o">=</span><span class="nb">yes
+</span><span class="nv">SystemCallFilter</span><span class="o">=</span>@default @file-system @basic-io @system-service
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">fstrim</code> command can take <code class="highlighter-rouge">--dry-run</code> option, so you can actually run in without eny real effect and just check what it does:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo</span> /sbin/fstrim <span class="nt">--fstab</span> <span class="nt">--verbose</span> <span class="nt">--quiet</span> <span class="nt">--dry-run</span>
+/home: 0 B <span class="o">(</span>dry run<span class="o">)</span> trimmed on /dev/mapper/luks-11e54aef-4128-4301-9e9a-230c7dbfe1a9
+/: 0 B <span class="o">(</span>dry run<span class="o">)</span> trimmed on /dev/sda3
+/boot/efi: 0 B <span class="o">(</span>dry run<span class="o">)</span> trimmed on /dev/sda1
+</code></pre></div></div>
+
+<p>It seems it’s working. It simply looks into <code class="highlighter-rouge">/etc/fstab</code> and trims all mounted filesystems mentioned in <code class="highlighter-rouge">/etc/fstab</code> on devices that support the discard operation. A good idea is to have a look what mounted filesystems support it:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>lsblk <span class="nt">--discard</span>
+NAME                                          DISC-ALN DISC-GRAN DISC-MAX DISC-ZERO
+sda                                                  0      512B       2G         0
+├─sda1                                               0      512B       2G         0
+├─sda2                                               0      512B       2G         0
+├─sda3                                               0      512B       2G         0
+└─sda4                                               0      512B       2G         0
+  └─luks-11e54aef-4128-4301-9e9a-230c7dbfe1a9        0      512B       2G         0
+</code></pre></div></div>
+
+<p>All I’m interested in is <code class="highlighter-rouge">DISC-GRAN</code> and <code class="highlighter-rouge">DISC-MAX</code> columns. If both are with non-zero values, just a filesystem supports trimming. Make sure that if you want to disable continuous trim for LUKS partition, there should be no <code class="highlighter-rouge">discard</code> option for such a partition in <code class="highlighter-rouge">/etc/fstab</code>, but there should be <code class="highlighter-rouge">discard</code> option for the LUKS partition in <code class="highlighter-rouge">/etc/crypttab</code>.</p>
+
+<p>We have confirmed there’s no problem, so let’s run the command as a service now:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">sudo </span>systemctl start fstrim.service
+<span class="nv">$ </span>systemctl status fstrim.service
+● fstrim.service - Discard unused blocks on filesystems from /etc/fstab
+       Loaded: loaded <span class="o">(</span>/usr/lib/systemd/system/fstrim.service<span class="p">;</span> static<span class="p">;</span> vendor preset: disabled<span class="o">)</span>
+       Active: inactive <span class="o">(</span>dead<span class="o">)</span> since Wed 2019-09-18 15:29:32 CEST<span class="p">;</span> 9min ago
+         Docs: man:fstrim<span class="o">(</span>8<span class="o">)</span>
+      Process: 1445 <span class="nv">ExecStart</span><span class="o">=</span>/sbin/fstrim <span class="nt">--fstab</span> <span class="nt">--verbose</span> <span class="nt">--quiet</span> <span class="o">(</span><span class="nv">code</span><span class="o">=</span>exited, <span class="nv">status</span><span class="o">=</span>0/SUCCESS<span class="o">)</span>
+     Main PID: 1445 <span class="o">(</span><span class="nv">code</span><span class="o">=</span>exited, <span class="nv">status</span><span class="o">=</span>0/SUCCESS<span class="o">)</span>
+    
+    Sep 18 15:29:31 pavel-pc systemd[1]: Starting Discard unused blocks on filesystems from /etc/fstab...
+    Sep 18 15:29:32 pavel-pc fstrim[1445]: /: 0 B <span class="o">(</span>0 bytes<span class="o">)</span> trimmed on /dev/sda3
+    Sep 18 15:29:32 pavel-pc fstrim[1445]: /boot/efi: 510.7 MiB <span class="o">(</span>535519232 bytes<span class="o">)</span> trimmed on /dev/sda1
+    Sep 18 15:29:32 pavel-pc systemd[1]: fstrim.service: Succeeded.
+    Sep 18 15:29:32 pavel-pc systemd[1]: Started Discard unused blocks on filesystems from /etc/fstab.
+</code></pre></div></div>
+
+<p>The service has run successfully, but there’s one small detail. Can you see it?</p>
+
+<p>When run as a command, <code class="highlighter-rouge">fstrim</code> reported, it can trim <code class="highlighter-rouge">/home</code> as well, but there’s no <code class="highlighter-rouge">/home</code> when we run it as a service.</p>
+
+<p>We can even have more into the log:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>journalctl <span class="nt">-b</span> <span class="nt">--no-pager</span> | <span class="nb">grep </span>fstrim
+Sep 18 15:29:31 pavel-pc <span class="nb">sudo</span><span class="o">[</span>1442]:    pavel : <span class="nv">TTY</span><span class="o">=</span>pts/0 <span class="p">;</span> <span class="nv">PWD</span><span class="o">=</span>/home/pavel <span class="p">;</span> <span class="nv">USER</span><span class="o">=</span>root <span class="p">;</span> <span class="nv">COMMAND</span><span class="o">=</span>/usr/bin/systemctl start fstrim.service
+Sep 18 15:29:32 pavel-pc fstrim[1445]: /: 0 B <span class="o">(</span>0 bytes<span class="o">)</span> trimmed on /dev/sda3
+Sep 18 15:29:32 pavel-pc fstrim[1445]: /boot/efi: 510.7 MiB <span class="o">(</span>535519232 bytes<span class="o">)</span> trimmed on /dev/sda1
+Sep 18 15:29:32 pavel-pc systemd[1]: fstrim.service: Succeeded.
+</code></pre></div></div>
+
+<p>Nothing.</p>
+
+<p>Well, the problem really is in the systemd service unit, there’s a line that says <code class="highlighter-rouge">ProtectHome=yes</code>, therefore the <code class="highlighter-rouge">fstrim</code> command was not run for <code class="highlighter-rouge">/home</code>.</p>
+
+<p>Having said that, let’s change it:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">sudo </span>systemctl edit <span class="nt">--full</span> fstrim.service
+<span class="c"># change it in your text editor and save it</span>
+<span class="nv">$ </span>systemctl <span class="nb">cat </span>fstrim.service
+<span class="c"># /etc/systemd/system/fstrim.service</span>
+<span class="o">[</span>Unit]
+<span class="nv">Description</span><span class="o">=</span>Discard unused blocks on filesystems from /etc/fstab
+<span class="nv">Documentation</span><span class="o">=</span>man:fstrim<span class="o">(</span>8<span class="o">)</span>
+
+<span class="o">[</span>Service]
+<span class="nv">Type</span><span class="o">=</span>oneshot
+<span class="nv">ExecStart</span><span class="o">=</span>/sbin/fstrim <span class="nt">--fstab</span> <span class="nt">--verbose</span> <span class="nt">--quiet</span>
+<span class="nv">ProtectSystem</span><span class="o">=</span>strict
+<span class="nv">ProtectHome</span><span class="o">=</span>no
+<span class="nv">PrivateDevices</span><span class="o">=</span>no
+<span class="nv">PrivateNetwork</span><span class="o">=</span><span class="nb">yes
+</span><span class="nv">PrivateUsers</span><span class="o">=</span>no
+<span class="nv">ProtectKernelTunables</span><span class="o">=</span><span class="nb">yes
+</span><span class="nv">ProtectKernelModules</span><span class="o">=</span><span class="nb">yes
+</span><span class="nv">ProtectControlGroups</span><span class="o">=</span><span class="nb">yes
+</span><span class="nv">MemoryDenyWriteExecute</span><span class="o">=</span><span class="nb">yes
+</span><span class="nv">SystemCallFilter</span><span class="o">=</span>@default @file-system @basic-io @system-service
+</code></pre></div></div>
+
+<p>When run now, it takes <code class="highlighter-rouge">/home</code> into consideration and performes trimming on it as well:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Sep 18 15:47:29 pavel-pc <span class="nb">sudo</span><span class="o">[</span>2576]:    pavel : <span class="nv">TTY</span><span class="o">=</span>pts/1 <span class="p">;</span> <span class="nv">PWD</span><span class="o">=</span>/home/pavel <span class="p">;</span> <span class="nv">USER</span><span class="o">=</span>root <span class="p">;</span> <span class="nv">COMMAND</span><span class="o">=</span>/usr/bin/systemctl start fstrim.service
+Sep 18 15:47:31 pavel-pc fstrim[2579]: /home: 846.6 MiB <span class="o">(</span>887713792 bytes<span class="o">)</span> trimmed on /dev/mapper/luks-11e54aef-4128-4301-9e9a-230c7dbfe1a9
+Sep 18 15:47:31 pavel-pc fstrim[2579]: /: 287.2 MiB <span class="o">(</span>301125632 bytes<span class="o">)</span> trimmed on /dev/sda3
+Sep 18 15:47:31 pavel-pc fstrim[2579]: /boot/efi: 510.7 MiB <span class="o">(</span>535519232 bytes<span class="o">)</span> trimmed on /dev/sda1
+Sep 18 15:47:31 pavel-pc systemd[1]: fstrim.service: Succeeded.
+</code></pre></div></div>
+
+<h3 id="conclusion">Conclusion</h3>
+
+<p>That wraps up this article. It’s not really anything difficult, but it requires a little bit of reading and digging around in some files on the system. Once set up, it can run with no manual input whatsoever.</p>
+
+<p>If you need more info, you can always check man pages or Google. I hope I’ve covered the most important parts of this topic and that my article could be used as a good reference when facing the same need to set this up. When reading about this topic, I particularly liked Arch wiki pages where this is also described. The rest was just looking into a few forum threads and piecing the bits together.</p>
+:ET

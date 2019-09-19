@@ -1,0 +1,21 @@
+I"�<p>When working with web applications, I sometimes need, or I’m just curious, to find what cookies the app is using. There are a few ways how to get hold of them. Let’s have a look at how to use dev tools in a browser.</p>
+
+<p>When you go into your browser, you can most likely press <code class="highlighter-rouge">F12</code> and get a new section like this:</p>
+
+<p><img src="/images/dev_tools.png" alt="image" /></p>
+
+<p>Many different things could be done from here. For example, there’s a console:</p>
+
+<p><img src="/images/dev_tools_2.png" alt="image" /></p>
+
+<p>This console could be used to execute some Javascript. Then it’s only one Google search away from finding out how to show all cookies for the current session:</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&gt;&gt;</span> <span class="nb">document</span><span class="p">.</span><span class="nx">cookie</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>And here we go:</p>
+
+<p><img src="/images/dev_tools_3.png" alt="image" /></p>
+
+<p>No need to install any addon like Cookie editor if you just need to check what cookies you got.</p>
+:ET
