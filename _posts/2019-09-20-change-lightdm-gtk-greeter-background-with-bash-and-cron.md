@@ -1,13 +1,13 @@
 ---
 layout: page
-title:  "Change Lightdm Greeter Background with Bash and Cron"
+title:  "Change LightDM GTK Greeter Background with Bash and Cron"
 date:   2019-09-19 22:07:19 +0200
 categories: linux
 ---
 
-Lightdm is a light desktop manager that could be configured in a few ways. One of the things I want to change regularly is the lightdm greeter background, so I get a new picture on my login screen every week.
+When using LightDM display manager, one also has to install a greeter. I’ve been using LightDM GTK Greeter, which is a light greeter that could be configured in a few ways. However, one of the things I want to change regularly is the greeter background, so I get a new picture on my login screen every week.
 
-When I have a look into lightdm settings, I can see I can easily change its background: ![image](/images/lightdm_greeter_settings.png)
+When I have a look into LightDM GTK settings, I can see I can easily change its background: ![image](/images/lightdm_greeter_settings.png)
 
 On the other hand, I have more than just one picture I like and I'd like to rotate them every now and then, let's say once a week.
 
