@@ -29,7 +29,7 @@ For every `up` or `down` status, there's one line with date and time, device nam
 
 I'll now run a few awk commands to process the file and get some interesting statistics.
 
-#### I want to know how many times I've connected to a network:
+#### I want to know how many times I've connected to a network
 
 ```bash
 $ awk -F'|' '($3 ~ /up/) { c++ } END {print c}' /var/log/NetworkManager-dispatcher.d.log*
@@ -37,7 +37,7 @@ $ awk -F'|' '($3 ~ /up/) { c++ } END {print c}' /var/log/NetworkManager-dispatch
 
 No need to write `if`, I can just type `(pattern)` and apply `{action}`. 
 
-#### I want to know what networks I've connected to:
+#### I want to know what networks I've connected to
 
 ```bash
 $ awk -F'|' '($3 ~ /up/) {net[$4]++} END{for (n in net) {print substr(n,2)}}' /var/log/NetworkManager-dispatcher.d.log*
@@ -45,7 +45,7 @@ $ awk -F'|' '($3 ~ /up/) {net[$4]++} END{for (n in net) {print substr(n,2)}}' /v
 
 Awk has some functions I can use. I can even create my own functions in awk.
 
-#### I want to know what networks I've connected to + how many times:
+#### I want to know what networks I've connected to + how many times
 
 ```bash
 $ awk -F'|' '{ntw=substr($4,index($4,":")+2,length(substr($4,index($4,":")+2))-1)} ($3 ~ /up/) {net[ntw]++} END{for (n in net) {print n,net[n]}}' OFS='|' /var/log/NetworkManager-dispatcher.d.log*
@@ -95,7 +95,7 @@ $ ./network_connections.awk /var/log/NetworkManager-dispatcher.d.log* | sort -t'
 
 The first line is the most used network on my machine.
 
-#### I want to know what IP addresses I've had:
+#### I want to know what IP addresses I've had
 
 ```bash
 $ awk -F'|' '($3 ~ /up/) {net[$6]++} END{for (n in net) {print substr(n,2)}}' /var/log/NetworkManager-dispatcher.d.log*
@@ -103,7 +103,7 @@ $ awk -F'|' '($3 ~ /up/) {net[$6]++} END{for (n in net) {print substr(n,2)}}' /v
 
 Awk has associative arrays, so it's easy to use some data as a key.
 
-#### I want to create a file named after an ID of a connection and save all times I've connected to such a network into the file:
+#### I want to create a file named after an ID of a connection and save all times I've connected to such a network into the file
 
 ```bash
 $ awk -F'|' '{file_name=substr($5,index($5,":")+2,length(substr($5,index($5,":")+2))-1)} ($3 ~ /up/) {print $1 > file_name}' /var/log/NetworkManager-dispatcher.d.log*
