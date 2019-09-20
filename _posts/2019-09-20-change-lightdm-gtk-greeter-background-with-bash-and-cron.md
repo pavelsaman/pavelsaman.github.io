@@ -1,7 +1,7 @@
 ---
 layout: page
 title:  "Change LightDM GTK Greeter Background with Bash and Cron"
-date:   2019-09-19 22:07:19 +0200
+date:   2019-09-20 12:07:19 +0200
 categories: linux
 ---
 
