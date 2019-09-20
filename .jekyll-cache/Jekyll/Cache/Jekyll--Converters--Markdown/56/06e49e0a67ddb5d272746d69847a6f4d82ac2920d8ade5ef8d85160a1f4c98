@@ -1,6 +1,6 @@
-I"�!<p>Lightdm is a light desktop manager that could be configured in a few ways. One of the things I want to change regularly is the lightdm greeter background, so I get a new picture on my login screen every week.</p>
+I"�!<p>When using LightDM display manager, one also has to install a greeter. I’ve been using LightDM GTK Greeter, which is a light greeter that could be configured in a few ways. However, one of the things I want to change regularly is the greeter background, so I get a new picture on my login screen every week.</p>
 
-<p>When I have a look into lightdm settings, I can see I can easily change its background: <img src="/images/lightdm_greeter_settings.png" alt="image" /></p>
+<p>When I have a look into LightDM GTK settings, I can see I can easily change its background: <img src="/images/lightdm_greeter_settings.png" alt="image" /></p>
 
 <p>On the other hand, I have more than just one picture I like and I’d like to rotate them every now and then, let’s say once a week.</p>
 
@@ -90,8 +90,6 @@ change <span class="o">&amp;&amp;</span> <span class="nb">exit </span>0 <span cl
 </code></pre></div></div>
 
 <p>As you can see, I first define some variables for the config file as well as for the backup file that’s used here for reading from it. I’ve also chosen a particular directory where I put all my pictures I want to rotate, they will go inside <code class="highlighter-rouge">/usr/share/backgrounds/greeter</code>. Then I just get names of all pictures inside the directory (function <code class="highlighter-rouge">get_all_pictures</code>) and choose one at random (function <code class="highlighter-rouge">choose_random</code>). If any of these functions fail from whatever reason, I terminate the script with exit code 1. The last part is running an awk script where I read lines from the config file and change the one starting with <code class="highlighter-rouge">background = </code>.</p>
-
-<p>You can test the script now (after backing up the config file first in order to be on the safe side).</p>
 
 <p>The last part is to set up a crontab, in my case, it looks like this:</p>
 
