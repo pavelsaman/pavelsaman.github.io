@@ -129,3 +129,4 @@ This is how awk works. Just a few notes at the end:
 8. awk can also read an env variable `ENVIRON["MY_VAR"]`, this can be used even in `BEGIN` block
 
 All in all, with a couple of characters, awk lets you do a lot with any text. It's worth it to know how to use it.
+If you want to see more examples, you can go into my [AwkWorkspace repository on github](https://github.com/pavelsaman/AwkWorkspace) or [see some of my awk libraries](https://github.com/pavelsaman/Awk-lib).
