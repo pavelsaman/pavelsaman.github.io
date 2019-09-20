@@ -14,15 +14,15 @@ The log is in two file in `/var/log`:
 -rw-r--r--   1 root   root             11K Sep 15 00:00 NetworkManager-dispatcher.d.log.1
 ```
 
-The file content is in the following format:
+The file content is in the following format (I deleted the real UUID of my networks):
 
 ```
-2019-09-13T19:16:28,914713963+00:00 | DEVICE: wlp2s0 | STATUS: up | UUID: 3d4d912a-6432-4a36-8cf2-1b2acf115134 | ID: test | IP4_GATEWAY: 192.168.1.1 | IP4_NAMESERVERS: 8.8.8.8
-2019-09-14T08:41:05,898951891+00:00 | DEVICE: eno1 | STATUS: up | UUID: ac187d12-fffe-35e9-bbca-91f79cea61f1 | ID: Wired connection 1 | IP4_GATEWAY: 192.168.1.1 | IP4_NAMESERVERS: 8.8.8.8
-2019-09-14T08:41:06,766934167+00:00 | DEVICE: wlp2s0 | STATUS: up | UUID: 3d4d912a-6432-4a36-8cf2-1b2acf115134 | ID: test | IP4_GATEWAY: 192.168.1.1 | IP4_NAMESERVERS: 8.8.8.8
-2019-09-14T16:15:19,264672512+00:00 | DEVICE: eno1 | STATUS: up | UUID: ac187d12-fffe-35e9-bbca-91f79cea61f1 | ID: Wired connection 1 | IP4_GATEWAY: 192.168.1.1 | IP4_NAMESERVERS: 8.8.8.8
-2019-09-14T16:15:20,021135139+00:00 | DEVICE: wlp2s0 | STATUS: up | UUID: 3d4d912a-6432-4a36-8cf2-1b2acf115134 | ID: test | IP4_GATEWAY: 192.168.1.1 | IP4_NAMESERVERS: 8.8.8.8
-2019-09-15T21:04:26,478777580+00:00 | DEVICE: wlp2s0 | STATUS: down | UUID: 016ebf86-842e-4551-8e21-3d33559f1219 | ID: Test | IP4_GATEWAY:  | IP4_NAMESERVERS: 
+2019-09-20T20:55:14,334287331+00:00 | DEVICE: wlp2s0 | STATUS: down | UUID: xxx | ID: akula | IP4_GATEWAY:  | IP4_NAMESERVERS: 
+2019-09-08T08:36:29,311656818+00:00 | DEVICE: eno1 | STATUS: up | UUID: xxx | ID: Wired connection 1 | IP4_GATEWAY: 192.168.1.1 | IP4_NAMESERVERS: 8.8.8.8
+2019-09-08T09:15:36,751701614+00:00 | DEVICE: eno1 | STATUS: down | UUID: xxx | ID: Wired connection 1 | IP4_GATEWAY:  | IP4_NAMESERVERS: 
+2019-09-08T10:03:08,171797403+00:00 | DEVICE: eno1 | STATUS: up | UUID: xxx | ID: Wired connection 1 | IP4_GATEWAY: 192.168.1.1 | IP4_NAMESERVERS: 8.8.8.8
+2019-09-08T11:37:24,046263858+00:00 | DEVICE: eno1 | STATUS: down | UUID: xxx | ID: Wired connection 1 | IP4_GATEWAY:  | IP4_NAMESERVERS: 
+2019-09-08T11:48:09,947160296+00:00 | DEVICE: eno1 | STATUS: up | UUID: xxx | ID: Wired connection 1 | IP4_GATEWAY: 192.168.1.1 | IP4_NAMESERVERS: 8.8.8.8
 ```
 
 For every `up` or `down` status, there's one line with date and time, device name, status, UUID of the network, ID of the network, IPv4 address, and an array of nameservers.
@@ -48,7 +48,7 @@ Awk has some functions I can use. I can even create my own functions in awk.
 #### I want to know what networks I've connected to + how many times:
 
 ```bash
-$ awk -F'|' '($3 ~ /up/) {net[$4]++} END{for (n in net) {print substr(n,index(n,":")+2,length(substr(n,index(n,":")+2))-1),net[n]}}' OFS='|' /var/log/NetworkManager-dispatcher.d.log*
+$ awk -F'|' '{ntw=substr($4,index($4,":")+2,length(substr($4,index($4,":")+2))-1)} ($3 ~ /up/) {net[ntw]++} END{for (n in net) {print n,net[n]}}' OFS='|' /var/log/NetworkManager-dispatcher.d.log*
 ```
 `OFS` changes the Output Field Separator. I can also beautify the output by getting rif od some whitespaces etc. by using `substr`, `index`, and `length` functions.
 
@@ -59,6 +59,41 @@ $ awk -F'|' '($3 ~ /up/) {net[substr($5,index($5,":")+2,length(substr($5,index($
 ```
 
 In awk I can really play around with the key of an associative array.
+
+#### If I want to put the previous oneliner into a script file
+
+```awk
+#!/usr/bin/awk -f
+
+BEGIN {
+	FS="|";
+	OFS="|";
+}
+
+{
+	if ($3 ~ /up/) {
+		net[substr($5,index($5,":")+2,length(substr($5,index($5,":")+2))-1) "|" substr($4,index($4,":")+2,length(substr($4,index($4,":")+2))-1)]++;
+	}
+}
+
+END {
+	for (n in net) {
+		print n,net[n];
+	}
+}
+```
+
+Awk can be run as a script just like a bash script. This is definitely more neat when the script grows in length.
+
+#### I want to sort the previous output by the number of connections
+
+Provided I saved the previous script as a file `network_connections.awk`
+
+```bash
+$ ./network_connections.awk /var/log/NetworkManager-dispatcher.d.log* | sort -t'|' -n -r -k 3
+```
+
+The first line is the most used network on my machine.
 
 #### I want to know what IP addresses I've had:
 
@@ -71,15 +106,26 @@ Awk has associative arrays, so it's easy to use some data as a key.
 #### I want to create a file named after an ID of a connection and save all times I've connected to such a network into the file:
 
 ```bash
-$ awk -F'|' '($3 ~ /up/) {print $1 > substr($5,index($5,":")+2,length(substr($5,index($5,":")+2))-1)}' /var/log/NetworkManager-dispatcher.d.log*
+$ awk -F'|' '{file_name=substr($5,index($5,":")+2,length(substr($5,index($5,":")+2))-1)} ($3 ~ /up/) {print $1 > file_name}' /var/log/NetworkManager-dispatcher.d.log*
+```
+
+#### I want to print only lines with a connection I hand to awk in a variable `NET`
+
+```bash
+$ awk -v NET="akula" -F'|' '{ntw=substr($5,index($5,":")+2,length(substr($5,index($5,":")+2))-1)} ($3 ~ /up/ && ntw == NET) {print}' /var/log/NetworkManager-dispatcher.d.log*
 ```
 
 Awk can create files for me and I can use redirection in awk.
 
 This is how awk works. Just a few notes at the end:
 1. awk uses pattern-action patters; patterns are in `()`, actions in `{}`, when a pattern gets evaluated to true, action is taken
-2. awk has associative arrays, so it's easy to use a piece of data as a key
+2. awk uses associative arrays, so it's easy to use a piece of data as a key
 3. there are some built-in variables in awk:
 ![image](/images/awk_vars.png)
 4. it's possible to write a script in awk and save it as a file, the first line would be `#!/usr/bin/awk`
 5. awk can redirect output to a file, it's even possible to use shell from within an awk script
+6. awk works with regular expressions that are enclosed in `//`, unlike grep for example
+7. to hand a variable from shell to awk, I can use option `-v`, such a variable will not be available in `BEGIN` block though
+8. awk can also read an env variable `ENVIRON["MY_VAR"]`, this can be used even in `BEGIN` block
+
+All in all, with a couple of characters, awk lets you do a lot with any text. It's worth it to know how to use it.
