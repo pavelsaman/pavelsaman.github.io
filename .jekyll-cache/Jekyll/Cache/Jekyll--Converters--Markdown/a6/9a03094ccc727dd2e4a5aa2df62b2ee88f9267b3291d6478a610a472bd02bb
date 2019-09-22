@@ -1,0 +1,191 @@
+I"S0<p>Some time ago, I started using and learning Codeception which I find a pretty good testing tool. In here, I’ll once again go over the initial steps of setting it up since there’re a few paths to take.</p>
+
+<h3 id="what-is-codeception">What is Codeception</h3>
+
+<p>First off, there’s an <a href="https://codeception.com/">official site</a> of the project. It says:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Codeception collects and shares best practices and solutions for 
+testing PHP web applications.
+With a flexible set of included modules tests are easy to write,
+easy to use and easy to maintain.
+</code></pre></div></div>
+
+<p>I’m a bit skeptical about the best practices part, since I guess it depends on a particular project and context. They also don’t really say what Codeception is, only that it collects something etc. So in my opinion, better to scroll all the way down where they say a bit more in the footer:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Codeception is a BDD-styled PHP testing framework,
+brought to you by Codeception Team.
+OpenSource MIT Licensed.
+</code></pre></div></div>
+
+<p>Finally some useful information. So it’s a testing framework, based on PHP. And it’s open source so no extra expenses for the project. Now we can decide if it’s suitable for us or not.</p>
+
+<p>On the main page, there’re some other hints about what Codeception can help you do. I’ll go briefly over some of them:</p>
+
+<ol>
+  <li><code class="highlighter-rouge">user-centric tests</code></li>
+</ol>
+
+<p>Fine, it probably means we can write tests the way non-programmers understand them. Could be a benefit, but my experience is, no one other than testers and programmers want to have anything to do with such technical thing anyway.</p>
+
+<ol>
+  <li><code class="highlighter-rouge">browser testing</code></li>
+</ol>
+
+<p>Testing the more or less final product, the UI, so we’re talking about acceptance testing here.</p>
+
+<ol>
+  <li><code class="highlighter-rouge">framework testing</code></li>
+</ol>
+
+<p>This seems interesting. Testing in browser (UI testing) is also slow, if Codeception has the ability to test on lower level, it’s might come in handy. Now we’re talking about integration and system testing.</p>
+
+<ol>
+  <li><code class="highlighter-rouge">API testing</code></li>
+</ol>
+
+<p>There’re likely be some modules that allow for API testing. That might be interesting so we don’t need to use different tools for different testing tasks, but stick to Codeception only.</p>
+
+<ol>
+  <li><code class="highlighter-rouge">data-drive tests</code></li>
+</ol>
+
+<p>Seems it will be easy to use test data from various databases.</p>
+
+<ol>
+  <li><code class="highlighter-rouge">unit and integration testing</code></li>
+</ol>
+
+<p>Aha, so we can do even unit testing with Codeception. Along with integration and acceptance tests, we come to a situation where Codeception can cover a wide range of tests, no need to use various tools and framework. Could be an advantage, but as I said, I think it depends on a context.</p>
+
+<h3 id="installation">Installation</h3>
+
+<p>Let’s try it out. There ar a few requirements, so let’s make sure, you have:</p>
+<ol>
+  <li>php installed
+There’s no php on <a href="https://distrowatch.com/table.php?distribution=manjaro">Manjaro</a> for example, so first I need to get this over with:
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">sudo </span>pacman <span class="nt">-Syu</span>
+<span class="nv">$ </span><span class="nb">sudo </span>pacman <span class="nt">-S</span> php
+</code></pre></div>    </div>
+  </li>
+</ol>
+
+<p>Then I find out there are two (at least) options to get Codeception working.</p>
+<h4 id="global-installation">Global Installation</h4>
+<p>In order to install Codeception globally, all I need to do is download <code class="highlighter-rouge">codecept.phar</code> file:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>wget https://codeception.com/codecept.phar
+</code></pre></div></div>
+
+<p>To make it easier for me, I put the file in into <code class="highlighter-rouge">PATH</code>, make it executable and either create an alias <code class="highlighter-rouge">codecept</code> or a symlink:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>lrwxrwxrwx  1 pavel pavel   13 Sep  7 23:31 codecept -&gt; codecept.phar
+<span class="nt">-rwxr-----</span>  1 pavel pavel 7.0M Aug 25 00:01 codecept.phar
+</code></pre></div></div>
+
+<p>This is the situation on my machine.</p>
+
+<h4 id="local-installation">Local Installation</h4>
+<p>Sooner or later, you’re gonna discover that Codeception has some modules and extensions that are not in the default installation. They need to be added, installed pretty much the same way Python installes additional packages via pip or Ruby uses gems. Then it becomes a bit too overwhelming to do the task globally. And just like there’re virtual environments in Python in which you can have different packages that are not accessible globally, the similar situation could be achived for Codeception via <a href="https://getcomposer.org/">composer</a>.</p>
+
+<p>Again, composer needs to be installed first:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">sudo </span>pacman <span class="nt">-Syu</span>
+<span class="nv">$ </span><span class="nb">sudo </span>pacman <span class="nt">-S</span> composer
+</code></pre></div></div>
+
+<p>Then go to your project root directory and install codeception:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>composer require codeception/codeception <span class="nt">--dev</span>
+</code></pre></div></div>
+
+<p>If you already know you won’t need acceptance tests, you can get codeception without stuff like WebDriver:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>composer require codeception/codeception <span class="nt">--dev</span>
+</code></pre></div></div>
+
+<p>Either approach you take here, the final outcome of this effort should be you can execute codeception, for instance:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>codecept <span class="nt">-V</span>
+Codeception 3.0.3
+</code></pre></div></div>
+
+<p>If you used the local installation, there’re gonna be 3 more files (2 files, one directory) in your project root folder:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">-rw-r--r--</span>  1 pavel pavel   73 Sep 21 14:40 composer.json
+<span class="nt">-rw-r--r--</span>  1 pavel pavel 117K Sep 21 14:41 composer.lock
+drwxr-xr-x 21 pavel pavel 4.0K Sep 21 14:41 vendor
+</code></pre></div></div>
+
+<p>Any time you want to execute the local installation of codeception, you’ll be executing the one in <code class="highlighter-rouge">vendor/bin/codecept</code>.</p>
+
+<h3 id="generate-tests">Generate Tests</h3>
+
+<p>After the successful installation, it’s time to generate some test structure and write some tests.</p>
+
+<p>First you need to initialize the config files and create some basic structure for the tests:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>php vendor/bin/codecept bootstrap
+</code></pre></div></div>
+
+<p>Upon successful completion, 2 things happen:</p>
+
+<ol>
+  <li>it adds <code class="highlighter-rouge">codeception.yml</code> into the project root dir</li>
+  <li>it created directory <code class="highlighter-rouge">tests</code>
+This dir has the following structure <img src="/images/codeception_structure.png" alt="image" /></li>
+</ol>
+
+<p>I find this useful because it already guides me how to structure files within my tests and where to put what. So there’s less change to end up with one big mess where test data are among tests or everything is in one file. The disadvantage is obvious, this can take longer to learn, as a newcomer to the framework, I might be lost in this structure.</p>
+
+<p>Another interesting thing to notice is, codeception already created 3 types of files in <code class="highlighter-rouge">_support/_generated</code>, files for unit, functional, and acceptance testing. Only the work functional might get confusing here. It doesn’t mean that acceptance or unit tests within codeception are not functional, th word simply related to integration tests, the ones run without the UI.</p>
+
+<p>From now on in this article, I’ll go for some acceptance tests.</p>
+
+<p>I let codeception generate a basic structure:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>php vendor/bin/codecept generate:cest acceptance FirstSmokeTest
+</code></pre></div></div>
+
+<p>This creates a new file named <code class="highlighter-rouge">FirstSmokeTest.php</code> inside <code class="highlighter-rouge">tests/acceptance/</code>. The content of the file is pretty simple:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">cat </span>FirstSmokeTest.php
+&lt;?php 
+
+class FirstSmokeTestCest
+<span class="o">{</span>
+    public <span class="k">function </span>_before<span class="o">(</span>AcceptanceTester <span class="nv">$I</span><span class="o">)</span>
+    <span class="o">{</span>
+    <span class="o">}</span>
+
+    // tests
+    public <span class="k">function </span>tryToTest<span class="o">(</span>AcceptanceTester <span class="nv">$I</span><span class="o">)</span>
+    <span class="o">{</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>This is where the tests go into.</p>
+
+<p>I should probably mention right here, that it’s a good idea to use some sort of structure, or design pattern if you want, for the tests. It makes it more readable and easy to maintain in the long run. There’s nothing worse than to put all test steps inside this FirstSmokeTest.php (or any similar file for that matter), only to wonder later how to reuse some of those test steps. Therefore, I will follow this path right from the beginning, because I believe it’s worth it to learn the right way right from the beginning, not to unlearn bad habits later. On the othe hand, it will become a bit more difficult now.</p>
+
+<p>However, I ned to cover one more thing right now. That is how to execute the tests. There are pretty much 3 option:</p>
+
+<h4 id="selenium-server">Selenium Server</h4>
+
+<p>This is a recomended path by Codeception team and I guess the most used one today. However, it requires some other prerequisites:</p>
+<ol>
+  <li>Java for running a selenium server</li>
+  <li>browsers</li>
+  <li>browser drivers</li>
+  <li>GUI to actually display something</li>
+</ol>
+
+<p>The idea behind Selenium Server is that you connect to the server and tell tge server what tests you want to run and the server manages other things like firing up browser instances. This could, and likely will be, done on a different machine to which you connect to executethe tests.</p>
+
+<h4 id="chromedriver">Chromedriver</h4>
+
+<p>Chromedriver could be used even as a separate tool (not with Selenium Server), to which you can connect directly to execute some tests. This is definitely easier to set up.</p>
+
+<h4 id="phpbrowser">PhpBrowser</h4>
+
+<p>PhpBrowser is so-called headless browser. You don’t actually need to have any browsers installed and it doesn’t require a GUI. What it does instead is it uses a PHP scraper, which basically means it sends requests and then parses the responses. But it has some limitations (see <a href="https://codeception.com/docs/03-AcceptanceTests">the official documentation</a>), so I won’t go for this option. I also think that when we decide to run acceptance tests, we should do acceptance tests, so why leave out GUI.</p>
+
+:ET

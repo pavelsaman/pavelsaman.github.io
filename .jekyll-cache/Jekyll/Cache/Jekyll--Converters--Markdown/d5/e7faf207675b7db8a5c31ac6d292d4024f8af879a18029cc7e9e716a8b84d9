@@ -1,0 +1,147 @@
+I"�*<p>I have recently wondered about why network interfaces in Linux have these, at first glance, obscure names. I vaguely remember it used to be more like eth0, wlan0. So I found a bit more info about it, let’s summarize it here.</p>
+
+<p>First of all, it really is true that the names used to be simple like eth0, wlan0. These names used to be assigned by the kernel. The problem, however, was that if more interfaces were present (say more enthernet interfaces), the names could change from boot to boot. And that is not very useful since other settings like firewall rules could rely on stable naming schemes.</p>
+
+<p>Alright, so there’s obviously a need for stable names that do not change from boot to boot. Therefore there’s udev that is nowadays used for assigning persistent names to network interfaces. There’s a <a href="https://www.freedesktop.org/wiki/Software/systemd/PredictableNetworkInterfaceNames/">good document</a> about it.</p>
+
+<p>I think the key part is the algorithm used for determining the names:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>1. Names incorporating Firmware/BIOS provided index numbers for on-board devices (example: eno1)
+2. Names incorporating Firmware/BIOS provided PCI Express hotplug slot index numbers (example: ens1)
+3. Names incorporating physical/geographical location of the connector of the hardware (example: enp2s0)
+4. Names incorporating the interfaces's MAC address (example: enx78e7d1ea46da)
+5. Classic, unpredictable kernel-native ethX naming (example: eth0)
+</code></pre></div></div>
+
+<p>It would also be useful to see this in more detail, let’s have a look into the <a href="https://github.com/systemd/systemd/blob/master/src/udev/net/link-config.c#L403">code</a>. There I can see the case statement that goes like this:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>1. ID_NET_NAME_FROM_DATABASE
+2. ID_NET_NAME_ONBOARD
+3. ID_NET_NAME_SLOT
+4. ID_NET_NAME_PATH
+5. ID_NET_NAME_MAC
+</code></pre></div></div>
+
+<p>Knowing this, I’ll find out what’s the situation on my system. I’ll show the process for my wifi interface.</p>
+
+<p>First, I get the name of such an interface:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>ip a
+...
+3: wlp2s0: &lt;NO-CARRIER,BROADCAST,MULTICAST,UP&gt; mtu 1500 qdisc mq state DOWN group default qlen 1000
+...
+</code></pre></div></div>
+
+<p>Then, I will find out more about my interface using utility <code class="highlighter-rouge">udevadm</code>:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>udevadm info <span class="nt">--path</span><span class="o">=</span>/sys/class/net/wlp2s0
+P: /devices/pci0000:00/0000:00:1c.3/0000:02:00.0/net/wlp2s0
+L: 0
+E: <span class="nv">DEVPATH</span><span class="o">=</span>/devices/pci0000:00/0000:00:1c.3/0000:02:00.0/net/wlp2s0
+E: <span class="nv">DEVTYPE</span><span class="o">=</span>wlan
+E: <span class="nv">INTERFACE</span><span class="o">=</span>wlp2s0
+E: <span class="nv">IFINDEX</span><span class="o">=</span>3
+E: <span class="nv">SUBSYSTEM</span><span class="o">=</span>net
+E: <span class="nv">USEC_INITIALIZED</span><span class="o">=</span>4181766
+E: <span class="nv">ID_NET_NAMING_SCHEME</span><span class="o">=</span>v240
+E: <span class="nv">ID_NET_NAME_MAC</span><span class="o">=</span>wlx94659c7f5855
+E: <span class="nv">ID_OUI_FROM_DATABASE</span><span class="o">=</span>Intel Corporate
+E: <span class="nv">ID_NET_NAME_PATH</span><span class="o">=</span>wlp2s0
+E: <span class="nv">ID_BUS</span><span class="o">=</span>pci
+E: <span class="nv">ID_VENDOR_ID</span><span class="o">=</span>0x8086
+E: <span class="nv">ID_MODEL_ID</span><span class="o">=</span>0x095a
+E: <span class="nv">ID_PCI_CLASS_FROM_DATABASE</span><span class="o">=</span>Network controller
+E: <span class="nv">ID_PCI_SUBCLASS_FROM_DATABASE</span><span class="o">=</span>Network controller
+E: <span class="nv">ID_VENDOR_FROM_DATABASE</span><span class="o">=</span>Intel Corporation
+E: <span class="nv">ID_MODEL_FROM_DATABASE</span><span class="o">=</span>Wireless 7265 <span class="o">(</span>Dual Band Wireless-AC 7265<span class="o">)</span>
+E: <span class="nv">ID_MM_CANDIDATE</span><span class="o">=</span>1
+E: <span class="nv">ID_PATH</span><span class="o">=</span>pci-0000:02:00.0
+E: <span class="nv">ID_PATH_TAG</span><span class="o">=</span>pci-0000_02_00_0
+E: <span class="nv">ID_NET_DRIVER</span><span class="o">=</span>iwlwifi
+E: <span class="nv">ID_NET_LINK_FILE</span><span class="o">=</span>/usr/lib/systemd/network/99-default.link
+E: <span class="nv">ID_NET_NAME</span><span class="o">=</span>wlp2s0
+E: <span class="nv">SYSTEMD_ALIAS</span><span class="o">=</span>/sys/subsystem/net/devices/wlp2s0 /sys/subsystem/net/devices/wlp2s0
+E: <span class="nv">TAGS</span><span class="o">=</span>:systemd:
+</code></pre></div></div>
+
+<p>I can already see that the first match is <code class="highlighter-rouge">ID_NET_NAME_PATH</code>, therefore such a name is used. If I look into <code class="highlighter-rouge">lspci</code>:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>lspci
+...
+02:00.0 Network controller: Intel Corporation Wireless 7265 <span class="o">(</span>rev 59<span class="o">)</span>
+...
+</code></pre></div></div>
+<p>I can see the interface is on bus 2, slot 0, so then I just need to figure out how udev worked from that to <code class="highlighter-rouge">wlp2s0</code>.</p>
+
+<p>It turns out the naming scheme works like this:</p>
+<ol>
+  <li>if it’s ethernet, the prefix will be <code class="highlighter-rouge">en</code></li>
+  <li>if it’s wlan, the prefix will be <code class="highlighter-rouge">wl</code></li>
+  <li>if it’s wwlan, the prefix will be <code class="highlighter-rouge">ww</code></li>
+  <li>there could also be <code class="highlighter-rouge">sl</code> for serial line IP (slip), which I don’t really know what it means now</li>
+</ol>
+
+<p>Then the other letters will be:</p>
+<ol>
+  <li><code class="highlighter-rouge">p</code> for bus</li>
+  <li><code class="highlighter-rouge">s</code> for slot</li>
+  <li><code class="highlighter-rouge">f</code> for function</li>
+  <li><code class="highlighter-rouge">x</code> for MAC address</li>
+  <li>and some other options as well that I’m not familiarized with for now</li>
+</ol>
+
+<p>In my case, it’s a wlan interface, therefore we start with <code class="highlighter-rouge">wl</code> prefix, then the name is determined based on rule number 4 (<code class="highlighter-rouge">ID_NET_NAME_PATH</code>) from the above algorithm. The bus number is 2, therefore <code class="highlighter-rouge">p2</code> and the slot is 0, therefore <code class="highlighter-rouge">s0</code>. It leaves me with the name <code class="highlighter-rouge">wlp2s0</code>.</p>
+
+<h3 id="changing-the-name">Changing the Name</h3>
+
+<p>The names should be persistent just based on the automatic procedure described above, yet for my home use on my laptop, I’d like to have a different name, preferably like the historic names (wlan0 etc.).</p>
+
+<p>Udev also allows for custom naming schemes that take precedence over the algorithm described above. I did exactly that.</p>
+
+<p>It really boils down to only one file in <code class="highlighter-rouge">/etc/udev/rules.d</code>:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">cat </span>20-wlan.rules 
+<span class="nv">SUBSYSTEM</span><span class="o">==</span><span class="s2">"net"</span>, <span class="nv">DEVPATH</span><span class="o">==</span><span class="s2">"/devices/pci0000:00/0000:00:1c.3/0000:02:00.0/net/*"</span>, <span class="nv">NAME</span><span class="o">=</span><span class="s2">"wlan0"</span>
+</code></pre></div></div>
+
+<p>I just used information provided by <code class="highlighter-rouge">udevadm</code> utility. It’s already shown above.</p>
+
+<p>On next boot, my wlan interface will be again named <code class="highlighter-rouge">wlan0</code>. Another look with <code class="highlighter-rouge">udevadm</code> shows an alias:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>udevadm info <span class="nt">--path</span><span class="o">=</span>/sys/class/net/wlan0
+P: /devices/pci0000:00/0000:00:1c.3/0000:02:00.0/net/wlan0
+L: 0
+E: <span class="nv">DEVPATH</span><span class="o">=</span>/devices/pci0000:00/0000:00:1c.3/0000:02:00.0/net/wlan0
+E: <span class="nv">DEVTYPE</span><span class="o">=</span>wlan
+E: <span class="nv">INTERFACE</span><span class="o">=</span>wlan0
+E: <span class="nv">IFINDEX</span><span class="o">=</span>3
+E: <span class="nv">SUBSYSTEM</span><span class="o">=</span>net
+E: <span class="nv">USEC_INITIALIZED</span><span class="o">=</span>4285178
+E: <span class="nv">ID_NET_NAMING_SCHEME</span><span class="o">=</span>v240
+E: <span class="nv">ID_NET_NAME_MAC</span><span class="o">=</span>wlx94659c7f5855
+E: <span class="nv">ID_OUI_FROM_DATABASE</span><span class="o">=</span>Intel Corporate
+E: <span class="nv">ID_NET_NAME_PATH</span><span class="o">=</span>wlp2s0
+E: <span class="nv">ID_BUS</span><span class="o">=</span>pci
+E: <span class="nv">ID_VENDOR_ID</span><span class="o">=</span>0x8086
+E: <span class="nv">ID_MODEL_ID</span><span class="o">=</span>0x095a
+E: <span class="nv">ID_PCI_CLASS_FROM_DATABASE</span><span class="o">=</span>Network controller
+E: <span class="nv">ID_PCI_SUBCLASS_FROM_DATABASE</span><span class="o">=</span>Network controller
+E: <span class="nv">ID_VENDOR_FROM_DATABASE</span><span class="o">=</span>Intel Corporation
+E: <span class="nv">ID_MODEL_FROM_DATABASE</span><span class="o">=</span>Wireless 7265 <span class="o">(</span>Dual Band Wireless-AC 7265<span class="o">)</span>
+E: <span class="nv">ID_MM_CANDIDATE</span><span class="o">=</span>1
+E: <span class="nv">ID_PATH</span><span class="o">=</span>pci-0000:02:00.0
+E: <span class="nv">ID_PATH_TAG</span><span class="o">=</span>pci-0000_02_00_0
+E: <span class="nv">ID_NET_DRIVER</span><span class="o">=</span>iwlwifi
+E: <span class="nv">ID_NET_LINK_FILE</span><span class="o">=</span>/usr/lib/systemd/network/99-default.link
+E: <span class="nv">ID_NET_NAME</span><span class="o">=</span>wlp2s0
+E: <span class="nv">SYSTEMD_ALIAS</span><span class="o">=</span>/sys/subsystem/net/devices/wlan0
+E: <span class="nv">TAGS</span><span class="o">=</span>:systemd:
+</code></pre></div></div>
+
+<p>And my interface is renamed:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>ip a
+...
+3: wlan0: &lt;NO-CARRIER,BROADCAST,MULTICAST,UP&gt; mtu 1500 qdisc mq state DOWN group default qlen 1000
+...
+</code></pre></div></div>
+:ET
