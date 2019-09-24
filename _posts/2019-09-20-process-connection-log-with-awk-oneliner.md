@@ -115,6 +115,12 @@ $ awk -F'|' '{file_name=substr($5,index($5,":")+2,length(substr($5,index($5,":")
 $ awk -v NET="akula" -F'|' '{ntw=substr($5,index($5,":")+2,length(substr($5,index($5,":")+2))-1)} ($3 ~ /up/ && ntw == NET) {print}' /var/log/NetworkManager-dispatcher.d.log*
 ```
 
+#### I want to know how many times I've connected to a network and sort it desc
+
+```bash
+$ awk -F'|' '($3 ~ /up/) {x[substr($1, 0, index($1, "T")-1)]++} END{for (n in x) {print n,x[n]}}' /var/log/NetworkManager-dispatcher.d.log* | sort -h -k2 -r
+```
+
 Awk can create files for me and I can use redirection in awk.
 
 This is how awk works. Just a few notes at the end:
