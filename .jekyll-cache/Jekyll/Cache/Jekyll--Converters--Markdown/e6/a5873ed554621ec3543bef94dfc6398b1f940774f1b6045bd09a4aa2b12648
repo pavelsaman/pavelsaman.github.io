@@ -1,0 +1,31 @@
+I"	<p>This is just a quick tip on how to see all cookies stored in Firefox.</p>
+
+<p>On Linux, Firefox creates a directory in <code class="highlighter-rouge">~/.mozilla</code>, inside that there are more stuff, but in terms of cookies, I need to go into a directory dedicated to my current profile, so sth like <code class="highlighter-rouge">~/.mozilla/firefox/av1831zo.default</code>.</p>
+
+<p>In here, there are two files:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>ll | <span class="nb">grep </span>cookie
+<span class="nt">-rw-r--r--</span>  1 pavel pavel 1.0M Sep 24 18:13 cookies.sqlite
+<span class="nt">-rw-r--r--</span>  1 pavel pavel 577K Sep 24 18:14 cookies.sqlite-wal
+</code></pre></div></div>
+
+<p>Firefox uses sqlite database, which is only one file, but it could be used as a simple database, e.g. I can query it using SQL commands. For that I use <code class="highlighter-rouge">sqlitebrowser</code>:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>pacman <span class="nt">-Qs</span> sqlitebrowser
+<span class="nb">local</span>/sqlitebrowser 3.11.2-1
+    SQLite Database browser is a light GUI editor <span class="k">for </span>SQLite databases, built on top of Qt
+</code></pre></div></div>
+
+<p>If your Firefox is open, I don’t really succeed in opening the file <code class="highlighter-rouge">cookies.sqlite</code>, it’s locked:</p>
+
+<p><img src="/images/cookies_locked.png" alt="image" /></p>
+
+<p>In this case, just copy the file elsewhere or close Firefox.</p>
+
+<p>After opening the file in <code class="highlighter-rouge">sqlitebrowser</code>, I can query e.g. all secure cookies currently stored in my Firefox profile:</p>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">moz_cookies</span> <span class="n">t</span> <span class="k">where</span> <span class="n">t</span><span class="p">.</span><span class="n">isSecure</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p><img src="/images/sqlitebrowser.png" alt="image" /></p>
+:ET

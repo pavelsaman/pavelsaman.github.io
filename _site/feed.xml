@@ -1,4 +1,33 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.0.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2019-09-22T14:32:28+02:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">pavelsaman</title><subtitle>Personal blog about technology, mostly Linux and testing.</subtitle><entry><title type="html">wlp2s0, eno1 - where do they come from?</title><link href="http://localhost:4000/wlp2s0-eno1-where-do-they-come-from.html" rel="alternate" type="text/html" title="wlp2s0, eno1 - where do they come from?" /><published>2019-09-22T09:07:19+02:00</published><updated>2019-09-22T09:07:19+02:00</updated><id>http://localhost:4000/wlp2s0-eno1-where-do-they-come-from</id><content type="html" xml:base="http://localhost:4000/wlp2s0-eno1-where-do-they-come-from.html">&lt;p&gt;I have recently wondered about why network interfaces in Linux have these, at first glance, obscure names. I vaguely remember it used to be more like eth0, wlan0. So I found a bit more info about it, let’s summarize it here.&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.0.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2019-09-24T18:24:05+02:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">pavelsaman</title><subtitle>Personal blog about technology, mostly Linux and testing.</subtitle><entry><title type="html">Cookies in Firefox</title><link href="http://localhost:4000/cookies-in-firefox.html" rel="alternate" type="text/html" title="Cookies in Firefox" /><published>2019-09-24T09:07:19+02:00</published><updated>2019-09-24T09:07:19+02:00</updated><id>http://localhost:4000/cookies-in-firefox</id><content type="html" xml:base="http://localhost:4000/cookies-in-firefox.html">&lt;p&gt;This is just a quick tip on how to see all cookies stored in Firefox.&lt;/p&gt;
+
+&lt;p&gt;On Linux, Firefox creates a directory in &lt;code class=&quot;highlighter-rouge&quot;&gt;~/.mozilla&lt;/code&gt;, inside that there are more stuff, but in terms of cookies, I need to go into a directory dedicated to my current profile, so sth like &lt;code class=&quot;highlighter-rouge&quot;&gt;~/.mozilla/firefox/av1831zo.default&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;In here, there are two files:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;ll | &lt;span class=&quot;nb&quot;&gt;grep &lt;/span&gt;cookie
+&lt;span class=&quot;nt&quot;&gt;-rw-r--r--&lt;/span&gt;  1 pavel pavel 1.0M Sep 24 18:13 cookies.sqlite
+&lt;span class=&quot;nt&quot;&gt;-rw-r--r--&lt;/span&gt;  1 pavel pavel 577K Sep 24 18:14 cookies.sqlite-wal
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Firefox uses sqlite database, which is only one file, but it could be used as a simple database, e.g. I can query it using SQL commands. For that I use &lt;code class=&quot;highlighter-rouge&quot;&gt;sqlitebrowser&lt;/code&gt;:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;pacman &lt;span class=&quot;nt&quot;&gt;-Qs&lt;/span&gt; sqlitebrowser
+&lt;span class=&quot;nb&quot;&gt;local&lt;/span&gt;/sqlitebrowser 3.11.2-1
+    SQLite Database browser is a light GUI editor &lt;span class=&quot;k&quot;&gt;for &lt;/span&gt;SQLite databases, built on top of Qt
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;If your Firefox is open, I don’t really succeed in opening the file &lt;code class=&quot;highlighter-rouge&quot;&gt;cookies.sqlite&lt;/code&gt;, it’s locked:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/cookies_locked.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;In this case, just copy the file elsewhere or close Firefox.&lt;/p&gt;
+
+&lt;p&gt;After opening the file in &lt;code class=&quot;highlighter-rouge&quot;&gt;sqlitebrowser&lt;/code&gt;, I can query it e.g. all secure cookies currently stored in my Firefox profile:&lt;/p&gt;
+
+&lt;div class=&quot;language-sql highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;select&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;moz_cookies&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;t&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;where&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;isSecure&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/sqlitebrowser.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;</content><author><name>Pavel Saman</name></author><summary type="html">This is just a quick tip on how to see all cookies stored in Firefox.</summary></entry><entry><title type="html">wlp2s0, eno1 - where do they come from?</title><link href="http://localhost:4000/wlp2s0-eno1-where-do-they-come-from.html" rel="alternate" type="text/html" title="wlp2s0, eno1 - where do they come from?" /><published>2019-09-22T09:07:19+02:00</published><updated>2019-09-22T09:07:19+02:00</updated><id>http://localhost:4000/wlp2s0-eno1-where-do-they-come-from</id><content type="html" xml:base="http://localhost:4000/wlp2s0-eno1-where-do-they-come-from.html">&lt;p&gt;I have recently wondered about why network interfaces in Linux have these, at first glance, obscure names. I vaguely remember it used to be more like eth0, wlan0. So I found a bit more info about it, let’s summarize it here.&lt;/p&gt;
 
 &lt;p&gt;First of all, it really is true that the names used to be simple like eth0, wlan0. These names used to be assigned by the kernel. The problem, however, was that if more interfaces were present (say more enthernet interfaces), the names could change from boot to boot. And that is not very useful since other settings like firewall rules could rely on stable naming schemes.&lt;/p&gt;
 
@@ -143,195 +172,7 @@ E: &lt;span class=&quot;nv&quot;&gt;TAGS&lt;/span&gt;&lt;span class=&quot;o&quot
 ...
 3: wlan0: &amp;lt;NO-CARRIER,BROADCAST,MULTICAST,UP&amp;gt; mtu 1500 qdisc mq state DOWN group default qlen 1000
 ...
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;</content><author><name>Pavel Saman</name></author><summary type="html">I have recently wondered about why network interfaces in Linux have these, at first glance, obscure names. I vaguely remember it used to be more like eth0, wlan0. So I found a bit more info about it, let’s summarize it here.</summary></entry><entry><title type="html">Setting Up Codeception</title><link href="http://localhost:4000/setting-up-codeception.html" rel="alternate" type="text/html" title="Setting Up Codeception" /><published>2019-09-21T13:07:19+02:00</published><updated>2019-09-21T13:07:19+02:00</updated><id>http://localhost:4000/setting-up-codeception</id><content type="html" xml:base="http://localhost:4000/setting-up-codeception.html">&lt;p&gt;Some time ago, I started using and learning Codeception which I find a pretty good testing tool. In here, I’ll once again go over the initial steps of setting it up since there’re a few paths to take.&lt;/p&gt;
-
-&lt;h3 id=&quot;what-is-codeception&quot;&gt;What is Codeception&lt;/h3&gt;
-
-&lt;p&gt;First off, there’s an &lt;a href=&quot;https://codeception.com/&quot;&gt;official site&lt;/a&gt; of the project. It says:&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Codeception collects and shares best practices and solutions for 
-testing PHP web applications.
-With a flexible set of included modules tests are easy to write,
-easy to use and easy to maintain.
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;I’m a bit skeptical about the best practices part, since I guess it depends on a particular project and context. They also don’t really say what Codeception is, only that it collects something etc. So in my opinion, better to scroll all the way down where they say a bit more in the footer:&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Codeception is a BDD-styled PHP testing framework,
-brought to you by Codeception Team.
-OpenSource MIT Licensed.
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Finally some useful information. So it’s a testing framework, based on PHP. And it’s open source so no extra expenses for the project. Now we can decide if it’s suitable for us or not.&lt;/p&gt;
-
-&lt;p&gt;On the main page, there’re some other hints about what Codeception can help you do. I’ll go briefly over some of them:&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;user-centric tests&lt;/code&gt;&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;Fine, it probably means we can write tests the way non-programmers understand them. Could be a benefit, but my experience is, no one other than testers and programmers want to have anything to do with such technical thing anyway.&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;browser testing&lt;/code&gt;&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;Testing the more or less final product, the UI, so we’re talking about acceptance testing here.&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;framework testing&lt;/code&gt;&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;This seems interesting. Testing in browser (UI testing) is also slow, if Codeception has the ability to test on lower level, it’s might come in handy. Now we’re talking about integration and system testing.&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;API testing&lt;/code&gt;&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;There’re likely be some modules that allow for API testing. That might be interesting so we don’t need to use different tools for different testing tasks, but stick to Codeception only.&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;data-drive tests&lt;/code&gt;&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;Seems it will be easy to use test data from various databases.&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;unit and integration testing&lt;/code&gt;&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;Aha, so we can do even unit testing with Codeception. Along with integration and acceptance tests, we come to a situation where Codeception can cover a wide range of tests, no need to use various tools and framework. Could be an advantage, but as I said, I think it depends on a context.&lt;/p&gt;
-
-&lt;h3 id=&quot;installation&quot;&gt;Installation&lt;/h3&gt;
-
-&lt;p&gt;Let’s try it out. There ar a few requirements, so let’s make sure, you have:&lt;/p&gt;
-&lt;ol&gt;
-  &lt;li&gt;php installed
-There’s no php on &lt;a href=&quot;https://distrowatch.com/table.php?distribution=manjaro&quot;&gt;Manjaro&lt;/a&gt; for example, so first I need to get this over with:
-    &lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;pacman &lt;span class=&quot;nt&quot;&gt;-Syu&lt;/span&gt;
-&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;pacman &lt;span class=&quot;nt&quot;&gt;-S&lt;/span&gt; php
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
-  &lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;Then I find out there are two (at least) options to get Codeception working.&lt;/p&gt;
-&lt;h4 id=&quot;global-installation&quot;&gt;Global Installation&lt;/h4&gt;
-&lt;p&gt;In order to install Codeception globally, all I need to do is download &lt;code class=&quot;highlighter-rouge&quot;&gt;codecept.phar&lt;/code&gt; file:&lt;/p&gt;
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;wget https://codeception.com/codecept.phar
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;To make it easier for me, I put the file in into &lt;code class=&quot;highlighter-rouge&quot;&gt;PATH&lt;/code&gt;, make it executable and either create an alias &lt;code class=&quot;highlighter-rouge&quot;&gt;codecept&lt;/code&gt; or a symlink:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;lrwxrwxrwx  1 pavel pavel   13 Sep  7 23:31 codecept -&amp;gt; codecept.phar
-&lt;span class=&quot;nt&quot;&gt;-rwxr-----&lt;/span&gt;  1 pavel pavel 7.0M Aug 25 00:01 codecept.phar
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;This is the situation on my machine.&lt;/p&gt;
-
-&lt;h4 id=&quot;local-installation&quot;&gt;Local Installation&lt;/h4&gt;
-&lt;p&gt;Sooner or later, you’re gonna discover that Codeception has some modules and extensions that are not in the default installation. They need to be added, installed pretty much the same way Python installes additional packages via pip or Ruby uses gems. Then it becomes a bit too overwhelming to do the task globally. And just like there’re virtual environments in Python in which you can have different packages that are not accessible globally, the similar situation could be achived for Codeception via &lt;a href=&quot;https://getcomposer.org/&quot;&gt;composer&lt;/a&gt;.&lt;/p&gt;
-
-&lt;p&gt;Again, composer needs to be installed first:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;pacman &lt;span class=&quot;nt&quot;&gt;-Syu&lt;/span&gt;
-&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;pacman &lt;span class=&quot;nt&quot;&gt;-S&lt;/span&gt; composer
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Then go to your project root directory and install codeception:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;composer require codeception/codeception &lt;span class=&quot;nt&quot;&gt;--dev&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;If you already know you won’t need acceptance tests, you can get codeception without stuff like WebDriver:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;composer require codeception/codeception &lt;span class=&quot;nt&quot;&gt;--dev&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Either approach you take here, the final outcome of this effort should be you can execute codeception, for instance:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;codecept &lt;span class=&quot;nt&quot;&gt;-V&lt;/span&gt;
-Codeception 3.0.3
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;If you used the local installation, there’re gonna be 3 more files (2 files, one directory) in your project root folder:&lt;/p&gt;
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nt&quot;&gt;-rw-r--r--&lt;/span&gt;  1 pavel pavel   73 Sep 21 14:40 composer.json
-&lt;span class=&quot;nt&quot;&gt;-rw-r--r--&lt;/span&gt;  1 pavel pavel 117K Sep 21 14:41 composer.lock
-drwxr-xr-x 21 pavel pavel 4.0K Sep 21 14:41 vendor
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Any time you want to execute the local installation of codeception, you’ll be executing the one in &lt;code class=&quot;highlighter-rouge&quot;&gt;vendor/bin/codecept&lt;/code&gt;.&lt;/p&gt;
-
-&lt;h3 id=&quot;generate-tests&quot;&gt;Generate Tests&lt;/h3&gt;
-
-&lt;p&gt;After the successful installation, it’s time to generate some test structure and write some tests.&lt;/p&gt;
-
-&lt;p&gt;First you need to initialize the config files and create some basic structure for the tests:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;php vendor/bin/codecept bootstrap
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Upon successful completion, 2 things happen:&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;it adds &lt;code class=&quot;highlighter-rouge&quot;&gt;codeception.yml&lt;/code&gt; into the project root dir&lt;/li&gt;
-  &lt;li&gt;it created directory &lt;code class=&quot;highlighter-rouge&quot;&gt;tests&lt;/code&gt;
-This dir has the following structure &lt;img src=&quot;/images/codeception_structure.png&quot; alt=&quot;image&quot; /&gt;&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;I find this useful because it already guides me how to structure files within my tests and where to put what. So there’s less change to end up with one big mess where test data are among tests or everything is in one file. The disadvantage is obvious, this can take longer to learn, as a newcomer to the framework, I might be lost in this structure.&lt;/p&gt;
-
-&lt;p&gt;Another interesting thing to notice is, codeception already created 3 types of files in &lt;code class=&quot;highlighter-rouge&quot;&gt;_support/_generated&lt;/code&gt;, files for unit, functional, and acceptance testing. Only the work functional might get confusing here. It doesn’t mean that acceptance or unit tests within codeception are not functional, th word simply related to integration tests, the ones run without the UI.&lt;/p&gt;
-
-&lt;p&gt;From now on in this article, I’ll go for some acceptance tests.&lt;/p&gt;
-
-&lt;p&gt;I let codeception generate a basic structure:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;php vendor/bin/codecept generate:cest acceptance FirstSmokeTest
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;This creates a new file named &lt;code class=&quot;highlighter-rouge&quot;&gt;FirstSmokeTest.php&lt;/code&gt; inside &lt;code class=&quot;highlighter-rouge&quot;&gt;tests/acceptance/&lt;/code&gt;. The content of the file is pretty simple:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cat &lt;/span&gt;FirstSmokeTest.php
-&amp;lt;?php 
-
-class FirstSmokeTestCest
-&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-    public &lt;span class=&quot;k&quot;&gt;function &lt;/span&gt;_before&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;AcceptanceTester &lt;span class=&quot;nv&quot;&gt;$I&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-
-    // tests
-    public &lt;span class=&quot;k&quot;&gt;function &lt;/span&gt;tryToTest&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;AcceptanceTester &lt;span class=&quot;nv&quot;&gt;$I&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;This is where the tests go into.&lt;/p&gt;
-
-&lt;p&gt;I should probably mention right here, that it’s a good idea to use some sort of structure, or design pattern if you want, for the tests. It makes it more readable and easy to maintain in the long run. There’s nothing worse than to put all test steps inside this FirstSmokeTest.php (or any similar file for that matter), only to wonder later how to reuse some of those test steps. Therefore, I will follow this path right from the beginning, because I believe it’s worth it to learn the right way right from the beginning, not to unlearn bad habits later. On the othe hand, it will become a bit more difficult now.&lt;/p&gt;
-
-&lt;p&gt;However, I ned to cover one more thing right now. That is how to execute the tests. There are pretty much 3 option:&lt;/p&gt;
-
-&lt;h4 id=&quot;selenium-server&quot;&gt;Selenium Server&lt;/h4&gt;
-
-&lt;p&gt;This is a recomended path by Codeception team and I guess the most used one today. However, it requires some other prerequisites:&lt;/p&gt;
-&lt;ol&gt;
-  &lt;li&gt;Java for running a selenium server&lt;/li&gt;
-  &lt;li&gt;browsers&lt;/li&gt;
-  &lt;li&gt;browser drivers&lt;/li&gt;
-  &lt;li&gt;GUI to actually display something&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;The idea behind Selenium Server is that you connect to the server and tell tge server what tests you want to run and the server manages other things like firing up browser instances. This could, and likely will be, done on a different machine to which you connect to executethe tests.&lt;/p&gt;
-
-&lt;h4 id=&quot;chromedriver&quot;&gt;Chromedriver&lt;/h4&gt;
-
-&lt;p&gt;Chromedriver could be used even as a separate tool (not with Selenium Server), to which you can connect directly to execute some tests. This is definitely easier to set up.&lt;/p&gt;
-
-&lt;h4 id=&quot;phpbrowser&quot;&gt;PhpBrowser&lt;/h4&gt;
-
-&lt;p&gt;PhpBrowser is so-called headless browser. You don’t actually need to have any browsers installed and it doesn’t require a GUI. What it does instead is it uses a PHP scraper, which basically means it sends requests and then parses the responses. But it has some limitations (see &lt;a href=&quot;https://codeception.com/docs/03-AcceptanceTests&quot;&gt;the official documentation&lt;/a&gt;), so I won’t go for this option. I also think that when we decide to run acceptance tests, we should do acceptance tests, so why leave out GUI.&lt;/p&gt;</content><author><name>Pavel Saman</name></author><summary type="html">Some time ago, I started using and learning Codeception which I find a pretty good testing tool. In here, I’ll once again go over the initial steps of setting it up since there’re a few paths to take.</summary></entry><entry><title type="html">Process Connection Log with Awk</title><link href="http://localhost:4000/process-connection-log-with-awk-oneliner.html" rel="alternate" type="text/html" title="Process Connection Log with Awk" /><published>2019-09-20T14:07:19+02:00</published><updated>2019-09-20T14:07:19+02:00</updated><id>http://localhost:4000/process-connection-log-with-awk-oneliner</id><content type="html" xml:base="http://localhost:4000/process-connection-log-with-awk-oneliner.html">&lt;p&gt;Awk is a useful tool for text processing. I’ve recently wanted to process a log generated by Network Manager. I’ll show you just a simple awk script that helped me get the data I wanted. I find it useful to get some practice in awk, so I’ll try out some awk oneliners here.&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;</content><author><name>Pavel Saman</name></author><summary type="html">I have recently wondered about why network interfaces in Linux have these, at first glance, obscure names. I vaguely remember it used to be more like eth0, wlan0. So I found a bit more info about it, let’s summarize it here.</summary></entry><entry><title type="html">Process Connection Log with Awk</title><link href="http://localhost:4000/process-connection-log-with-awk-oneliner.html" rel="alternate" type="text/html" title="Process Connection Log with Awk" /><published>2019-09-20T14:07:19+02:00</published><updated>2019-09-20T14:07:19+02:00</updated><id>http://localhost:4000/process-connection-log-with-awk-oneliner</id><content type="html" xml:base="http://localhost:4000/process-connection-log-with-awk-oneliner.html">&lt;p&gt;Awk is a useful tool for text processing. I’ve recently wanted to process a log generated by Network Manager. I’ll show you just a simple awk script that helped me get the data I wanted. I find it useful to get some practice in awk, so I’ll try out some awk oneliners here.&lt;/p&gt;
 
 &lt;p&gt;The log is in two file in &lt;code class=&quot;highlighter-rouge&quot;&gt;/var/log&lt;/code&gt;:&lt;/p&gt;
 
