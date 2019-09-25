@@ -2,7 +2,7 @@
 layout: page
 title:  "Cookies in Firefox"
 date:   2019-09-24 09:07:19 +0200
-categories: linux
+categories: browser linux
 ---
 
 This is just a quick tip on how to see all cookies stored in Firefox.

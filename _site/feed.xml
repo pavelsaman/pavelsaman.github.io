@@ -1,4 +1,40 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.0.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2019-09-24T18:24:05+02:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">pavelsaman</title><subtitle>Personal blog about technology, mostly Linux and testing.</subtitle><entry><title type="html">Cookies in Firefox</title><link href="http://localhost:4000/cookies-in-firefox.html" rel="alternate" type="text/html" title="Cookies in Firefox" /><published>2019-09-24T09:07:19+02:00</published><updated>2019-09-24T09:07:19+02:00</updated><id>http://localhost:4000/cookies-in-firefox</id><content type="html" xml:base="http://localhost:4000/cookies-in-firefox.html">&lt;p&gt;This is just a quick tip on how to see all cookies stored in Firefox.&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.0.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2019-09-25T15:39:41+02:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">pavelsaman</title><subtitle>Personal blog about technology, mostly Linux and testing.</subtitle><entry><title type="html">Upgrading BIOS on Dell Laptop</title><link href="http://localhost:4000/upgrading-bios-on-dell-laptop.html" rel="alternate" type="text/html" title="Upgrading BIOS on Dell Laptop" /><published>2019-09-25T15:07:19+02:00</published><updated>2019-09-25T15:07:19+02:00</updated><id>http://localhost:4000/upgrading-bios-on-dell-laptop</id><content type="html" xml:base="http://localhost:4000/upgrading-bios-on-dell-laptop.html">&lt;p&gt;Just a quick article on how to find out BIOS version and how to get an update, and finally how to upgrade it.&lt;/p&gt;
+
+&lt;p&gt;I’ve recently done exactly this on my Dell E5550 laptop.&lt;/p&gt;
+
+&lt;p&gt;First, my BIOS version was A06:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;dmidecode &lt;span class=&quot;nt&quot;&gt;-s&lt;/span&gt; bios-version
+A06
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Next question is how to find out if there’s a new version for my laptop. I had to first get a serial number of my machine:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;dmidecode &lt;span class=&quot;nt&quot;&gt;-s&lt;/span&gt; system-serial-number
+xxxxx &lt;span class=&quot;c&quot;&gt;# don't want to make it public&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Then on &lt;a href=&quot;https://www.dell.com/support/home/uk/en/ukdhs1&quot;&gt;Dell website&lt;/a&gt;, I copy-pasted my serial number and let the system find new updates.&lt;/p&gt;
+
+&lt;p&gt;Surely, there was a new BIOS version &lt;code class=&quot;highlighter-rouge&quot;&gt;A21&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;It’s always an &lt;code class=&quot;highlighter-rouge&quot;&gt;.exe&lt;/code&gt; file, no matter what OS you have. There’s also a good tutorial on how to upgrade BIOS on Linux machines. The tutorial there is for Ubuntu since that’s an OS Dell delivers on its machines.&lt;/p&gt;
+
+&lt;p&gt;Then, I had to do a few more things:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;I downloaded the &lt;code class=&quot;highlighter-rouge&quot;&gt;.exe&lt;/code&gt; file&lt;/li&gt;
+  &lt;li&gt;I verified checksums of the downloaded file against what Dell has on their website&lt;/li&gt;
+  &lt;li&gt;I formatted a usb flash drive, it’s important to use FAT 32
+In my case, I used &lt;code class=&quot;highlighter-rouge&quot;&gt;fsdisk&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;mkfs.fat&lt;/code&gt; tools, but it’s possible to use some other tools, e.g. GUI tools present in your distro.&lt;/li&gt;
+  &lt;li&gt;I copied the &lt;code class=&quot;highlighter-rouge&quot;&gt;.exe&lt;/code&gt; file onto my flash drive&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Then it’s all about rebooting, pressing &lt;code class=&quot;highlighter-rouge&quot;&gt;F12&lt;/code&gt; and selecting &lt;code class=&quot;highlighter-rouge&quot;&gt;BIOS Flash Update&lt;/code&gt;. The rest should be automatic and if there’re no problems, the BIOS should be upgraded to a new version (in my case A21), which I can confirm either in BIOS setup or after boot in my OS:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;dmidecode &lt;span class=&quot;nt&quot;&gt;-s&lt;/span&gt; bios-version
+A21
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;</content><author><name>Pavel Saman</name></author><summary type="html">Just a quick article on how to find out BIOS version and how to get an update, and finally how to upgrade it.</summary></entry><entry><title type="html">Cookies in Firefox</title><link href="http://localhost:4000/cookies-in-firefox.html" rel="alternate" type="text/html" title="Cookies in Firefox" /><published>2019-09-24T09:07:19+02:00</published><updated>2019-09-24T09:07:19+02:00</updated><id>http://localhost:4000/cookies-in-firefox</id><content type="html" xml:base="http://localhost:4000/cookies-in-firefox.html">&lt;p&gt;This is just a quick tip on how to see all cookies stored in Firefox.&lt;/p&gt;
 
 &lt;p&gt;On Linux, Firefox creates a directory in &lt;code class=&quot;highlighter-rouge&quot;&gt;~/.mozilla&lt;/code&gt;, inside that there are more stuff, but in terms of cookies, I need to go into a directory dedicated to my current profile, so sth like &lt;code class=&quot;highlighter-rouge&quot;&gt;~/.mozilla/firefox/av1831zo.default&lt;/code&gt;.&lt;/p&gt;
 
@@ -269,6 +305,11 @@ E: &lt;span class=&quot;nv&quot;&gt;TAGS&lt;/span&gt;&lt;span class=&quot;o&quot
 &lt;h4 id=&quot;i-want-to-print-only-lines-with-a-connection-i-hand-to-awk-in-a-variable-net&quot;&gt;I want to print only lines with a connection I hand to awk in a variable &lt;code class=&quot;highlighter-rouge&quot;&gt;NET&lt;/code&gt;&lt;/h4&gt;
 
 &lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;awk&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;NET&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;akula&quot;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-F&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'|'&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'{ntw=substr($5,index($5,&quot;:&quot;)+2,length(substr($5,index($5,&quot;:&quot;)+2))-1)} ($3 ~ /up/ &amp;amp;&amp;amp; ntw == NET) {print}'&lt;/span&gt; /var/log/NetworkManager-dispatcher.d.log&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h4 id=&quot;i-want-to-know-how-many-times-ive-connected-to-a-network-and-sort-it-desc&quot;&gt;I want to know how many times I’ve connected to a network and sort it desc&lt;/h4&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;awk&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-F&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'|'&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'($3 ~ /up/) {x[substr($1, 0, index($1, &quot;T&quot;)-1)]++} END{for (n in x) {print n,x[n]}}'&lt;/span&gt; /var/log/NetworkManager-dispatcher.d.log&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt; | &lt;span class=&quot;nb&quot;&gt;sort&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-h&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-k2&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-r&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;Awk can create files for me and I can use redirection in awk.&lt;/p&gt;
@@ -913,29 +954,4 @@ When an interactive login shell exits, or a non-interactive login shell executes
 
 &lt;p&gt;One more picture to summarize interactive and login shells and the files that are executed when these shells are started: &lt;img src=&quot;/images/bash_files.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;Note:&lt;/strong&gt; contents of the files presented in this article could, and likely will, differ in other distributions. You need to understand the logic and apply it on your particular distro.&lt;/p&gt;</content><author><name>Pavel Saman</name></author><summary type="html">Bash allows for various files that are read and executed upon bash invocation. It could be a bit tricky to navigate these files, especially when edited to personal needs. I’ll share a quick post about my setup, I think it helps keep things neat and tidy.</summary></entry><entry><title type="html">Why I Run Linux</title><link href="http://localhost:4000/why-i-run-linux.html" rel="alternate" type="text/html" title="Why I Run Linux" /><published>2019-09-14T16:07:19+02:00</published><updated>2019-09-14T16:07:19+02:00</updated><id>http://localhost:4000/why-i-run-linux</id><content type="html" xml:base="http://localhost:4000/why-i-run-linux.html">&lt;p&gt;I want to express just a few reasons why I go for Linux as my main operating system. It’s not an attempt on an exhaustive list, just a few items off the top of my head.&lt;/p&gt;
-
-&lt;h3 id=&quot;learning&quot;&gt;Learning&lt;/h3&gt;
-&lt;p&gt;The most important reason for me is Linux allows me to learn more about different parts of the system, config files, data formats, tools etc.&lt;/p&gt;
-
-&lt;p&gt;A lot of things could be set up in Linux, even details that I didn’t thought possible when coming from the Windows platform. It might be a bit overwhelming at the beginning, but it also means a lot of new things could be learnt. As a result, I understand more IT stuff and that’s a big plus since it happens to be my job as well.&lt;/p&gt;
-
-&lt;h3 id=&quot;settings&quot;&gt;Settings&lt;/h3&gt;
-
-&lt;p&gt;It directly follows the previous point. Linux could be tweaked to the smallest detail. Both user interface and many stuff that run in the background and are not directly visible to the user. If something is acting up, the high changes are I can find it out with not so much effort.&lt;/p&gt;
-
-&lt;h3 id=&quot;efficiency&quot;&gt;Efficiency&lt;/h3&gt;
-
-&lt;p&gt;It might not come across as the most obvious reason at first, but I actually think using command line environment is more efficient than using a mouse. Using pipes, running various programs by just typing a few characters are simply faster, and it means a lot to me.&lt;/p&gt;
-
-&lt;p&gt;I can also look at the topic from the point of view of the system. It doesn’t consume many resources. When I don’t work on my machine, everything on the system is quiet, the CPU usage is low, RAM is free, when I have a look at the network interface, there’s no traffic etc. Whereas on my Windows machine, it’s always on like 70 % of RAM capacity, the same with the CPU and disk, and the machine is always talking to the outside world via its network interface. I guess some of these things could be turned off, but just the default behaviour scares me. Why not turn off almost everything and let the user decide what to use?&lt;/p&gt;
-
-&lt;h3 id=&quot;gui&quot;&gt;GUI&lt;/h3&gt;
-
-&lt;p&gt;While criticised a lot by mostly non-linux users, I find it much nicer. And there are many options to choose from. You can have GNOME, KDE, LXDE, Cinnamon, MATE, Xfce, LXQt all the way down to some really light environments like Openbox.&lt;/p&gt;
-
-&lt;p&gt;Furthermore, any desktop environment could be further tweaked and changed to the needs of every user.&lt;/p&gt;
-
-&lt;p&gt;However, try to add a custom clock format on a panel in Windows. You have to go into registry! What a thing!&lt;/p&gt;
-
-&lt;p&gt;These are my reasons for using Linux. I could find out more as I learn more about the system, but even now after just half a year of using Linux everyday as my main system, I can’t but say it was definitely a good choice to switch to this platform.&lt;/p&gt;</content><author><name>Pavel Saman</name></author><summary type="html">I want to express just a few reasons why I go for Linux as my main operating system. It’s not an attempt on an exhaustive list, just a few items off the top of my head.</summary></entry></feed>
+&lt;p&gt;&lt;strong&gt;Note:&lt;/strong&gt; contents of the files presented in this article could, and likely will, differ in other distributions. You need to understand the logic and apply it on your particular distro.&lt;/p&gt;</content><author><name>Pavel Saman</name></author><summary type="html">Bash allows for various files that are read and executed upon bash invocation. It could be a bit tricky to navigate these files, especially when edited to personal needs. I’ll share a quick post about my setup, I think it helps keep things neat and tidy.</summary></entry></feed>
