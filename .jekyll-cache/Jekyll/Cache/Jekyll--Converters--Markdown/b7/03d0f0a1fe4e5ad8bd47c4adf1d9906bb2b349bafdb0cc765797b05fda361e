@@ -1,0 +1,171 @@
+I"�<p>In language acquisition, there’s an idea of the most common words in a language. It can be interesting to know this when learning a new language. I’ll try to analyze Harry Potter and the Philosopher’s Stone in order to show word frequency and how many of the 1000 most common English words are represented in the book, so one has an idea how much of the book is possible to read when knowing only this set of words (of course it’s a simplification, but an interesting one).</p>
+
+<h3 id="plain-test">Plain Test</h3>
+
+<p>Number one task I hae is to get the book in plain text, so I can process it. I’ve found it online and the result <a href="/files/hpps">is in this text file</a>. To see just first 10 ilnes to get an idea, the file looks like this:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Harry Potter and the Sorcerer's Stone
+
+CHAPTER ONE
+
+THE BOY WHO LIVED
+
+Mr. and Mrs. Dursley, of number four, Privet Drive, were proud to say
+that they were perfectly normal, thank you very much. They were the last
+people you'd expect to be involved in anything strange or mysterious,
+because they just didn't hold with such nonsense.
+</code></pre></div></div>
+
+<h3 id="clearing-the-data">Clearing the Data</h3>
+
+<p>When I have a look at the file, there’re a few problems with the text:</p>
+<ol>
+  <li>some words use both <code class="highlighter-rouge">[A-Z]</code> and <code class="highlighter-rouge">[a-z]</code> ranges</li>
+  <li>there’re some numbers (page numbers etc.) that I don’t consider numbers</li>
+  <li>there are empty lines</li>
+  <li>there’s punctuation that can spoil individual words</li>
+  <li>but not all <code class="highlighter-rouge">[[:punct:]]</code> is problematic - e.g. <code class="highlighter-rouge">you've</code> is alright</li>
+</ol>
+
+<p>I need to get rid off all these data, so I have a “clean” text as input for frequency analysis.</p>
+
+<h4 id="upper-to-lowercase">Upper to Lowercase</h4>
+
+<p>This is fairly easy to do:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">cat </span>hpps | <span class="nb">tr</span> <span class="s1">'[A-Z]'</span> <span class="s1">'[a-z]'</span>
+</code></pre></div></div>
+
+<p>Done :)</p>
+
+<h4 id="punctuation">Punctuation</h4>
+
+<p>I want to delete some punctuation:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">sed</span> <span class="nt">-e</span> <span class="s2">"s/[,;:</span><span class="se">\!</span><span class="s2">?.</span><span class="se">\"</span><span class="s2">()-]//g"</span> hpps
+</code></pre></div></div>
+
+<h3 id="no-empty-lines">No Empty lines</h3>
+
+<p>Empty lines spoil the data as well, get rid of them:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">grep</span> <span class="nt">-v</span> <span class="s2">"^$"</span> hpps
+</code></pre></div></div>
+
+<h4 id="getting-rid-of-numbers">Getting rid of numbers</h4>
+
+<p>I need get rid of numbers. This turns out to be a little bit of problem as I’ve discovered some of the numbers are juxtaposed to other characters such as <code class="highlighter-rouge">'</code>. The solution is to use this after other steps as well.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">grep</span> <span class="nt">-v</span> <span class="nt">-E</span> <span class="s2">"^[0-9]+$"</span>
+</code></pre></div></div>
+
+<p>After these steps, first 10 lines look like this:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>harry potter and the sorcerer's stone
+chapter one
+the boy who lived
+mr and mrs dursley of number four privet drive were proud to say
+that they were perfectly normal thank you very much they were the last
+people you'd expect to be involved in anything strange or mysterious
+because they just didn't hold with such nonsense
+mr dursley was the director of a firm called grunnings which made
+drills he was a big beefy man with hardly any neck although he did
+have a very large mustache mrs dursley was thin and blonde and had
+</code></pre></div></div>
+
+<p>That’s much better, but I still want to transform the data a bit more.</p>
+
+<h3 id="word-per-line">Word per Line</h3>
+
+<p>Let’s put each word on a single line:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">sed</span> <span class="nt">-e</span> <span class="s2">"s/[[:space:]]/</span><span class="se">\n</span><span class="s2">/g"</span>
+</code></pre></div></div>
+
+<p>But the problem now is some of the “words” look like this:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>'please'
+'s'
+'f'
+'gar'
+'yes
+'jordan
+'nmat
+'dumbledore
+'til
+'hocus
+'cause
+</code></pre></div></div>
+
+<p>I don’t want to consider these to be words since I don’t like the apostrophe. Let’s clean it further:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">grep</span> <span class="nt">-v</span> <span class="s2">"^'"</span>
+</code></pre></div></div>
+
+<p>and at the end:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">grep</span> <span class="nt">-v</span> <span class="s2">"'$"</span>
+</code></pre></div></div>
+
+<p>Now it looks much cleaner:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>harry
+potter
+and
+the
+sorcerer's
+stone
+chapter
+one
+the
+boy
+</code></pre></div></div>
+
+<p>If I now try to find numbers:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">grep</span> <span class="o">[</span>0-9]
+</code></pre></div></div>
+
+<p>I get:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>4
+4
+17
+1
+31
+3
+0
+1
+2
+3
+4
+1
+2
+382
+1945
+31
+3
+1473
+1945
+1709
+1637
+90
+</code></pre></div></div>
+
+<p>So I again filter out such lines:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">grep</span> <span class="nt">-v</span> <span class="nt">-E</span> <span class="s2">"^[0-9]+$"</span>
+</code></pre></div></div>
+
+<p>The same has to be done with empty lines:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">grep</span> <span class="nt">-v</span> <span class="s2">"^$"</span>
+</code></pre></div></div>
+
+<p>Finally, I consider the input data clean. Let’s see some basic statistics:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">wc</span> <span class="nt">-l</span> hpps_cleaned
+76967 hpps_cleaned
+</code></pre></div></div>
+
+<p>That’s how many words are in the book :) The file could be downloaded here.</p>
+:ET

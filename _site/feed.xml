@@ -1,4 +1,279 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.0.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2019-09-25T15:39:41+02:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">pavelsaman</title><subtitle>Personal blog about technology, mostly Linux and testing.</subtitle><entry><title type="html">Upgrading BIOS on Dell Laptop</title><link href="http://localhost:4000/upgrading-bios-on-dell-laptop.html" rel="alternate" type="text/html" title="Upgrading BIOS on Dell Laptop" /><published>2019-09-25T15:07:19+02:00</published><updated>2019-09-25T15:07:19+02:00</updated><id>http://localhost:4000/upgrading-bios-on-dell-laptop</id><content type="html" xml:base="http://localhost:4000/upgrading-bios-on-dell-laptop.html">&lt;p&gt;Just a quick article on how to find out BIOS version and how to get an update, and finally how to upgrade it.&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.0.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2019-09-26T22:14:14+02:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">pavelsaman</title><subtitle>Personal blog about technology, mostly Linux and testing.</subtitle><entry><title type="html">Harry Potter Word Frequency</title><link href="http://localhost:4000/harry-potter-word-frequency.html" rel="alternate" type="text/html" title="Harry Potter Word Frequency" /><published>2019-09-26T15:07:19+02:00</published><updated>2019-09-26T15:07:19+02:00</updated><id>http://localhost:4000/harry-potter-word-frequency</id><content type="html" xml:base="http://localhost:4000/harry-potter-word-frequency.html">&lt;p&gt;In language acquisition, there’s the idea of the most common words in a language. It can be interesting to know this when learning a new language. I’ll try to analyze &lt;em&gt;Harry Potter and the Philosopher’s Stone&lt;/em&gt; in order to show word frequency and how many of the 1000 most common English words are represented in the book, so one has an idea how much of the book is possible to read when knowing only this set of words (of course it’s a simplification, but an interesting one).&lt;/p&gt;
+
+&lt;h3 id=&quot;plain-text&quot;&gt;Plain Text&lt;/h3&gt;
+
+&lt;p&gt;Number one task I have is to get the book in plain text, so I can process it. I’ve found it online and the result &lt;a href=&quot;/files/hpps&quot;&gt;is in this text file&lt;/a&gt;. To see just first 10 lines to get an idea, the file looks like this:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Harry Potter and the Sorcerer's Stone
+
+CHAPTER ONE
+
+THE BOY WHO LIVED
+
+Mr. and Mrs. Dursley, of number four, Privet Drive, were proud to say
+that they were perfectly normal, thank you very much. They were the last
+people you'd expect to be involved in anything strange or mysterious,
+because they just didn't hold with such nonsense.
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;clearing-the-data&quot;&gt;Clearing the Data&lt;/h3&gt;
+
+&lt;p&gt;When I have a look at the file, there’re a few problems with the text:&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;some words use both &lt;code class=&quot;highlighter-rouge&quot;&gt;[A-Z]&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;[a-z]&lt;/code&gt; ranges&lt;/li&gt;
+  &lt;li&gt;there are some numbers (page numbers etc.) that I don’t consider as numbers&lt;/li&gt;
+  &lt;li&gt;there are empty lines&lt;/li&gt;
+  &lt;li&gt;there’s punctuation that can spoil individual words&lt;/li&gt;
+  &lt;li&gt;but not all &lt;code class=&quot;highlighter-rouge&quot;&gt;[[:punct:]]&lt;/code&gt; is problematic - e.g. &lt;code class=&quot;highlighter-rouge&quot;&gt;you've&lt;/code&gt; is alright&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;I need to get rid off all these data, so I have a “clean” text as input for frequency analysis.&lt;/p&gt;
+
+&lt;h4 id=&quot;upper-to-lowercase&quot;&gt;Upper to Lowercase&lt;/h4&gt;
+
+&lt;p&gt;This is fairly easy to do:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cat &lt;/span&gt;hpps | &lt;span class=&quot;nb&quot;&gt;tr&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'[A-Z]'&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'[a-z]'&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Done.&lt;/p&gt;
+
+&lt;h4 id=&quot;punctuation&quot;&gt;Punctuation&lt;/h4&gt;
+
+&lt;p&gt;I want to delete some punctuation:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sed&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-e&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;s/[,;:&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\!&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;?.&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\&quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;()-]//g&quot;&lt;/span&gt; hpps
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h4 id=&quot;no-empty-lines&quot;&gt;No Empty Lines&lt;/h4&gt;
+
+&lt;p&gt;Empty lines spoil the data as well, get rid of them:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;grep&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;^$&quot;&lt;/span&gt; hpps
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h4 id=&quot;getting-rid-of-numbers&quot;&gt;Getting rid of numbers&lt;/h4&gt;
+
+&lt;p&gt;I need get rid of numbers. This turns out to be a little bit of problem as I’ve discovered some of the numbers are juxtaposed to other characters such as &lt;code class=&quot;highlighter-rouge&quot;&gt;'&lt;/code&gt;. The solution is to use this after other steps as well.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;grep&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-E&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;^[0-9]+$&quot;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;After these steps, first 10 lines look like this:&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;harry potter and the sorcerer's stone
+chapter one
+the boy who lived
+mr and mrs dursley of number four privet drive were proud to say
+that they were perfectly normal thank you very much they were the last
+people you'd expect to be involved in anything strange or mysterious
+because they just didn't hold with such nonsense
+mr dursley was the director of a firm called grunnings which made
+drills he was a big beefy man with hardly any neck although he did
+have a very large mustache mrs dursley was thin and blonde and had
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;That’s much better, but I still want to transform the data a bit more.&lt;/p&gt;
+
+&lt;h3 id=&quot;word-per-line&quot;&gt;Word per Line&lt;/h3&gt;
+
+&lt;p&gt;Let’s put each word on a single line:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sed&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-e&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;s/[[:space:]]/&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;/g&quot;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;But the problem now is some of the “words” look like this:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;'please'
+'s'
+'f'
+'gar'
+'yes
+'jordan
+'nmat
+'dumbledore
+'til
+'hocus
+'cause
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;I don’t want to consider these to be words since I don’t like the apostrophe. Let’s clean it further:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;grep&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;^'&quot;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;and at the end:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;grep&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;'$&quot;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now it looks much cleaner:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;harry
+potter
+and
+the
+sorcerer's
+stone
+chapter
+one
+the
+boy
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;If I try to find numbers:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;grep&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;0-9]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;I get:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;4
+4
+17
+1
+31
+3
+0
+1
+2
+3
+4
+1
+2
+382
+1945
+31
+3
+1473
+1945
+1709
+1637
+90
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;I filter out such lines again:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;grep&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-E&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;^[0-9]+$&quot;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The same has to be done with empty lines:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;grep&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;^$&quot;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Finally, I consider the input data clean. Let’s see some basic statistics:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;wc&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-l&lt;/span&gt; hpps_cleaned
+76967 hpps_cleaned
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;That’s how many words are in the book :) The file could be downloaded &lt;a href=&quot;/files/hpps_cleaned&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h3 id=&quot;most-frequent-words&quot;&gt;Most Frequent Words&lt;/h3&gt;
+
+&lt;p&gt;I can finally count frequency of each words. I’ll use &lt;code class=&quot;highlighter-rouge&quot;&gt;awk&lt;/code&gt; for that and sort the output:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;awk&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'{!word[$1]++} END{for (w in word) {print w,word[w]}}'&lt;/span&gt; hpps_cleaned | &lt;span class=&quot;nb&quot;&gt;sort&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-k2&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-h&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-r&lt;/span&gt; | &lt;span class=&quot;nb&quot;&gt;head&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-10&lt;/span&gt;
+the 3621
+and 1914
+to 1852
+a 1682
+he 1526
+of 1254
+harry 1208
+was 1182
+it 1022
+&lt;span class=&quot;k&quot;&gt;in &lt;/span&gt;962
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The first most common words in the book are not a big suprise. There’re mostly prepositions, articles, and one name (I should have got rid of that). The complete sorted list could be downloaded &lt;a href=&quot;/files/hpps_frequency_sorted&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;If I count the number of unique words, I get:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;wc&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-l&lt;/span&gt; hpps_frequency_sorted
+5990 hpps_frequency_sorted
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Again, there are “words” like &lt;code class=&quot;highlighter-rouge&quot;&gt;pomfrey's&lt;/code&gt; which are not ideal from at least two reasons:&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;they contain names&lt;/li&gt;
+  &lt;li&gt;they contain short forms (&lt;code class=&quot;highlighter-rouge&quot;&gt;'s&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;'ve&lt;/code&gt; etc.)&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;However, I still consider this list a pretty decent approximation.&lt;/p&gt;
+
+&lt;h3 id=&quot;1000-most-common-english-words&quot;&gt;1000 Most Common English Words&lt;/h3&gt;
+
+&lt;p&gt;Another interesting point of view could be to have a look at the first 1000 most common English words and see how many of them are represented in this text. Such a list could be found on different places, they even vary a bit since the underlying inputs could have been different. For my analysis, I’ve used &lt;a href=&quot;https://github.com/first20hours/google-10000-english/blob/master/google-10000-english.txt&quot;&gt;this one&lt;/a&gt;. You actually get 10000 most common English words, so I cut the list:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;awk&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'(NR &amp;lt;= 1000) {print}'&lt;/span&gt; 10000
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The rest is to go over my harry-potter file and this 1000 file and perform some counting on it:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;awk&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'(FILENAME == &quot;1000&quot;) {!x[$1]++} (FILENAME == &quot;hpps_cleaned&quot;) {!y[$1]++} END{for (w in x) { if(y[w]) {c++}} print c}'&lt;/span&gt; 1000 hpps_cleaned 
+615
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;615 words from the list of the 1000 most common English words are in the Harry Potter book. I can see how much of the original text is represented by these 615 words:&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;awk&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'(FILENAME == &quot;1000&quot;) {!x[$1]++} (FILENAME == &quot;hpps_cleaned&quot;) {!y[$1]++} END{for (w in x) { if(y[w]) {c+=y[w]}} print c}'&lt;/span&gt; 1000 hpps_cleaned 
+47216
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;If someone learns the list of the 1000 most common English words, they can read about 61 % of &lt;em&gt;Harry Potter and the Philosopher’s Stone&lt;/em&gt;. I can calculate the same thing for a few more values of the most common English words and see what’s gonna happen to the coverage in the book:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/hpps_word_coverage.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;So for the 5000 most common English words, the coverage of &lt;em&gt;Harry Potter and the Philosopher’s Stone&lt;/em&gt; is nearly 79 %. Still, it doesn’t mean you can read the book easily, 79 % of the text understood is not enough for easy comprehension. Another thing to notice here is the developement of these numbers. The more words I learn from the list of the most common English words, the higher the coverage, but it’s not a linear function. It suggests the strategy of learning frequency words is not always effective. The more one knows, the more one needs to study low frequency words that are outside of the range of any list of most common words.&lt;/p&gt;
+
+&lt;p&gt;Next, I can have a look at the words that are outside of the range of the 1000 most common English words according to my list presented above:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;awk&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'(FILENAME == &quot;1000&quot;) {!x[$1]++} (FILENAME == &quot;hpps_cleaned&quot;) {!y[$1]++} END{for (w in y) { if(! x[w]) {print w}}}'&lt;/span&gt; 1000 hpps_cleaned
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;These are the words in the Harry Potter book but outside of the 1000 most common English words. That’s the remaining 5375 unique words. The complete list cound be downloaded &lt;a href=&quot;/files/words_outside_1000_range&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;If I take a look as some of them:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;that's
+blackpool
+closer
+coats
+dampen
+wriggles
+vanished
+fastenings
+elephant
+died
+cage
+reason
+morning
+globes
+curiously
+toads
+tulips
+staffroom
+bobbing
+squashy
+hurts
+lord
+looming
+mmm
+plates
+snape
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;I still can see the underlying data could be improved. There’re names and short forms, both of which spoil the data and provide less accurate result. The rest are words not so frequent or words related to this specific wizarding world (like &lt;code class=&quot;highlighter-rouge&quot;&gt;toads&lt;/code&gt; (sort of anyway)).&lt;/p&gt;
+
+&lt;h3 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h3&gt;
+
+&lt;p&gt;There could be much more to say about this. You can play around with the data to find more. I’ll, however, bring it to a conlusion here. What I see here is mostly language learning advice, since that’s why I started on this article in the first place.&lt;/p&gt;
+
+&lt;p&gt;Many articles and/or advice say that knowing just a few thousands of the most common English words is enough. I, based on this article, disagree. Even with the 5000 most common English words, one can comprehend only roughly 79 % of the book in question. That’s not enough for easy and pleasurable reading. One simply has to study even low frequency words that are outside of this range. The article even suggests that the strategy proves inefficient after a few thousands most common words learnt. The increments are simply too small.&lt;/p&gt;
+
+&lt;p&gt;From the point of view of the analysis, I can only say it’s amazing how much information one can get with just a couple of text processing tools. If I should do something similar again, I consider the data cleaning part the most important part of the whole process. If my input is correct, the results get even more precise.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;NOTE:&lt;/strong&gt; this article has left out many other points. E.g. you can’t really read much if you lack the knowledge of grammar.&lt;/p&gt;</content><author><name>Pavel Saman</name></author><summary type="html">In language acquisition, there’s the idea of the most common words in a language. It can be interesting to know this when learning a new language. I’ll try to analyze Harry Potter and the Philosopher’s Stone in order to show word frequency and how many of the 1000 most common English words are represented in the book, so one has an idea how much of the book is possible to read when knowing only this set of words (of course it’s a simplification, but an interesting one).</summary></entry><entry><title type="html">Upgrading BIOS on Dell Laptop</title><link href="http://localhost:4000/upgrading-bios-on-dell-laptop.html" rel="alternate" type="text/html" title="Upgrading BIOS on Dell Laptop" /><published>2019-09-25T15:07:19+02:00</published><updated>2019-09-25T15:07:19+02:00</updated><id>http://localhost:4000/upgrading-bios-on-dell-laptop</id><content type="html" xml:base="http://localhost:4000/upgrading-bios-on-dell-laptop.html">&lt;p&gt;Just a quick article on how to find out BIOS version and how to get an update, and finally how to upgrade it.&lt;/p&gt;
 
 &lt;p&gt;I’ve recently done exactly this on my Dell E5550 laptop.&lt;/p&gt;
 
@@ -836,122 +1111,4 @@ appendpath &lt;span class=&quot;s1&quot;&gt;'/usr/bin'&lt;/span&gt;
 
 &lt;p&gt;&lt;img src=&quot;/images/dev_tools_3.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
 
-&lt;p&gt;No need to install any addon like Cookie editor if you just need to check what cookies you got.&lt;/p&gt;</content><author><name>Pavel Saman</name></author><summary type="html">When working with web applications, I sometimes need, or I’m just curious, to find what cookies the app is using. There are a few ways how to get hold of them. Let’s have a look at how to use dev tools in a browser.</summary></entry><entry><title type="html">Bash Files for Interactive Non Login Shells</title><link href="http://localhost:4000/bash-files-for-interactive-non-login-shells.html" rel="alternate" type="text/html" title="Bash Files for Interactive Non Login Shells" /><published>2019-09-16T18:07:19+02:00</published><updated>2019-09-16T18:07:19+02:00</updated><id>http://localhost:4000/bash-files-for-interactive-non-login-shells</id><content type="html" xml:base="http://localhost:4000/bash-files-for-interactive-non-login-shells.html">&lt;p&gt;Bash allows for various files that are read and executed upon bash invocation. It could be a bit tricky to navigate these files, especially when edited to personal needs. I’ll share a quick post about my setup, I think it helps keep things neat and tidy.&lt;/p&gt;
-
-&lt;p&gt;First of all, when you start digging into files like &lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/profile&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;~/.bash_profile&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;~/.bash_login&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;~/.profile&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;~/.bashrc&lt;/code&gt;, you first read something like:&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;When  bash is invoked as an interactive login shell, or as a non-interactive shell with the --login option, it first reads and executes commands from the
-file /etc/profile, if that file exists.  After reading that file, it looks for ~/.bash_profile, ~/.bash_login, and ~/.profile, in that order,  and  reads
-and  executes  commands from the first one that exists and is readable.  The --noprofile option may be used when the shell is started to inhibit this be‐
-havior.
-
-When an interactive login shell exits, or a non-interactive login shell executes the exit builtin command, bash reads and executes commands from the file
-~/.bash_logout, if it exists.
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;But what the hell is login, interactive and non-interactive shell?&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Interactive shell&lt;/strong&gt; is simply the one you type your commands into. &lt;strong&gt;Non-interactive&lt;/strong&gt; shell is your scripts you just execute and then wait for the recult code, the commands inside your script are run by a non-interactive shell. &lt;strong&gt;Login shells&lt;/strong&gt; are usually interactive, they are those shells that you use for logging into a console (F2 etc.), trough SSH, or via &lt;code class=&quot;highlighter-rouge&quot;&gt;su -&lt;/code&gt;.&lt;/p&gt;
-
-&lt;p&gt;Having said that, there’re different files that get read and executed for these shells.&lt;/p&gt;
-
-&lt;p&gt;Let’s have a look at an interactive non login shell. The man page for bash say:&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;When an interactive shell that is not a login shell is started, bash reads and executes commands from ~/.bashrc,
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;I also think that interactive non login shell is the most common for home users. Such a shell will probably be started more often than any other shell, so let’s stick to this option to show how I organise the files that get executed after this shell is started.&lt;/p&gt;
-
-&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;~/.bashrc&lt;/code&gt; could be really long, but the point is that when you want to add some other commands (tweak your command prompt etc.), it should most likely go into this file. As you add more commands, it can grow so much that you lose yourself in it. That’s where some organisation comes in.&lt;/p&gt;
-
-&lt;p&gt;I simply create &lt;code class=&quot;highlighter-rouge&quot;&gt;~/.bash_aliases&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;~/.bash_export&lt;/code&gt; files. It could be already obvious what I put in them, but let’s have a look at oth of them:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; .bash_aliases 
-&lt;span class=&quot;c&quot;&gt;# some more ls aliases&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;alias ls&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'ls --color=auto'&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;alias grep&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'grep --colour=auto'&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;egrep&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'egrep --colour=auto'&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;fgrep&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'fgrep --colour=auto'&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;ll&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'ls -lah'&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;la&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'ls -lha'&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'ls -l'&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;em&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'emacs -nw'&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;alias dd&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'dd status=progress'&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;_&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'sudo'&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;_i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'sudo -i'&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;cls&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'clear'&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;note&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'/home/pavel/.local/bin/NixNote2-x86_64.AppImage'&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;rst&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'reset'&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;cd..&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'cd ..'&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;alias df&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'df -h'&lt;/span&gt;                          &lt;span class=&quot;c&quot;&gt;# human-readable sizes&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;free&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'free -m'&lt;/span&gt;                      &lt;span class=&quot;c&quot;&gt;# show sizes in MB&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;more&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;less
-&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;lock&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;xflock4
-&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;g&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;giggle
-&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;xfce4-screenshooter -r -c -s ~/Pictures/screenshots &amp;gt;/dev/null 2&amp;gt;&amp;amp;1&quot;&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;lspic&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;viewnior
-&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;running_services&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;systemctl list-units --type service --state running&quot;&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;enabled_services&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;systemctl list-unit-files --type service --state enabled&quot;&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;all_services&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;systemctl list-unit-files --type service&quot;&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;failed_services&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;systemctl list-units --type service --state failed&quot;&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#alias start_docker=&quot;systemctl start docker.service&quot;&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#alias stop_docker=&quot;systemctl stop docker.service&quot;&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;alias rm&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;rm -v&quot;&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;which&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;which -a&quot;&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;selenium_server&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;java -jar ~/selenium-standalone-servers/selenium-server-standalone-3.141.59.jar -host 127.0.0.1&quot;&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;swappiness&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;cat /proc/sys/vm/swappiness&quot;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; .bash_export 
-&lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;EDITOR&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;vim&quot;&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;VISUAL&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;vim&quot;&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;SYSTEMD_EDITOR&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;vim&quot;&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;PATH&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;PATH&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;:/home/pavel/.local/bin:&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;$(&lt;/span&gt;ruby &lt;span class=&quot;nt&quot;&gt;-e&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'puts Gem.user_dir'&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;/bin&quot;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Nice and clean. When I need to add a new alias, I simply add a new line into &lt;code class=&quot;highlighter-rouge&quot;&gt;~/.bash_aliases&lt;/code&gt;.&lt;/p&gt;
-
-&lt;p&gt;One more thing to do. These files do not get read by an interactive non login shell, nor by any other. In order to change that, I need to edit &lt;code class=&quot;highlighter-rouge&quot;&gt;~/.bashrc&lt;/code&gt;:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;# aliases&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[[&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; ~/.bash_aliases &lt;span class=&quot;o&quot;&gt;]]&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
-	&lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt; ~/.bash_aliases
-&lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
-
-&lt;span class=&quot;c&quot;&gt;# export variables&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[[&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; ~/.bash_export &lt;span class=&quot;o&quot;&gt;]]&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
-	&lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt; ~/.bash_export
-&lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;As for a login shell, it’s about different files:&lt;/p&gt;
-&lt;ol&gt;
-  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/profile&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;~/.bash_profile&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;~/.bash_login&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;~/.profile&lt;/code&gt;&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;Furthermore, the files are executed in this order. Plus when I have a look into &lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/profile&lt;/code&gt;, it also looks for &lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/bash.bashrc&lt;/code&gt; under certain conditions:&lt;/p&gt;
-
-&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;# Source global bash config&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;if &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;test&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$PS1&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;test&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$BASH&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;test&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-z&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;POSIXLY_CORRECT&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;+x&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;test&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-r&lt;/span&gt; /etc/bash.bashrc&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
-	&lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt; /etc/bash.bashrc
-&lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;And when I have a look into &lt;code class=&quot;highlighter-rouge&quot;&gt;~/.bash_profile&lt;/code&gt;, I can see:&lt;/p&gt;
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; .bash_profile 
-&lt;span class=&quot;c&quot;&gt;#&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# ~/.bash_profile&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#&lt;/span&gt;
-
-&lt;span class=&quot;o&quot;&gt;[[&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; ~/.bashrc &lt;span class=&quot;o&quot;&gt;]]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt; ~/.bashrc
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;So in the end, my &lt;code class=&quot;highlighter-rouge&quot;&gt;~/.bashrc&lt;/code&gt; is excuted even for interactive login shells.&lt;/p&gt;
-
-&lt;p&gt;Instead of cluttering my &lt;code class=&quot;highlighter-rouge&quot;&gt;~/.bashrc&lt;/code&gt; with many export and aliases, I keep them separated in the two files. To me, this looks a bit more organised.&lt;/p&gt;
-
-&lt;p&gt;One more picture to summarize interactive and login shells and the files that are executed when these shells are started: &lt;img src=&quot;/images/bash_files.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Note:&lt;/strong&gt; contents of the files presented in this article could, and likely will, differ in other distributions. You need to understand the logic and apply it on your particular distro.&lt;/p&gt;</content><author><name>Pavel Saman</name></author><summary type="html">Bash allows for various files that are read and executed upon bash invocation. It could be a bit tricky to navigate these files, especially when edited to personal needs. I’ll share a quick post about my setup, I think it helps keep things neat and tidy.</summary></entry></feed>
+&lt;p&gt;No need to install any addon like Cookie editor if you just need to check what cookies you got.&lt;/p&gt;</content><author><name>Pavel Saman</name></author><summary type="html">When working with web applications, I sometimes need, or I’m just curious, to find what cookies the app is using. There are a few ways how to get hold of them. Let’s have a look at how to use dev tools in a browser.</summary></entry></feed>

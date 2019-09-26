@@ -1,0 +1,274 @@
+I"}6<p>In language acquisition, there’s the idea of the most common words in a language. It can be interesting to know this when learning a new language. I’ll try to analyze <em>Harry Potter and the Philosopher’s Stone</em> in order to show word frequency and how many of the 1000 most common English words are represented in the book, so one has an idea how much of the book is possible to read when knowing only this set of words (of course it’s a simplification, but an interesting one).</p>
+
+<h3 id="plain-test">Plain Test</h3>
+
+<p>Number one task I hae is to get the book in plain text, so I can process it. I’ve found it online and the result <a href="/files/hpps">is in this text file</a>. To see just first 10 ilnes to get an idea, the file looks like this:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Harry Potter and the Sorcerer's Stone
+
+CHAPTER ONE
+
+THE BOY WHO LIVED
+
+Mr. and Mrs. Dursley, of number four, Privet Drive, were proud to say
+that they were perfectly normal, thank you very much. They were the last
+people you'd expect to be involved in anything strange or mysterious,
+because they just didn't hold with such nonsense.
+</code></pre></div></div>
+
+<h3 id="clearing-the-data">Clearing the Data</h3>
+
+<p>When I have a look at the file, there’re a few problems with the text:</p>
+<ol>
+  <li>some words use both <code class="highlighter-rouge">[A-Z]</code> and <code class="highlighter-rouge">[a-z]</code> ranges</li>
+  <li>there’re some numbers (page numbers etc.) that I don’t consider numbers</li>
+  <li>there are empty lines</li>
+  <li>there’s punctuation that can spoil individual words</li>
+  <li>but not all <code class="highlighter-rouge">[[:punct:]]</code> is problematic - e.g. <code class="highlighter-rouge">you've</code> is alright</li>
+</ol>
+
+<p>I need to get rid off all these data, so I have a “clean” text as input for frequency analysis.</p>
+
+<h4 id="upper-to-lowercase">Upper to Lowercase</h4>
+
+<p>This is fairly easy to do:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">cat </span>hpps | <span class="nb">tr</span> <span class="s1">'[A-Z]'</span> <span class="s1">'[a-z]'</span>
+</code></pre></div></div>
+
+<p>Done :)</p>
+
+<h4 id="punctuation">Punctuation</h4>
+
+<p>I want to delete some punctuation:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">sed</span> <span class="nt">-e</span> <span class="s2">"s/[,;:</span><span class="se">\!</span><span class="s2">?.</span><span class="se">\"</span><span class="s2">()-]//g"</span> hpps
+</code></pre></div></div>
+
+<h4 id="no-empty-lines">No Empty Lines</h4>
+
+<p>Empty lines spoil the data as well, get rid of them:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">grep</span> <span class="nt">-v</span> <span class="s2">"^$"</span> hpps
+</code></pre></div></div>
+
+<h4 id="getting-rid-of-numbers">Getting rid of numbers</h4>
+
+<p>I need get rid of numbers. This turns out to be a little bit of problem as I’ve discovered some of the numbers are juxtaposed to other characters such as <code class="highlighter-rouge">'</code>. The solution is to use this after other steps as well.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">grep</span> <span class="nt">-v</span> <span class="nt">-E</span> <span class="s2">"^[0-9]+$"</span>
+</code></pre></div></div>
+
+<p>After these steps, first 10 lines look like this:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>harry potter and the sorcerer's stone
+chapter one
+the boy who lived
+mr and mrs dursley of number four privet drive were proud to say
+that they were perfectly normal thank you very much they were the last
+people you'd expect to be involved in anything strange or mysterious
+because they just didn't hold with such nonsense
+mr dursley was the director of a firm called grunnings which made
+drills he was a big beefy man with hardly any neck although he did
+have a very large mustache mrs dursley was thin and blonde and had
+</code></pre></div></div>
+
+<p>That’s much better, but I still want to transform the data a bit more.</p>
+
+<h3 id="word-per-line">Word per Line</h3>
+
+<p>Let’s put each word on a single line:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">sed</span> <span class="nt">-e</span> <span class="s2">"s/[[:space:]]/</span><span class="se">\n</span><span class="s2">/g"</span>
+</code></pre></div></div>
+
+<p>But the problem now is some of the “words” look like this:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>'please'
+'s'
+'f'
+'gar'
+'yes
+'jordan
+'nmat
+'dumbledore
+'til
+'hocus
+'cause
+</code></pre></div></div>
+
+<p>I don’t want to consider these to be words since I don’t like the apostrophe. Let’s clean it further:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">grep</span> <span class="nt">-v</span> <span class="s2">"^'"</span>
+</code></pre></div></div>
+
+<p>and at the end:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">grep</span> <span class="nt">-v</span> <span class="s2">"'$"</span>
+</code></pre></div></div>
+
+<p>Now it looks much cleaner:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>harry
+potter
+and
+the
+sorcerer's
+stone
+chapter
+one
+the
+boy
+</code></pre></div></div>
+
+<p>If I now try to find numbers:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">grep</span> <span class="o">[</span>0-9]
+</code></pre></div></div>
+
+<p>I get:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>4
+4
+17
+1
+31
+3
+0
+1
+2
+3
+4
+1
+2
+382
+1945
+31
+3
+1473
+1945
+1709
+1637
+90
+</code></pre></div></div>
+
+<p>I again filter out such lines:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">grep</span> <span class="nt">-v</span> <span class="nt">-E</span> <span class="s2">"^[0-9]+$"</span>
+</code></pre></div></div>
+
+<p>The same has to be done with empty lines:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">grep</span> <span class="nt">-v</span> <span class="s2">"^$"</span>
+</code></pre></div></div>
+
+<p>Finally, I consider the input data clean. Let’s see some basic statistics:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">wc</span> <span class="nt">-l</span> hpps_cleaned
+76967 hpps_cleaned
+</code></pre></div></div>
+
+<p>That’s how many words are in the book :) The file could be downloaded <a href="/files/hpps_cleaned">here</a>.</p>
+
+<h3 id="most-frequent-words">Most Frequent Words</h3>
+
+<p>I can finally count frequency of each words. I’ll use <code class="highlighter-rouge">awk</code> for that and sort the output:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">awk</span> <span class="s1">'{!word[$1]++} END{for (w in word) {print w,word[w]}}'</span> hpps_cleaned | <span class="nb">sort</span> <span class="nt">-k2</span> <span class="nt">-h</span> <span class="nt">-r</span> | <span class="nb">head</span> <span class="nt">-10</span>
+the 3621
+and 1914
+to 1852
+a 1682
+he 1526
+of 1254
+harry 1208
+was 1182
+it 1022
+<span class="k">in </span>962
+</code></pre></div></div>
+
+<p>The first most common words in the book are not a big suprise. There’re mostly prepositions, articles, and one name (I should have got rid of that). The complete sorted list could be downloaded <a href="/files/hpps_frequency_sorted">here</a>.</p>
+
+<p>If I count the number of unique words, I get:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">wc</span> <span class="nt">-l</span> hpps_frequency_sorted
+5990 hpps_frequency_sorted
+</code></pre></div></div>
+
+<p>Again, there are “words” like <code class="highlighter-rouge">pomfrey's</code> which are no ideal from at least two reasons:</p>
+<ol>
+  <li>they contain names</li>
+  <li>they contain short forms (<code class="highlighter-rouge">'s</code>, <code class="highlighter-rouge">'ve</code> etc.)</li>
+</ol>
+
+<p>However, I still consider this list a pretty decent approximation.</p>
+
+<h3 id="1000-most-common-english-words">1000 Most Common English Words</h3>
+
+<p>Another interesting point of view could be to have a look at the first 1000 most common English words and see how many of them are represented in this text. Susch a list could be found on different places, they even vary a bit since the underlying inputs could have been different. For my analysis, I’ve used <a href="https://github.com/first20hours/google-10000-english/blob/master/google-10000-english.txt">this one</a>. You actually get 10000 most common English words, so I cut the list:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">awk</span> <span class="s1">'(NR &lt;= 1000) {print}'</span> 10000
+</code></pre></div></div>
+
+<p>The rest is to go over my harry-potter file and this 1000 file and perform some counting on it:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">awk</span> <span class="s1">'(FILENAME == "1000") {!x[$1]++} (FILENAME == "hpps_cleaned") {!y[$1]++} END{for (w in x) { if(y[w]) {c++}} print c}'</span> 1000 hpps_cleaned 
+615
+</code></pre></div></div>
+
+<p>615 words from the list of the 1000 most common English words are in the Harry Potter book. I can see how much of the original text is represented by these 615 words:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">awk</span> <span class="s1">'(FILENAME == "1000") {!x[$1]++} (FILENAME == "hpps_cleaned") {!y[$1]++} END{for (w in x) { if(y[w]) {c+=y[w]}} print c}'</span> 1000 hpps_cleaned 
+47216
+</code></pre></div></div>
+
+<p>If someone learns the list of the 1000 most common English words, they can read about 61 % of <em>Harry Potter and the Philosopher’s Stone</em>. I can calculate the same thing for a few more values of the most common English words and see what’s gonna happen to the coverage in the book:</p>
+
+<p><img src="/images/hpps_word_coverage.png" alt="image" /></p>
+
+<p>So for the 5000 most common English words, the coverage of <em>Harry Potter and the Philosopher’s Stone</em> is nearly 79 %. Still, it doesn’t mean you can read the book easily, 79 % of the text understood is not enough for easy comprehension. Another thing to notice here is the developement of these numbers. The more words I learn from the list of the most common English words, the higher the coverage, but it’s not a linear function. It suggests the strategy of learning frequency words is not always effective. The more one knows, the more one needs to study low frequency words that are outside of the range of any list of most common words.</p>
+
+<p>Next, I can have a look at the words that are outside of the range of the 1000 most common English words according to my list presented above:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">awk</span> <span class="s1">'(FILENAME == "1000") {!x[$1]++} (FILENAME == "hpps_cleaned") {!y[$1]++} END{for (w in y) { if(! x[w]) {print w}}}'</span> 1000 hpps_cleaned
+</code></pre></div></div>
+
+<p>These are the words in the Harry Potter book but outside of the 1000 most common English words. That’s the remaining 5375 unique words. The complete list cound be downloaded <a href="/files/words_outside_1000_range">here</a>.</p>
+
+<p>If I take a look as some of them:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>that's
+blackpool
+closer
+coats
+dampen
+wriggles
+vanished
+fastenings
+elephant
+died
+cage
+reason
+morning
+globes
+curiously
+toads
+tulips
+staffroom
+bobbing
+squashy
+hurts
+lord
+looming
+mmm
+plates
+snape
+</code></pre></div></div>
+
+<p>I still can see the underlying data could be improved. There’re names and short forms, both of which spoil the data and provide less accurate result. The rest are words not so frequent or words related to this specific wizarding world (like <code class="highlighter-rouge">toads</code> (sort of anyway)).</p>
+
+<h3 id="conclusion">Conclusion</h3>
+
+<p>There could be much more to be said about this. You can play around with the data to find more. I’ll, however, bring it to a conlusion here. What I see here is mostly language learning advice, since that’s why I started on this article in the first place.</p>
+
+<p>Many articles and/or advice say that knowing just a few thousands of the most common English words is enough. I, based on this article, disagree. Even with the 5000 most common English words, one can comprehend only roughly 79 % of the book in question. That’s not enough for easy reading. One simply has to study even low frequency words that are outside of this range.</p>
+
+:ET
