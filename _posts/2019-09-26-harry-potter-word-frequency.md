@@ -9,7 +9,7 @@ In language acquisition, there's the idea of the most common words in a language
 
 ### Plain Text
 
-Number one task I have is to get the book in plain text, so I can process it. I've found it online and the result [is in this text file](/files/hpps). To see just first 10 lines to get an idea, the file looks like this:
+Number one task I have is to get the book in plain text, so I can process it. I've found it online [on this website](http://anyflip.com/dlgr/thrn/basic). To see just first 10 lines to get an idea, the file looks like this:
 
 ```
 Harry Potter and the Sorcerer's Stone
