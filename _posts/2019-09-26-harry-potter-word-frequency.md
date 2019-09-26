@@ -33,7 +33,7 @@ When I have a look at the file, there're a few problems with the text:
 4. there's punctuation that can spoil individual words
 5. but not all `[[:punct:]]` is problematic - e.g. `you've` is alright
 
-I need to get rid off all these data, so I have a "clean" text as input for frequency analysis.
+I need to get rid of all these data, so I have a "clean" text as input for frequency analysis.
 
 #### Upper to Lowercase
 
