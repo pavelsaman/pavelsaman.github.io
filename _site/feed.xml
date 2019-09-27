@@ -1,8 +1,18 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.0.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2019-09-26T22:14:14+02:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">pavelsaman</title><subtitle>Personal blog about technology, mostly Linux and testing.</subtitle><entry><title type="html">Harry Potter Word Frequency</title><link href="http://localhost:4000/harry-potter-word-frequency.html" rel="alternate" type="text/html" title="Harry Potter Word Frequency" /><published>2019-09-26T15:07:19+02:00</published><updated>2019-09-26T15:07:19+02:00</updated><id>http://localhost:4000/harry-potter-word-frequency</id><content type="html" xml:base="http://localhost:4000/harry-potter-word-frequency.html">&lt;p&gt;In language acquisition, there’s the idea of the most common words in a language. It can be interesting to know this when learning a new language. I’ll try to analyze &lt;em&gt;Harry Potter and the Philosopher’s Stone&lt;/em&gt; in order to show word frequency and how many of the 1000 most common English words are represented in the book, so one has an idea how much of the book is possible to read when knowing only this set of words (of course it’s a simplification, but an interesting one).&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.0.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2019-09-27T10:51:34+02:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">pavelsaman</title><subtitle>Personal blog about technology, mostly Linux and testing.</subtitle><entry><title type="html">Testing Book to Read</title><link href="http://localhost:4000/testing-book-to-read.html" rel="alternate" type="text/html" title="Testing Book to Read" /><published>2019-09-27T08:07:19+02:00</published><updated>2019-09-27T08:07:19+02:00</updated><id>http://localhost:4000/testing-book-to-read</id><content type="html" xml:base="http://localhost:4000/testing-book-to-read.html">&lt;p&gt;A quick recommendation on what to read in the field of software testing.&lt;/p&gt;
+
+&lt;p&gt;I’ve recently got to read this book about software testing:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/testing_book.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;I must say this is absolutely amazing book about the field. I won’t go into details here but I definitely recommend this one.&lt;/p&gt;
+
+&lt;p&gt;Perhaps not a new one, but the advice is timely and could be applied or considered any time, even in today environment.&lt;/p&gt;
+
+&lt;p&gt;Enjoy reading.&lt;/p&gt;</content><author><name>Pavel Saman</name></author><summary type="html">A quick recommendation on what to read in the field of software testing.</summary></entry><entry><title type="html">Harry Potter Word Frequency</title><link href="http://localhost:4000/harry-potter-word-frequency.html" rel="alternate" type="text/html" title="Harry Potter Word Frequency" /><published>2019-09-26T15:07:19+02:00</published><updated>2019-09-26T15:07:19+02:00</updated><id>http://localhost:4000/harry-potter-word-frequency</id><content type="html" xml:base="http://localhost:4000/harry-potter-word-frequency.html">&lt;p&gt;In language acquisition, there’s the idea of the most common words in a language. It can be interesting to know this when learning a new language. I’ll try to analyze &lt;em&gt;Harry Potter and the Philosopher’s Stone&lt;/em&gt; in order to show word frequency and how many of the 1000 most common English words are represented in the book, so one has an idea how much of the book is possible to read when knowing only this set of words (of course it’s a simplification, but an interesting one).&lt;/p&gt;
 
 &lt;h3 id=&quot;plain-text&quot;&gt;Plain Text&lt;/h3&gt;
 
-&lt;p&gt;Number one task I have is to get the book in plain text, so I can process it. I’ve found it online and the result &lt;a href=&quot;/files/hpps&quot;&gt;is in this text file&lt;/a&gt;. To see just first 10 lines to get an idea, the file looks like this:&lt;/p&gt;
+&lt;p&gt;Number one task I have is to get the book in plain text, so I can process it. I’ve found it online &lt;a href=&quot;http://anyflip.com/dlgr/thrn/basic&quot;&gt;on this website&lt;/a&gt;. To see just first 10 lines to get an idea, the file looks like this:&lt;/p&gt;
 
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Harry Potter and the Sorcerer's Stone
 
@@ -27,7 +37,7 @@ because they just didn't hold with such nonsense.
   &lt;li&gt;but not all &lt;code class=&quot;highlighter-rouge&quot;&gt;[[:punct:]]&lt;/code&gt; is problematic - e.g. &lt;code class=&quot;highlighter-rouge&quot;&gt;you've&lt;/code&gt; is alright&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;p&gt;I need to get rid off all these data, so I have a “clean” text as input for frequency analysis.&lt;/p&gt;
+&lt;p&gt;I need to get rid of all these data, so I have a “clean” text as input for frequency analysis.&lt;/p&gt;
 
 &lt;h4 id=&quot;upper-to-lowercase&quot;&gt;Upper to Lowercase&lt;/h4&gt;
 
@@ -1092,23 +1102,4 @@ appendpath &lt;span class=&quot;s1&quot;&gt;'/usr/bin'&lt;/span&gt;
 &lt;span class=&quot;nt&quot;&gt;-rw-r--r--&lt;/span&gt; 1 root root 77 Sep 17 16:12 shell-timeout.sh
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;Now it’s a good time to test it. Log into a console (tty, not pts) and just wait for 30 seconds. After the time period, the user should be logged out automatically.&lt;/p&gt;</content><author><name>Pavel Saman</name></author><summary type="html">It is possible to forget to log out from a console, which might be a security risk. It would be nice to have a way to log out automatically if this happens.</summary></entry><entry><title type="html">Find Out Cookies For Current Session</title><link href="http://localhost:4000/find-out-cookies-for-current-session.html" rel="alternate" type="text/html" title="Find Out Cookies For Current Session" /><published>2019-09-17T21:07:19+02:00</published><updated>2019-09-17T21:07:19+02:00</updated><id>http://localhost:4000/find-out-cookies-for-current-session</id><content type="html" xml:base="http://localhost:4000/find-out-cookies-for-current-session.html">&lt;p&gt;When working with web applications, I sometimes need, or I’m just curious, to find what cookies the app is using. There are a few ways how to get hold of them. Let’s have a look at how to use dev tools in a browser.&lt;/p&gt;
-
-&lt;p&gt;When you go into your browser, you can most likely press &lt;code class=&quot;highlighter-rouge&quot;&gt;F12&lt;/code&gt; and get a new section like this:&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/images/dev_tools.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;Many different things could be done from here. For example, there’s a console:&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/images/dev_tools_2.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;This console could be used to execute some Javascript. Then it’s only one Google search away from finding out how to show all cookies for the current session:&lt;/p&gt;
-
-&lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;document&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;cookie&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;And here we go:&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/images/dev_tools_3.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;No need to install any addon like Cookie editor if you just need to check what cookies you got.&lt;/p&gt;</content><author><name>Pavel Saman</name></author><summary type="html">When working with web applications, I sometimes need, or I’m just curious, to find what cookies the app is using. There are a few ways how to get hold of them. Let’s have a look at how to use dev tools in a browser.</summary></entry></feed>
+&lt;p&gt;Now it’s a good time to test it. Log into a console (tty, not pts) and just wait for 30 seconds. After the time period, the user should be logged out automatically.&lt;/p&gt;</content><author><name>Pavel Saman</name></author><summary type="html">It is possible to forget to log out from a console, which might be a security risk. It would be nice to have a way to log out automatically if this happens.</summary></entry></feed>

@@ -1,6 +1,0 @@
-I"�<p>In language acquisition, there’s an idea of the most common words in a language. It can be interesting to know this when learning a new language. I’ll try to analyze Harry Potter and the Philosopher’s Stone in order to show word frequency and how many of the 1000 most common English words are represented in the book, so one has an idea how much of the book is possible to read when knowing only this set of words (of course it’s a simplification, but an interesting one).</p>
-
-<h3 id="plain-test">Plain Test</h3>
-
-<p>Number one task I hae is to get the book in plain text, so I can process it. I’ve found it online and the result <a href="file:///files/hpps">is in this text file</a>.</p>
-:ET
