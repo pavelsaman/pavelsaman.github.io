@@ -5,7 +5,7 @@ date:   2019-09-28 12:07:19 +0200
 categories: browser
 ---
 
-It's not a big surpise that different browsers implement different things and behave differently. I've, however, focused on one particular area - HTTP cache request headers and how some of the main browsers of today respond to three different user actions..
+It's not a big surpise that different browsers implement different things and behave differently. I've, however, focused on one particular area - HTTP cache request headers and how some of the main browsers of today respond to three different user actions.
 
 There are a few HTTP headers that control caching. For a full description, see [this documentation](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers#Caching) and [this](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers#Conditionals) as well. Out of these headers that are related to caching, only the following list of headers fall into either general or request header category:
 1. Cache-Control
