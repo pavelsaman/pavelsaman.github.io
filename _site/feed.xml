@@ -1,4 +1,243 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.0.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2019-09-28T00:41:04+02:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">pavelsaman</title><subtitle>Personal blog about technology, mostly Linux and testing.</subtitle><entry><title type="html">Testing Book to Read</title><link href="http://localhost:4000/testing-book-to-read.html" rel="alternate" type="text/html" title="Testing Book to Read" /><published>2019-09-27T08:07:19+02:00</published><updated>2019-09-27T08:07:19+02:00</updated><id>http://localhost:4000/testing-book-to-read</id><content type="html" xml:base="http://localhost:4000/testing-book-to-read.html">&lt;p&gt;A quick recommendation on what to read in the field of software testing.&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.0.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2019-09-28T14:38:12+02:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">pavelsaman</title><subtitle>Personal blog about technology, mostly Linux and testing.</subtitle><entry><title type="html">Testing Input Fields</title><link href="http://localhost:4000/testing-input-fields.html" rel="alternate" type="text/html" title="Testing Input Fields" /><published>2019-09-28T10:07:19+02:00</published><updated>2019-09-28T10:07:19+02:00</updated><id>http://localhost:4000/testing-input-fields</id><content type="html" xml:base="http://localhost:4000/testing-input-fields.html">&lt;p&gt;Like it or not, a lot of time as a tester will be spent checking inputs and whether the system fails or not. One way we can do this is basically using the final product, that is via a GUI interface as a user. We can call a user testing or differently, it’s not that important to remember the eve-growing list of names in software testing, it’s important to use your own brain and think about the testing you do.&lt;/p&gt;
+
+&lt;h3 id=&quot;input-field-under-test&quot;&gt;Input Field Under Test&lt;/h3&gt;
+
+&lt;p&gt;Not surprisingly, there are many different fields a web page or any other app (mobile, desktop) can have. There’re input fields for text, for numbers, checkboxs, radio buttons etc. For each of them, you need to consider a bit different set of checks/tests.&lt;/p&gt;
+
+&lt;p&gt;For this article, I’ll choose as an example a simple search field as shown here:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/search_field.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;It’s a search field from a web application.&lt;/p&gt;
+
+&lt;h3 id=&quot;what-to-test-for&quot;&gt;What to Test For?&lt;/h3&gt;
+
+&lt;p&gt;Long time ago, I was asked this very question (a bit broader in fact, but this was part of it) during an interview. Well, as a newcomer to SW testing, I stuttered out 1 or 2 thinks in the list I utilize nowadays. I don’t feel particularly good about it now, but everyone has to start somehow.&lt;/p&gt;
+
+&lt;p&gt;Below you can see my simple table I ca use as a checklist when testing input fields. There’re more than just 2 inputs now.&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;&lt;strong&gt;Test&lt;/strong&gt;&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;&lt;strong&gt;Check if the result is expected/valid&lt;/strong&gt;&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;&lt;strong&gt;Problem&lt;/strong&gt;&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Allowed value&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Empty value&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Far below LB&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;LB-1&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;LB (low boundary)&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;LB+1&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;UB-1&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;UB (upper boundary)&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;UB+1&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Far above UB&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Different data type (e.g. float into int field, different datetime format)&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;String value&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;National characters (e.g. Czech, Russian, Chinese)&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;White character(s)&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Leading spaces + valid value&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Trailing spaces + valid value&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Leading zeros&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Special characters (e.g. &amp;amp;, @, /)&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Type in a value&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Copy in a value (Ctrl + c and Ctrl + v)&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Copy in a value using a mouse&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;max value (e.g. max int, max # of chars in a string field)&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Negative value (for number fields)&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;0&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Null&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;NaN&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;nill&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Upper case&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Lower case&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Combination of upper and lower case&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;File name absolute path&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;File name relative path&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;File name forward slashes /&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;File name backward slashes \&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;File name combination of slashes / and \&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;File name more forward slashes //&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;File name more backward slashes \\&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;ASCII 255&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Escape characters (‘, “, \, \t, \n, \0, \)&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Is the value in the field remembered when going away from the page and back?&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Different browsers&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;As you’ve figured out, not all these tests are applicable for every input field. When testing a search field, I don’t need to check for different ways to enter a file path. Again, take this as a general guidance and use your own judgement.&lt;/p&gt;
+
+&lt;p&gt;There might be more to it, no I might have missed something. One interesting input field is the one for telephone numbers… when you consider all these formats one might input their phone number (722222222, 722 222 222, 0042722222222, 0042 722 222 222, +420722222222, +420 722 222 222, foreign phone numbers, how about leading and trailing white characters (someone might press space by mistake) etc.), on the other hand, I consider all these nuances under the “different data type” row. That’s where your creativity and judgement come in.&lt;/p&gt;
+
+&lt;p&gt;Hope it will make you consider more tests in the future. If you want to download a spreadsheet with the table, &lt;a href=&quot;/files/input_fields_checkbox.ods&quot;&gt;get it here&lt;/a&gt;.&lt;/p&gt;</content><author><name>Pavel Saman</name></author><summary type="html">Like it or not, a lot of time as a tester will be spent checking inputs and whether the system fails or not. One way we can do this is basically using the final product, that is via a GUI interface as a user. We can call a user testing or differently, it’s not that important to remember the eve-growing list of names in software testing, it’s important to use your own brain and think about the testing you do.</summary></entry><entry><title type="html">Testing Book to Read</title><link href="http://localhost:4000/testing-book-to-read.html" rel="alternate" type="text/html" title="Testing Book to Read" /><published>2019-09-27T08:07:19+02:00</published><updated>2019-09-27T08:07:19+02:00</updated><id>http://localhost:4000/testing-book-to-read</id><content type="html" xml:base="http://localhost:4000/testing-book-to-read.html">&lt;p&gt;A quick recommendation on what to read in the field of software testing.&lt;/p&gt;
 
 &lt;p&gt;I’ve recently got to read this book about software testing:&lt;/p&gt;
 
@@ -1019,87 +1258,4 @@ blacklist pcspkr
 ......
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;The last line with no dots shows what kernel module is used.&lt;/p&gt;</content><author><name>Pavel Saman</name></author><summary type="html">Have you ever experienced this annoying beep sound your PC speaker makes on error, in console and possibly on other places? This is the single most annoying thing I wanted to get rid off system-wide and for good. If you want to do the same, this short blog post might come in handy.</summary></entry><entry><title type="html">Log Out From Console after Certain Time</title><link href="http://localhost:4000/log-out-from-console-after-certain-time.html" rel="alternate" type="text/html" title="Log Out From Console after Certain Time" /><published>2019-09-18T17:00:19+02:00</published><updated>2019-09-18T17:00:19+02:00</updated><id>http://localhost:4000/log-out-from-console-after-certain-time</id><content type="html" xml:base="http://localhost:4000/log-out-from-console-after-certain-time.html">&lt;p&gt;It is possible to forget to log out from a console, which might be a security risk. It would be nice to have a way to log out automatically if this happens.&lt;/p&gt;
-
-&lt;h3 id=&quot;etcprofile-and-etcprofiled&quot;&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/profile&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/profile.d/&lt;/code&gt;&lt;/h3&gt;
-
-&lt;p&gt;As it turns out, we can do such a thing with just a few lines of shell code. Let’s write this:&lt;/p&gt;
-
-&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;TMOUT&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;30
-
-&lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;si&quot;&gt;$(&lt;/span&gt; /usr/bin/tty &lt;span class=&quot;si&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt;
-	/dev/tty[0-9]&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-		&lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;TMOUT
-		&lt;span class=&quot;p&quot;&gt;;;&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;esac&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Variable &lt;code class=&quot;highlighter-rouge&quot;&gt;TMOUT&lt;/code&gt; could be used to log out a user after a specified number of seconds. If set to &lt;code class=&quot;highlighter-rouge&quot;&gt;30&lt;/code&gt; like in my example, it’ll log out a user after 30 seconds of innactivity.&lt;/p&gt;
-
-&lt;p&gt;The only question now is where to put such a script?&lt;/p&gt;
-
-&lt;p&gt;Let’s have a look at &lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/profile&lt;/code&gt;:&lt;/p&gt;
-
-&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;# /etc/profile&lt;/span&gt;
-
-&lt;span class=&quot;c&quot;&gt;# Set our umask&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;umask &lt;/span&gt;022
-
-&lt;span class=&quot;c&quot;&gt;# Append our default paths&lt;/span&gt;
-appendpath &lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;:&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$PATH&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;:&quot;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;:&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$1&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;:&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-            &lt;span class=&quot;p&quot;&gt;;;&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-            &lt;span class=&quot;nv&quot;&gt;PATH&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;PATH&lt;/span&gt;:+&lt;span class=&quot;nv&quot;&gt;$PATH&lt;/span&gt;:&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$1&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;esac&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-
-appendpath &lt;span class=&quot;s1&quot;&gt;'/usr/local/sbin'&lt;/span&gt;
-appendpath &lt;span class=&quot;s1&quot;&gt;'/usr/local/bin'&lt;/span&gt;
-appendpath &lt;span class=&quot;s1&quot;&gt;'/usr/bin'&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;unset &lt;/span&gt;appendpath
-
-&lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;PATH
-
-&lt;span class=&quot;c&quot;&gt;# Load profiles from /etc/profile.d&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;if &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;test&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-d&lt;/span&gt; /etc/profile.d/&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;then
-	for &lt;/span&gt;profile &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; /etc/profile.d/&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;.sh&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do
-		&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;test&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-r&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$profile&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$profile&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
-	&lt;span class=&quot;k&quot;&gt;done
-	&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;unset &lt;/span&gt;profile
-&lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
-
-&lt;span class=&quot;c&quot;&gt;# Source global bash config&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;if &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;test&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$PS1&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;test&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$BASH&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;test&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-z&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;POSIXLY_CORRECT&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;+x&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;test&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-r&lt;/span&gt; /etc/bash.bashrc&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
-	&lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt; /etc/bash.bashrc
-&lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
-
-&lt;span class=&quot;c&quot;&gt;# Termcap is outdated, old, and crusty, kill it.&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;unset &lt;/span&gt;TERMCAP
-
-&lt;span class=&quot;c&quot;&gt;# Man is much better than us at figuring this out&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;unset &lt;/span&gt;MANPATH
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;This is a standard content of the file on Manjaro Linux. This file gets read by bash when it’s invoked as a login shell, so it’s a good place to set up some global config for all users (just like here setting &lt;code class=&quot;highlighter-rouge&quot;&gt;PATH&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;umask&lt;/code&gt; for example).&lt;/p&gt;
-
-&lt;p&gt;One particular piece I’m interested in is:&lt;/p&gt;
-
-&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;# Load profiles from /etc/profile.d&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;if &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;test&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-d&lt;/span&gt; /etc/profile.d/&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;then
-	for &lt;/span&gt;profile &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; /etc/profile.d/&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;.sh&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do
-		&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;test&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-r&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$profile&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$profile&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
-	&lt;span class=&quot;k&quot;&gt;done
-	&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;unset &lt;/span&gt;profile
-&lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;This part works with every file in &lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/profile.d/&lt;/code&gt; that ends with &lt;code class=&quot;highlighter-rouge&quot;&gt;.sh&lt;/code&gt;. If such a file exists and read permissions are granted, it will execute such a file. That’s exactly what we need for our tiny script from the beginning.&lt;/p&gt;
-
-&lt;p&gt;Let’s save our script as &lt;code class=&quot;highlighter-rouge&quot;&gt;shell-timeout.sh&lt;/code&gt;:&lt;/p&gt;
-&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;ls&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-l&lt;/span&gt; shell-timeout.sh 
-&lt;span class=&quot;nt&quot;&gt;-rw-r--r--&lt;/span&gt; 1 root root 77 Sep 17 16:12 shell-timeout.sh
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Now it’s a good time to test it. Log into a console (tty, not pts) and just wait for 30 seconds. After the time period, the user should be logged out automatically.&lt;/p&gt;</content><author><name>Pavel Saman</name></author><summary type="html">It is possible to forget to log out from a console, which might be a security risk. It would be nice to have a way to log out automatically if this happens.</summary></entry></feed>
+&lt;p&gt;The last line with no dots shows what kernel module is used.&lt;/p&gt;</content><author><name>Pavel Saman</name></author><summary type="html">Have you ever experienced this annoying beep sound your PC speaker makes on error, in console and possibly on other places? This is the single most annoying thing I wanted to get rid off system-wide and for good. If you want to do the same, this short blog post might come in handy.</summary></entry></feed>

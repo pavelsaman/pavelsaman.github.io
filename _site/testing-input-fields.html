@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pavelsaman | Personal blog about technology, mostly Linux and testing.</title>
+<meta property="og:title" content="pavelsaman" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Personal blog about technology, mostly Linux and testing." />
+<meta property="og:description" content="Personal blog about technology, mostly Linux and testing." />
+<meta property="og:site_name" content="pavelsaman" />
+<link rel="next" href="/page/2/" />
+<script type="application/ld+json">
+{"description":"Personal blog about technology, mostly Linux and testing.","headline":"pavelsaman","@type":"WebSite","name":"pavelsaman","url":"http://pavelsaman.github.io/","@context":"https://schema.org"}</script>
+<link rel="stylesheet" href="/assets/main.css">
+<link rel="shortcut icon" type="image/png" href="/favicon.png">
+
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">pavelsaman</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/concepts/2019-09-21-setting-up-codeception.html">Setting Up Codeception</a><a class="page-link" href="/about/">About</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post">
+
+  <header class="post-header">
+    <h1 class="post-title">Testing Input Fields</h1>
+  </header>
+
+  <p class="post-meta">
+    <span class="date">28/09/2019</span>
+    <span class="delim">•</span>
+    <span class="author">Pavel Saman</span>
+  </p>
+
+  <div class="post-content">
+    <p>Like it or not, a lot of time as a tester will be spent checking inputs and whether the system fails or not. One way we can do this is basically using the final product, that is via a GUI interface as a user. We can call a user testing or differently, it’s not that important to remember the eve-growing list of names in software testing, it’s important to use your own brain and think about the testing you do.</p>
+
+<h3 id="input-field-under-test">Input Field Under Test</h3>
+
+<p>Not surprisingly, there are many different fields a web page or any other app (mobile, desktop) can have. There’re input fields for text, for numbers, checkboxs, radio buttons etc. For each of them, you need to consider a bit different set of checks/tests.</p>
+
+<p>For this article, I’ll choose as an example a simple search field as shown here:</p>
+
+<p><img src="/images/search_field.png" alt="image" /></p>
+
+<p>It’s a search field from a web application.</p>
+
+<h3 id="what-to-test-for">What to Test For?</h3>
+
+<p>Long time ago, I was asked this very question (a bit broader in fact, but this was part of it) during an interview. Well, as a newcomer to SW testing, I stuttered out 1 or 2 thinks in the list I utilize nowadays. I don’t feel particularly good about it now, but everyone has to start somehow.</p>
+
+<p>Below you can see my simple table I ca use as a checklist when testing input fields. There’re more than just 2 inputs now.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><strong>Test</strong></th>
+      <th style="text-align: center"><strong>Check if the result is expected/valid</strong></th>
+      <th style="text-align: center"><strong>Problem</strong></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">Allowed value</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Empty value</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Far below LB</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">LB-1</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">LB (low boundary)</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">LB+1</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">UB-1</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">UB (upper boundary)</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">UB+1</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Far above UB</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Different data type (e.g. float into int field, different datetime format)</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">String value</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">National characters (e.g. Czech, Russian, Chinese)</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">White character(s)</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Leading spaces + valid value</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Trailing spaces + valid value</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Leading zeros</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Special characters (e.g. &amp;, @, /)</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Type in a value</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Copy in a value (Ctrl + c and Ctrl + v)</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Copy in a value using a mouse</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">max value (e.g. max int, max # of chars in a string field)</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Negative value (for number fields)</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">0</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Null</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">NaN</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">nill</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Upper case</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Lower case</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Combination of upper and lower case</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">File name absolute path</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">File name relative path</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">File name forward slashes /</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">File name backward slashes \</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">File name combination of slashes / and \</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">File name more forward slashes //</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">File name more backward slashes \\</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">ASCII 255</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Escape characters (‘, “, \, \t, \n, \0, \)</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Is the value in the field remembered when going away from the page and back?</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Different browsers</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+  </tbody>
+</table>
+
+<p>As you’ve figured out, not all these tests are applicable for every input field. When testing a search field, I don’t need to check for different ways to enter a file path. Again, take this as a general guidance and use your own judgement.</p>
+
+<p>There might be more to it, no I might have missed something. One interesting input field is the one for telephone numbers… when you consider all these formats one might input their phone number (722222222, 722 222 222, 0042722222222, 0042 722 222 222, +420722222222, +420 722 222 222, foreign phone numbers, how about leading and trailing white characters (someone might press space by mistake) etc.), on the other hand, I consider all these nuances under the “different data type” row. That’s where your creativity and judgement come in.</p>
+
+<p>Hope it will make you consider more tests in the future. If you want to download a spreadsheet with the table, <a href="/files/input_fields_checkbox.ods">get it here</a>.</p>
+
+  </div>
+
+</article>
+      </div>
+    </main></footer>
+
+<footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">    
+
+    <h2 class="footer-heading"><a href="/">pavelsaman</a></h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Pavel Saman</li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://www.linkedin.com/in/pavelsaman"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#linkedin"></use></svg> <span class="username">LinkedIn</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Personal blog about technology, mostly Linux and testing.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer></body>
+
+</html>
