@@ -1,4 +1,234 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.0.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2019-09-28T14:38:12+02:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">pavelsaman</title><subtitle>Personal blog about technology, mostly Linux and testing.</subtitle><entry><title type="html">Testing Input Fields</title><link href="http://localhost:4000/testing-input-fields.html" rel="alternate" type="text/html" title="Testing Input Fields" /><published>2019-09-28T10:07:19+02:00</published><updated>2019-09-28T10:07:19+02:00</updated><id>http://localhost:4000/testing-input-fields</id><content type="html" xml:base="http://localhost:4000/testing-input-fields.html">&lt;p&gt;Like it or not, a lot of time as a tester will be spent checking inputs and whether the system fails or not. One way we can do this is basically using the final product, that is via a GUI interface as a user. We can call a user testing or differently, it’s not that important to remember the eve-growing list of names in software testing, it’s important to use your own brain and think about the testing you do.&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.0.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2019-09-28T18:38:30+02:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">pavelsaman</title><subtitle>Personal blog about technology, mostly Linux and testing.</subtitle><entry><title type="html">Cache HTTP Request Headers and Difference in Browsers</title><link href="http://localhost:4000/cache-http-request-headers-and-browser-differences.html" rel="alternate" type="text/html" title="Cache HTTP Request Headers and Difference in Browsers" /><published>2019-09-28T12:07:19+02:00</published><updated>2019-09-28T12:07:19+02:00</updated><id>http://localhost:4000/cache-http-request-headers-and-browser-differences</id><content type="html" xml:base="http://localhost:4000/cache-http-request-headers-and-browser-differences.html">&lt;p&gt;It’s not a big surpise that different browsers implement different things and behave differently. I’ve, however, focused on one particular area - HTTP cache request headers and how some of the main browsers of today respond to three different user actions..&lt;/p&gt;
+
+&lt;p&gt;There are a few HTTP headers that control caching. For a full description, see &lt;a href=&quot;https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers#Caching&quot;&gt;this documentation&lt;/a&gt; and &lt;a href=&quot;https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers#Conditionals&quot;&gt;this&lt;/a&gt; as well. Out of these headers that are related to caching, only the following list of headers fall into either general or request header category:&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;Cache-Control&lt;/li&gt;
+  &lt;li&gt;Pragma&lt;/li&gt;
+  &lt;li&gt;Warning&lt;/li&gt;
+  &lt;li&gt;If-Match&lt;/li&gt;
+  &lt;li&gt;If-None-Match&lt;/li&gt;
+  &lt;li&gt;If-Modified-Since&lt;/li&gt;
+  &lt;li&gt;If-Unmodified-Since&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;That’s still a lot of headers, leaving us with many options since they can be combined when a browser sends a request for a resource.&lt;/p&gt;
+
+&lt;p&gt;However, I’ve taken the following browsers and tried to observe what they do (what request headers they send) after they have already visited (loaded) a particular resource (a web page).&lt;/p&gt;
+
+&lt;p&gt;The browsers are:&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;Firefox 69.0.1&lt;/li&gt;
+  &lt;li&gt;Chromium 76.0.3809.132&lt;/li&gt;
+  &lt;li&gt;Opera 63.0.3368.66&lt;/li&gt;
+  &lt;li&gt;Brave 0.67.119 (Chromium: 76.0.3809.72)&lt;/li&gt;
+  &lt;li&gt;Pale Moon 28.7.0&lt;/li&gt;
+  &lt;li&gt;Otter Browser 1.0.01&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;As I said, I’ve first visited a site (main site of this blog actually) and all testing was done after this point. It included the following 3 actions:&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;Enter the same URL into address bar and press Enter&lt;/li&gt;
+  &lt;li&gt;Use &lt;code class=&quot;highlighter-rouge&quot;&gt;F5&lt;/code&gt; on the site&lt;/li&gt;
+  &lt;li&gt;Use reload button on the site&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Three simple action, yet the result surprised me.&lt;/p&gt;
+
+&lt;h3 id=&quot;entering-url-into-address-bar&quot;&gt;Entering URL into Address Bar&lt;/h3&gt;
+
+&lt;p&gt;Let’s start with the first action on the list and see what the browsers did:&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;&lt;strong&gt;Browser&lt;/strong&gt;&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;&lt;strong&gt;If-None-Match&lt;/strong&gt;&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;&lt;strong&gt;If-Modified-Since&lt;/strong&gt;&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;&lt;strong&gt;Cache-Control&lt;/strong&gt;&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;&lt;strong&gt;Status code&lt;/strong&gt;&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Mozilla&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;N&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;N&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;N&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;200 (cached)&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Chromium&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Y&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Y&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;max-age=0&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;304&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Opera&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Y&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Y&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;max-age=0&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;304&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Brave&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Y&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Y&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;max-age=0&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;304&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Pale Moon&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;N&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;N&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;N&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;200 (cached)&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Otter Browser&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;N&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;N&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;N&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;200 (data transferred)&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;Values &lt;code class=&quot;highlighter-rouge&quot;&gt;Y&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;N&lt;/code&gt; were actually concrete values, but I was more interested whether these headers got sent or not, so I don’t show these concrete values here, only &lt;code class=&quot;highlighter-rouge&quot;&gt;Y&lt;/code&gt; if such a header was sent or &lt;code class=&quot;highlighter-rouge&quot;&gt;N&lt;/code&gt; if it wasn’t.&lt;/p&gt;
+
+&lt;p&gt;As it’s obvious even here, there are differences among these browsers. Those that sent headers &lt;code class=&quot;highlighter-rouge&quot;&gt;If-None-Match&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;If-Modified-Since&lt;/code&gt; ended up with code &lt;code class=&quot;highlighter-rouge&quot;&gt;304&lt;/code&gt;, so the final page was retrieved from local cache after the resource version had been validated with the server. In these cases, no actual resource data were sent over the network. Firefox returned status code 200 but didn’t actually ask the server, the answer was retrieved from local cache. This is the fastest way to get a resource as there’s no traffic over the network.&lt;/p&gt;
+
+&lt;h3 id=&quot;f5&quot;&gt;F5&lt;/h3&gt;
+
+&lt;p&gt;How about when pressing &lt;code class=&quot;highlighter-rouge&quot;&gt;F5&lt;/code&gt; on the site?&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;&lt;strong&gt;Browser&lt;/strong&gt;&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;&lt;strong&gt;If-None-Match&lt;/strong&gt;&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;&lt;strong&gt;If-Modified-Since&lt;/strong&gt;&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;&lt;strong&gt;Cache-Control&lt;/strong&gt;&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;&lt;strong&gt;Status code&lt;/strong&gt;&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Mozilla&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Y&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Y&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;max-age=0&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;304&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Chromium&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Y&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Y&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;max-age=0&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;304&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Opera&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Y&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Y&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;max-age=0&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;304&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Brave&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Y&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Y&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;max-age=0&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;304&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Pale Moon&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Y&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Y&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;max-age=0&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;304&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Otter Browser&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;N&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;N&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;max-age=0&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;200 (data transferred)&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;The browsers tend to behave in the same way, except Otter Browser.&lt;/p&gt;
+
+&lt;h3 id=&quot;reload-button&quot;&gt;Reload Button&lt;/h3&gt;
+
+&lt;p&gt;Finally, the last action I took in all these browsers was pressing a reload button in menu.&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;&lt;strong&gt;Browser&lt;/strong&gt;&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;&lt;strong&gt;If-None-Match&lt;/strong&gt;&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;&lt;strong&gt;If-Modified-Since&lt;/strong&gt;&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;&lt;strong&gt;Cache-Control&lt;/strong&gt;&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;&lt;strong&gt;Status code&lt;/strong&gt;&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Mozilla&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Y&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Y&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;max-age=0&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;304&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Chromium&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Y&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Y&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;max-age=0&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;304&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Opera&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Y&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Y&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;max-age=0&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;304&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Brave&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Y&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Y&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;max-age=0&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;304&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Pale Moon&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Y&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Y&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;max-age=0&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;304&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Otter Browser&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;N&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;N&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;max-age=0&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;200 (data transferred)&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;These results are actually the same as in the previous situation.&lt;/p&gt;
+
+&lt;h3 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h3&gt;
+
+&lt;p&gt;Different browsers behave differently in terms of caching and sent cache HTTP headers. It needs to be taken into account when e.g. testing since it matters a lot where I get a resource from.&lt;/p&gt;
+
+&lt;p&gt;Chromium, Opera, and Brave browsers seem to behave the same when it comes down to caching and cache HTTP request headers. Otter Browser doesn’t seem to use resource version at all and seem to use less caching than the other browsers. Firefox and Pale Moon seem to utilize 200 cache response in one particular situation, so the display a resource with no network traffic at all.&lt;/p&gt;
+
+&lt;p&gt;It’d be interesting to see other browsers as well, namely IE and Edge, but my current OS platform doesn’t allow me to do so. I might go into this topic later as well, so come and see if I have an update.&lt;/p&gt;</content><author><name>Pavel Saman</name></author><summary type="html">It’s not a big surpise that different browsers implement different things and behave differently. I’ve, however, focused on one particular area - HTTP cache request headers and how some of the main browsers of today respond to three different user actions..</summary></entry><entry><title type="html">Testing Input Fields</title><link href="http://localhost:4000/testing-input-fields.html" rel="alternate" type="text/html" title="Testing Input Fields" /><published>2019-09-28T10:07:19+02:00</published><updated>2019-09-28T10:07:19+02:00</updated><id>http://localhost:4000/testing-input-fields</id><content type="html" xml:base="http://localhost:4000/testing-input-fields.html">&lt;p&gt;Like it or not, a lot of time as a tester will be spent checking inputs and whether the system fails or not. One way we can do this is basically using the final product, that is via a GUI interface as a user. We can call a user testing or differently, it’s not that important to remember the eve-growing list of names in software testing, it’s important to use your own brain and think about the testing you do.&lt;/p&gt;
 
 &lt;h3 id=&quot;input-field-under-test&quot;&gt;Input Field Under Test&lt;/h3&gt;
 
@@ -1234,28 +1464,4 @@ Sep 18 15:47:31 pavel-pc systemd[1]: fstrim.service: Succeeded.
 
 &lt;p&gt;That wraps up this article. It’s not really anything difficult, but it requires a little bit of reading and digging around in some files on the system. Once set up, it can run with no manual input whatsoever.&lt;/p&gt;
 
-&lt;p&gt;If you need more info, you can always check man pages or Google. I hope I’ve covered the most important parts of this topic and that my article could be used as a good reference when facing the same need to set this up. When reading about this topic, I particularly liked Arch wiki pages where this is also described. The rest was just looking into a few forum threads and piecing the bits together.&lt;/p&gt;</content><author><name>Pavel Saman</name></author><summary type="html">I’ve recently stumbled upon the following topic that seems interesting enough, so after some playing around with it, I’ve decided to summarize my own thoughts and write this article.</summary></entry><entry><title type="html">Turn Off Annoying Speaker</title><link href="http://localhost:4000/turn-off-annoying-speaker.html" rel="alternate" type="text/html" title="Turn Off Annoying Speaker" /><published>2019-09-18T20:07:19+02:00</published><updated>2019-09-18T20:07:19+02:00</updated><id>http://localhost:4000/turn-off-annoying-speaker</id><content type="html" xml:base="http://localhost:4000/turn-off-annoying-speaker.html">&lt;p&gt;Have you ever experienced this annoying beep sound your PC speaker makes on error, in console and possibly on other places? This is the single most annoying thing I wanted to get rid off system-wide and for good. If you want to do the same, this short blog post might come in handy.&lt;/p&gt;
-
-&lt;p&gt;There are a few different places where this could be disabled, but I wanted to do it system-wide, so I don’t need to worry about all the places where to turn it off.&lt;/p&gt;
-
-&lt;p&gt;It turns out that the speaker functions because of &lt;code class=&quot;highlighter-rouge&quot;&gt;pcspkr&lt;/code&gt; kernel module. Knowing this, I only created a new file in &lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/modprobe.d/&lt;/code&gt; with the following content:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cat &lt;/span&gt;blacklist-mine.conf 
-blacklist pcspkr
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;This will not load the kernel module on next boot, thus silencing the PC speaker :)&lt;/p&gt;
-
-&lt;p&gt;Of course, the same method could be used if you don’t want to load some other kernel modules. One way to find out what piece of hardware uses what kernel module is command &lt;code class=&quot;highlighter-rouge&quot;&gt;lspci -v&lt;/code&gt;, the output looks like this:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;lspci &lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt;
-00:00.0 Host bridge: Intel Corporation Broadwell-U Host Bridge &lt;span class=&quot;nt&quot;&gt;-OPI&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;rev 09&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-	Subsystem: Dell Broadwell-U Host Bridge &lt;span class=&quot;nt&quot;&gt;-OPI&lt;/span&gt;
-	Flags: bus master, fast devsel, latency 0
-	Capabilities: &amp;lt;access denied&amp;gt;
-	Kernel driver &lt;span class=&quot;k&quot;&gt;in &lt;/span&gt;use: bdw_uncore
-......
-......
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;The last line with no dots shows what kernel module is used.&lt;/p&gt;</content><author><name>Pavel Saman</name></author><summary type="html">Have you ever experienced this annoying beep sound your PC speaker makes on error, in console and possibly on other places? This is the single most annoying thing I wanted to get rid off system-wide and for good. If you want to do the same, this short blog post might come in handy.</summary></entry></feed>
+&lt;p&gt;If you need more info, you can always check man pages or Google. I hope I’ve covered the most important parts of this topic and that my article could be used as a good reference when facing the same need to set this up. When reading about this topic, I particularly liked Arch wiki pages where this is also described. The rest was just looking into a few forum threads and piecing the bits together.&lt;/p&gt;</content><author><name>Pavel Saman</name></author><summary type="html">I’ve recently stumbled upon the following topic that seems interesting enough, so after some playing around with it, I’ve decided to summarize my own thoughts and write this article.</summary></entry></feed>

@@ -1,0 +1,225 @@
+I"�#<p>It’s not a big surpise that different browsers implement different things and behave differently. I’ve, however, tried to play around with HTTP cache request headers in a few browsers.</p>
+
+<p>There are a few HTTP headers that control caching. For a full description, see <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers#Caching">this documentation</a> and <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers#Conditionals">this</a> as well. Another option to control caching is by using conditional HTTP headers (like <code class="highlighter-rouge">ETag</code>, <code class="highlighter-rouge">If-None-Match</code> etc.). Out of these, only the following list of headers fall into either general or request header category:</p>
+<ol>
+  <li>Cache-Control</li>
+  <li>Pragma</li>
+  <li>Warning</li>
+  <li>If-Match</li>
+  <li>If-None-Match</li>
+  <li>If-Modified-Since</li>
+  <li>If-Unmodified-Since</li>
+</ol>
+
+<p>That’s still a lot of headers, leaving us with many options since they can be combined when a browser sends a request for a resource.</p>
+
+<p>However, I’ve taken the following browsers and tried to observe what they do (what request headers they send) after they have already visited (loaded) a particular resource (a web page).</p>
+
+<p>The browsers are:</p>
+<ol>
+  <li>Firefox 69.0.1</li>
+  <li>Chromium 76.0.3809.132</li>
+  <li>Opera 63.0.3368.66</li>
+  <li>Brave 0.67.119 (Chromium: 76.0.3809.72)</li>
+  <li>Pale Moon 28.7.0</li>
+  <li>Otter Browser 1.0.01</li>
+</ol>
+
+<p>As I said, I’ve first visited a site (main site of this blog actually) and all testing was done after this point. It included the following 3 actions:</p>
+<ol>
+  <li>Enter the same URL into address bar and press Enter</li>
+  <li>Use <code class="highlighter-rouge">F5</code> on the site</li>
+  <li>Use reload button on the site</li>
+</ol>
+
+<p>Three simple action, yet the result surprised me.</p>
+
+<h3 id="enter-url-into-address-bar">Enter URL into Address Bar</h3>
+
+<p>Let’s start with the first action on the list and see what the browsers did:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><strong>Browser</strong></th>
+      <th style="text-align: center"><strong>If-None-Match</strong></th>
+      <th style="text-align: center"><strong>If-Modified-Since</strong></th>
+      <th style="text-align: center"><strong>Cache-Control</strong></th>
+      <th style="text-align: center"><strong>Status code</strong></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">Mozilla</td>
+      <td style="text-align: center">N</td>
+      <td style="text-align: center">N</td>
+      <td style="text-align: center">N</td>
+      <td style="text-align: center">200</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Chromium</td>
+      <td style="text-align: center">Y</td>
+      <td style="text-align: center">Y</td>
+      <td style="text-align: center">max-age=0</td>
+      <td style="text-align: center">304</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Opera</td>
+      <td style="text-align: center">Y</td>
+      <td style="text-align: center">Y</td>
+      <td style="text-align: center">max-age=0</td>
+      <td style="text-align: center">304</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Brave</td>
+      <td style="text-align: center">Y</td>
+      <td style="text-align: center">Y</td>
+      <td style="text-align: center">max-age=0</td>
+      <td style="text-align: center">304</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Pale Moon</td>
+      <td style="text-align: center">N</td>
+      <td style="text-align: center">N</td>
+      <td style="text-align: center">N</td>
+      <td style="text-align: center">200</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Otter Browser</td>
+      <td style="text-align: center">N</td>
+      <td style="text-align: center">N</td>
+      <td style="text-align: center">N</td>
+      <td style="text-align: center">200</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Values <code class="highlighter-rouge">Y</code> and <code class="highlighter-rouge">N</code> were actually concrete values, but I was more interested if these headers got sent or not, so I don’t show these concrete values, only <code class="highlighter-rouge">Y</code> if such a header was sent or <code class="highlighter-rouge">N</code> if it wasn’t.</p>
+
+<p>As it’s obvious even here, there are differences among these browsers. Those that send headers <code class="highlighter-rouge">If-None-Match</code> and <code class="highlighter-rouge">If-Modified-Since</code> returned <code class="highlighter-rouge">304</code>, so the final page was retrieved from local cache. The rest of the browsers got a standard response including the resource.</p>
+
+<h3 id="f5">F5</h3>
+
+<p>How about when pressing <code class="highlighter-rouge">F5</code> on the site?</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><strong>Browser</strong></th>
+      <th style="text-align: center"><strong>If-None-Match</strong></th>
+      <th style="text-align: center"><strong>If-Modified-Since</strong></th>
+      <th style="text-align: center"><strong>Cache-Control</strong></th>
+      <th style="text-align: center"><strong>Status code</strong></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">Mozilla</td>
+      <td style="text-align: center">Y</td>
+      <td style="text-align: center">Y</td>
+      <td style="text-align: center">Y</td>
+      <td style="text-align: center">304</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Chromium</td>
+      <td style="text-align: center">Y</td>
+      <td style="text-align: center">Y</td>
+      <td style="text-align: center">Y</td>
+      <td style="text-align: center">304</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Opera</td>
+      <td style="text-align: center">Y</td>
+      <td style="text-align: center">Y</td>
+      <td style="text-align: center">Y</td>
+      <td style="text-align: center">304</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Brave</td>
+      <td style="text-align: center">Y</td>
+      <td style="text-align: center">Y</td>
+      <td style="text-align: center">Y</td>
+      <td style="text-align: center">304</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Pale Moon</td>
+      <td style="text-align: center">Y</td>
+      <td style="text-align: center">Y</td>
+      <td style="text-align: center">Y</td>
+      <td style="text-align: center">304</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Otter Browser</td>
+      <td style="text-align: center">N</td>
+      <td style="text-align: center">N</td>
+      <td style="text-align: center">max-age=0</td>
+      <td style="text-align: center">200</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The browsers tend to behave in the same way, except Otter Browser that didn’t use local cache.</p>
+
+<h3 id="reload-button">Reload Button</h3>
+
+<p>Finally, the last action I took in all these browsers was pressing a reload button in menu.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><strong>Browser</strong></th>
+      <th style="text-align: center"><strong>If-None-Match</strong></th>
+      <th style="text-align: center"><strong>If-Modified-Since</strong></th>
+      <th style="text-align: center"><strong>Cache-Control</strong></th>
+      <th style="text-align: center"><strong>Status code</strong></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">Mozilla</td>
+      <td style="text-align: center">Y</td>
+      <td style="text-align: center">Y</td>
+      <td style="text-align: center">Y</td>
+      <td style="text-align: center">304</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Chromium</td>
+      <td style="text-align: center">Y</td>
+      <td style="text-align: center">Y</td>
+      <td style="text-align: center">Y</td>
+      <td style="text-align: center">304</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Opera</td>
+      <td style="text-align: center">Y</td>
+      <td style="text-align: center">Y</td>
+      <td style="text-align: center">Y</td>
+      <td style="text-align: center">304</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Brave</td>
+      <td style="text-align: center">Y</td>
+      <td style="text-align: center">Y</td>
+      <td style="text-align: center">Y</td>
+      <td style="text-align: center">304</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Pale Moon</td>
+      <td style="text-align: center">Y</td>
+      <td style="text-align: center">Y</td>
+      <td style="text-align: center">Y</td>
+      <td style="text-align: center">304</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Otter Browser</td>
+      <td style="text-align: center">N</td>
+      <td style="text-align: center">N</td>
+      <td style="text-align: center">max-age=0</td>
+      <td style="text-align: center">200</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>These results are actually the same as in the previous situation.</p>
+
+:ET
