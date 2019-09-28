@@ -42,6 +42,8 @@ White character(s)| |
 Leading spaces + valid value| | 
 Trailing spaces + valid value| | 
 Leading zeros| | 
+Leading zeros + positive sign (+)| | 
+Leading zeros + negative sign (-)| | 
 Special characters (e.g. &, @, /)| | 
 Type in a value| | 
 Copy in a value (Ctrl + c and Ctrl + v)| | 
@@ -58,14 +60,18 @@ Combination of upper and lower case| |
 File name absolute path| | 
 File name relative path| | 
 File name forward slashes /| | 
-File name backward slashes \\ | | 
-File name combination of slashes / and \\ | | 
+File name backward slashes \| | 
+File name combination of slashes / and \| | 
 File name more forward slashes //| | 
-File name more backward slashes \\\\ | | 
+File name more backward slashes \\| | 
 ASCII 255| | 
 Escape characters (‘, “, \, \t, \n, \0, \\)| | 
 Is the value in the field remembered when going away from the page and back?| | 
 Different browsers| | 
+Arrows – do they work? Can I use them to find a char?| | 
+Del – can I delete characters?| | 
+Backspace – can I delete characters?| | 
+Focus – go to a different window and back, where is the focus? Have the field lost it?| | 
 
 As you've figured out, not all these tests are applicable for every input field. When testing a search field, I don't need to check for different ways to enter a file path. Again, take this as a general guidance and use your own judgement.
 

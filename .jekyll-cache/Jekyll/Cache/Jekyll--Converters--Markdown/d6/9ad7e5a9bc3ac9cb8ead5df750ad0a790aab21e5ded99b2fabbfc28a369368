@@ -1,4 +1,4 @@
-I"�&<p>Like it or not, a lot of time as a tester will be spent checking inputs and whether the system fails or not. One way we can do this is basically using the final product, that is via a GUI interface as a user. We can call a user testing or differently, it’s not that important to remember the eve-growing list of names in software testing, it’s important to use your own brain and think about the testing you do.</p>
+I"l+<p>Like it or not, a lot of time as a tester will be spent checking inputs and whether the system fails or not. One way we can do this is basically using the final product, that is via a GUI interface as a user. We can call a user testing or differently, it’s not that important to remember the eve-growing list of names in software testing, it’s important to use your own brain and think about the testing you do.</p>
 
 <h3 id="input-field-under-test">Input Field Under Test</h3>
 
@@ -111,6 +111,16 @@
       <td style="text-align: center"> </td>
     </tr>
     <tr>
+      <td style="text-align: center">Leading zeros + positive sign (+)</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Leading zeros + negative sign (-)</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
       <td style="text-align: center">Special characters (e.g. &amp;, @, /)</td>
       <td style="text-align: center"> </td>
       <td style="text-align: center"> </td>
@@ -191,12 +201,12 @@
       <td style="text-align: center"> </td>
     </tr>
     <tr>
-      <td style="text-align: center">File name backward slashes \</td>
+      <td style="text-align: center">File name backward slashes |</td>
       <td style="text-align: center"> </td>
       <td style="text-align: center"> </td>
     </tr>
     <tr>
-      <td style="text-align: center">File name combination of slashes / and \</td>
+      <td style="text-align: center">File name combination of slashes / and |</td>
       <td style="text-align: center"> </td>
       <td style="text-align: center"> </td>
     </tr>
@@ -206,7 +216,7 @@
       <td style="text-align: center"> </td>
     </tr>
     <tr>
-      <td style="text-align: center">File name more backward slashes \\</td>
+      <td style="text-align: center">File name more backward slashes |</td>
       <td style="text-align: center"> </td>
       <td style="text-align: center"> </td>
     </tr>
@@ -227,6 +237,26 @@
     </tr>
     <tr>
       <td style="text-align: center">Different browsers</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Arrows – do they work? Can I use them to find a char?</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Del – can I delete characters?</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Backspace – can I delete characters?</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Focus – go to a different window and back, where is the focus? Have the field lost it?</td>
       <td style="text-align: center"> </td>
       <td style="text-align: center"> </td>
     </tr>
