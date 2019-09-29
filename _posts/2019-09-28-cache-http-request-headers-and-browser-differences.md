@@ -46,11 +46,11 @@ Chromium|Y|Y|max-age=0|304
 Opera|Y|Y|max-age=0|304
 Brave|Y|Y|max-age=0|304
 Pale Moon|N|N|N|200 (cached)
-Otter Browser|N|N|N|200 (data transferred)
+Otter Browser|N|N|N|200 (cached)
 
 Values `Y` and `N` were actually concrete values, but I was more interested whether these headers got sent or not, so I don't show these concrete values here, only `Y` if such a header was sent or `N` if it wasn't.
 
-As it's obvious even here, there are differences among these browsers. Those that sent headers `If-None-Match` and `If-Modified-Since` ended up with code `304`, so the final page was retrieved from local cache after the resource version had been validated with the server. In these cases, no actual resource data were sent over the network. Firefox returned status code 200 but didn't actually ask the server, the answer was retrieved from local cache. This is the fastest way to get a resource as there's no traffic over the network.
+As it's obvious even here, there are differences among these browsers. Those that sent headers `If-None-Match` and `If-Modified-Since` ended up with code `304`, so the final page was retrieved from local cache after the resource version had been validated with the server. In these cases, no actual resource data were sent over the network. Firefox, pale Moon and Otter Browser returned status code 200 but didn't actually ask the server, the answer was retrieved from local cache. This is the fastest way to get a resource as there's no traffic over the network.
 
 ### F5
 
@@ -86,6 +86,6 @@ These results are actually the same as in the previous situation.
 
 Different browsers behave differently in terms of caching and sent cache HTTP headers. It needs to be taken into account when e.g. testing since it matters a lot where I get a resource from.
 
-Chromium, Opera, and Brave browsers seem to behave the same when it comes down to caching and cache HTTP request headers. Otter Browser doesn't seem to use resource version at all and seem to use less caching than the other browsers. Firefox and Pale Moon seem to utilize 200 cache response in one particular situation, so the display a resource with no network traffic at all.
+Chromium, Opera, and Brave browsers seem to behave the same when it comes down to caching and cache HTTP request headers. Otter Browser doesn't seem to use resource version at all and seem to use less caching than the other browsers. Firefox, Pale Moon and Otter Browser seem to utilize 200 cache response in one particular situation, so they display a resource with no network traffic at all.
 
 It'd be interesting to see other browsers as well, namely IE and Edge, but my current OS platform doesn't allow me to do so. I might go into this topic later as well, so come and see if I have an update.
