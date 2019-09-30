@@ -1,0 +1,43 @@
+I"�<p>I feel this topic is really important for many reasons. I also have recent experience that proves people are not that good at this, or they don’t try hard enough. I’ll try to write a bit about this and hopefully convince a few about the importance of good questions.</p>
+
+<h3 id="why-to-ask-good-questions">Why To Ask Good Questions?</h3>
+
+<p>I’ll dive right in and say a few words about why I think this is absolutely crucial to ask good questions. It turns out that people ask questions when they need something. So a useful answer is usually what they hope for. However, does really anybody feel like helping other people when they pose a stupid, broad, vague etc. question? I don’t think so! Such questions tend to be avoided, answered in a similar manner, handed to somebody else or, at best, people who ask such dumb questions get, instead of an answer, a question in return. Any of these waste time and nothing gets solved.</p>
+
+<h3 id="attributes-of-good-question">Attributes of Good Question</h3>
+
+<p>When we know why to ask good questions, let’s have a look at what you should do in order to ask good questions.</p>
+
+<ol>
+  <li>Be concrete</li>
+  <li>Present details</li>
+  <li>Say what’s your objective - why are you asking in the first place? what do you want to achive? there might be a better/easier solution</li>
+  <li>Present what you have already tried and why it didn’t work or what results you got - it shows you’re not lazy and that you actually try to solve your problems first, that’s always a good strategy</li>
+  <li>Say where you have tried to look for an answer - people won’t point you towards the same resource, so you’re not wasting anybody’s time</li>
+  <li>Suggest what direction you’d take next and even ask if one of them might be the right one - it shows you’re thinking about the problem and that you try to be an active participant in finding the solution</li>
+  <li>If your question is written, read it after yourself, correct typos, grammatical errors etc. - you show you’re not illiterate :)</li>
+  <li>Don’t put the blame on anybody, rather assume you’ve missed something - it’s easy to point a finger on other people, but the odds are that you’re likely to be wrong and that you’ve missed something important</li>
+</ol>
+
+<p>There might be more points, but I’m sure that following just these will dramatically improve your questions, and in turn the way people respond to them. You will simply get relevant answers faster!</p>
+
+<h3 id="examples-of-bad-questions">Examples of Bad Questions</h3>
+
+<p>It’s time to show you a few beauties what should never be asked.</p>
+
+<ol>
+  <li><code class="highlighter-rouge">This doesn't work, how can I fix it?</code> Ok… what doesn’t work? Why do you want to fix it? What do you want to achive? Why should I do some thinking instead of you? What have you tried? … I can go on and on. And I’m not very willing to help you.</li>
+  <li><code class="highlighter-rouge">Im using robot framework. Both the if part and else part is executing. Can anybody help me with this? Thank you</code> Where is the code? Do you really expect anybody to help you out when you can’t even provide the faulty code? What have you tried? Why should I solve your problems? Even if I’m super nice, my only answer could be just <code class="highlighter-rouge">yes</code>, because you’re not asking how to solve the problem, you’re asking if somebody can help you…</li>
+  <li><code class="highlighter-rouge">Why this doesn't work?</code> Why do you assume it doesn’t? What do you expect to see? How did you end up in this situation?</li>
+</ol>
+
+<p>I think I’ll stop here :)</p>
+
+<h3 id="example-of-good-questions">Example of Good Questions</h3>
+
+<p>Good questions tends to be longer, so I’ll link <a href="https://sqa.stackexchange.com/questions/40564/codeception-test-data-in-annotation-codeception-reports-undefined-variable">this one question I posted in sqa.stackexchange.com</a>. I’m brave enought to say I asked a good question. It was concrete, I showed what steps I took, and I didn’t assume there was something wrong with Codeception, but rather assumed I missed something. And of course I missed a fairly stupid thing. I just didn’t see that. The important think is I got a solution in 12 minutes. How long would it have taken had I asked in some broad, impolite way?</p>
+
+<p><a href="https://superuser.com/questions/1480011/flask-app-inside-a-docker-container-is-not-served-to-localhost-when-using-docker/1480056#1480056">Another question</a> I asked. It starts with a fairly concrete title, then I presented detail steps I took and results of each one of them. I show I checked that the container is running. I described what I didn’t see and what I expected to see. I also included versions of the products I used. All this trouble of defining my question precisely eventually led me to investigate further and I found a solution myself (which I posted there as well). Asking good questions has a strong potential to lead you to the right answer with no help at all. Sometimes you just need to summarize it and go over it once again.</p>
+
+<p>I hope I’ve presented enough examples on either side, so I’ll leave it here. Feel free to let me know if I missed something important.</p>
+:ET

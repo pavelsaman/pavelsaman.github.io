@@ -136,14 +136,14 @@
       <td style="text-align: center">N</td>
       <td style="text-align: center">N</td>
       <td style="text-align: center">N</td>
-      <td style="text-align: center">200 (data transferred)</td>
+      <td style="text-align: center">200 (cached)</td>
     </tr>
   </tbody>
 </table>
 
 <p>Values <code class="highlighter-rouge">Y</code> and <code class="highlighter-rouge">N</code> were actually concrete values, but I was more interested whether these headers got sent or not, so I don’t show these concrete values here, only <code class="highlighter-rouge">Y</code> if such a header was sent or <code class="highlighter-rouge">N</code> if it wasn’t.</p>
 
-<p>As it’s obvious even here, there are differences among these browsers. Those that sent headers <code class="highlighter-rouge">If-None-Match</code> and <code class="highlighter-rouge">If-Modified-Since</code> ended up with code <code class="highlighter-rouge">304</code>, so the final page was retrieved from local cache after the resource version had been validated with the server. In these cases, no actual resource data were sent over the network. Firefox returned status code 200 but didn’t actually ask the server, the answer was retrieved from local cache. This is the fastest way to get a resource as there’s no traffic over the network.</p>
+<p>As it’s obvious even here, there are differences among these browsers. Those that sent headers <code class="highlighter-rouge">If-None-Match</code> and <code class="highlighter-rouge">If-Modified-Since</code> ended up with code <code class="highlighter-rouge">304</code>, so the final page was retrieved from local cache after the resource version had been validated with the server. In these cases, no actual resource data were sent over the network. Firefox, Pale Moon and Otter Browser returned status code 200 but didn’t actually ask the server, the answer was retrieved from local cache. This is the fastest way to get a resource as there’s no traffic over the network.</p>
 
 <h3 id="f5">F5</h3>
 
@@ -273,7 +273,7 @@
 
 <p>Different browsers behave differently in terms of caching and sent cache HTTP headers. It needs to be taken into account when e.g. testing since it matters a lot where I get a resource from.</p>
 
-<p>Chromium, Opera, and Brave browsers seem to behave the same when it comes down to caching and cache HTTP request headers. Otter Browser doesn’t seem to use resource version at all and seem to use less caching than the other browsers. Firefox and Pale Moon seem to utilize 200 cache response in one particular situation, so the display a resource with no network traffic at all.</p>
+<p>Chromium, Opera, and Brave browsers seem to behave the same when it comes down to caching and cache HTTP request headers. Otter Browser doesn’t seem to use resource version at all and seem to use less caching than the other browsers. Firefox, Pale Moon and Otter Browser seem to utilize 200 cache response in one particular situation, so they display a resource with no network traffic at all.</p>
 
 <p>It’d be interesting to see other browsers as well, namely IE and Edge, but my current OS platform doesn’t allow me to do so. I might go into this topic later as well, so come and see if I have an update.</p>
 
