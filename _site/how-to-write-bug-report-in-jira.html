@@ -32,64 +32,52 @@
 </header>
 <main class="page-content" aria-label="Content">
       <div class="wrapper">
-        <!-- This loops through the paginated posts -->
+        <article class="post">
 
-  <h1><a href="/turn-off-annoying-speaker.html">Turn Off Annoying Speaker</a></h1>
+  <header class="post-header">
+    <h1 class="post-title">How to Write Bug Report in Jira</h1>
+  </header>
+
   <p class="post-meta">
-    <span class="date">18/09/2019</span>
-    <!--<span class="delim">•</span>
-    <span class="author">Pavel Saman</span>-->
+    <span class="date">03/10/2019</span>
+    <span class="delim">•</span>
+    <span class="author">Pavel Saman</span>
   </p>
-  <div class="content">
-    <p>Have you ever experienced this annoying beep sound your PC speaker makes on error, in console and possibly on other places? This is the single most annoying thing I wanted to get rid off system-wide and for good. If you want to do the same, this short blog post might come in handy.</p>
+
+  <div class="post-content">
+    <p>Jira is a popular tool for software development. One of the ways in which Jira is used for is bug reporting. I’ve recently faced a situation where there was no structure to bug reports in Jira, leaving it completely up to a Tester. I’ll try to argue for why this is not the best practice and how it could be improved.</p>
+
+<p>The following printscreen is how bugs are added into Jira.</p>
+
+<p><img src="/images/jira_empty.png" alt="image" /></p>
+
+<p>A new bug is simply described in field: That’t exactly what I want to write about on the following lines.</p>
+
+<h3 id="how-to-describe-bug">How to Describe Bug</h3>
+
+<p>A bug needs to be described somehow. Depending on a context, it could be a long report or one sentence. However, in any situation, what needs to be described is at least:</p>
+
+<ol>
+  <li>environment, app version</li>
+  <li>what data was used - like testing users, values in input fields etc.</li>
+  <li>how to reproduce the bug, so some steps</li>
+  <li>what the current state is</li>
+  <li>what the desired state is</li>
+</ol>
+
+<p>Again, each of these steps could be more or less formal, depending on a context! But a Tester always needs to think along these lines, and only then decide what format (formal, informal) to choose.</p>
+
+<h3 id="how-to-improve-jira">How to Improve Jira</h3>
+
+<p>Fairly easy, what I have a good experience with is adding a simple teplate that would automatically add these 4 guidlines. A Tester doesn’t need to keep everything in their head and if there’re some less experienced testers on the team, they might even use this as a reminder what not to forget when filling in new bug reports.</p>
+
+<p>The final Jira could look like this:</p>
+
+<p><img src="/images/jira_full.png" alt="image" /></p>
 
   </div>
 
-  <h1><a href="/log-out-from-console-after-certain-time.html">Log Out From Console after Certain Time</a></h1>
-  <p class="post-meta">
-    <span class="date">18/09/2019</span>
-    <!--<span class="delim">•</span>
-    <span class="author">Pavel Saman</span>-->
-  </p>
-  <div class="content">
-    <p>It is possible to forget to log out from a console, which might be a security risk. It would be nice to have a way to log out automatically if this happens.</p>
-
-  </div>
-
-  <h1><a href="/find-out-cookies-for-current-session.html">Find Out Cookies For Current Session</a></h1>
-  <p class="post-meta">
-    <span class="date">17/09/2019</span>
-    <!--<span class="delim">•</span>
-    <span class="author">Pavel Saman</span>-->
-  </p>
-  <div class="content">
-    <p>When working with web applications, I sometimes need, or I’m just curious, to find what cookies the app is using. There are a few ways how to get hold of them. Let’s have a look at how to use dev tools in a browser.</p>
-
-  </div>
-
-  <h1><a href="/bash-files-for-interactive-non-login-shells.html">Bash Files for Interactive Non Login Shells</a></h1>
-  <p class="post-meta">
-    <span class="date">16/09/2019</span>
-    <!--<span class="delim">•</span>
-    <span class="author">Pavel Saman</span>-->
-  </p>
-  <div class="content">
-    <p>Bash allows for various files that are read and executed upon bash invocation. It could be a bit tricky to navigate these files, especially when edited to personal needs. I’ll share a quick post about my setup, I think it helps keep things neat and tidy.</p>
-
-  </div>
-
-
-<!-- Pagination links -->
-<div class="pagination">
-  
-    <a href="/page/3/" class="previous">Previous</a>
-  
-  <span class="page_number ">Page: 4 of 5</span>
-  
-    <a href="/page/5/" class="next">Next</a>
-  
-</div>
-
+</article>
       </div>
     </main></footer>
 
