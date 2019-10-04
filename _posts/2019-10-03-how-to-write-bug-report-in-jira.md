@@ -27,7 +27,7 @@ Again, each of these steps could be more or less formal, depending on a context!
 
 ### How to Improve Jira
 
-Fairly easy, what I have a good experience with is adding a simple teplate that would automatically add these 4 guidlines. A Tester doesn't need to keep everything in their head and if there're some less experienced testers on the team, they might even use this as a reminder what not to forget when filling in new bug reports.
+Fairly easy, what I have a good experience with is adding a simple template that would automatically add these 4 guidelines. A Tester doesn't need to keep everything in their head and if there're some less experienced testers on the team, they might even use this as a reminder what not to forget when filling in new bug reports.
 
 The final Jira could look like this:
 
