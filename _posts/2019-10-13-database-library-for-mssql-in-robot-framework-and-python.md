@@ -188,7 +188,7 @@ class AlpineDB(object):
     """
 
     ROBOT_LIBRARY_VERSION = 1.0
-    ROBOT_LIBRARY_SCOPE = 'TEST SUITE'
+    ROBOT_LIBRARY_SCOPE = 'GLOBAL'
 
     PARAM_SUBSTITUTE = '{}'
     AP_SHOP_ID_CZ = 121
