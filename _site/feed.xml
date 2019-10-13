@@ -1,4 +1,318 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.0.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2019-10-04T21:22:22+02:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">pavelsaman</title><subtitle>Personal blog about technology, mostly Linux and testing.</subtitle><entry><title type="html">How to Write Bug Report in Jira</title><link href="http://localhost:4000/how-to-write-bug-report-in-jira.html" rel="alternate" type="text/html" title="How to Write Bug Report in Jira" /><published>2019-10-03T15:07:19+02:00</published><updated>2019-10-03T15:07:19+02:00</updated><id>http://localhost:4000/how-to-write-bug-report-in-jira</id><content type="html" xml:base="http://localhost:4000/how-to-write-bug-report-in-jira.html">&lt;p&gt;Jira is a popular tool for software development. One of the ways in which Jira is used for is bug reporting. I’ve recently faced a situation where there was no structure to bug reports in Jira, leaving it completely up to a Tester. I’ll try to argue for why this is not the best practice and how it could be improved.&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.0.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2019-10-13T13:23:16+02:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">pavelsaman</title><subtitle>Personal blog about technology, mostly Linux and testing.</subtitle><entry><title type="html">Database Library for MS SQL in Robot Framework and Python</title><link href="http://localhost:4000/database-library-for-mssql-in-robot-framework-and-python.html" rel="alternate" type="text/html" title="Database Library for MS SQL in Robot Framework and Python" /><published>2019-10-13T09:07:19+02:00</published><updated>2019-10-13T09:07:19+02:00</updated><id>http://localhost:4000/database-library-for-mssql-in-robot-framework-and-python</id><content type="html" xml:base="http://localhost:4000/database-library-for-mssql-in-robot-framework-and-python.html">&lt;p&gt;Robot Framework is a useful tool for test automation. It’s mostly used, and suitable, for UI testing because it can be easily integrated with Selenium API. But there could also be many other libraries, either written by other people or we can come up with our own libraries that extend the number of use cases for which Robot could be used. I’ve recently needed to use Robot in a way when it looks into a DB and checks a few things there. I’m going to share with you a part of my outcome.&lt;/p&gt;
+
+&lt;h3 id=&quot;structure&quot;&gt;Structure&lt;/h3&gt;
+
+&lt;p&gt;First of all, having a certain structure for the whole test project is important. As the number of test cases grows, it becomes more and more difficult to know where you keep things (test cases, variables, page objects, …). You can easily get lost in your project, only having to spend a lot of time every time you need to change a few test cases (or add new ones).&lt;/p&gt;
+
+&lt;p&gt;Having said that, I keep the following structure for my test project:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;.
+├── Keywords
+├── Libraries
+├── Objects
+├── README.md
+├── Resources
+├── Results
+├── Settings
+└── Tests
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;This is how an empty project in Robot looks when I use the tool. Of course I can further divide some of the folders, so a more real project would end up with a structure similar to this one:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;.
+├── arguments.txt
+├── Keywords
+│   ├── alpine_admin_keywords.txt
+│   └── alpine_keywords.txt
+├── Libraries
+│   ├── AlpineDB.py
+├── Objects
+│   ├── alpine_admin_objects.py
+│   ├── alpine_objects.py
+├── README.md
+├── red.xml
+├── Resources
+│   ├── alpine_admin_test_data.py
+│   ├── alpine_sql.py
+│   ├── alpine_test_data.py
+│   ├── alpine_texts.py
+│   ├── alpine_variables.py
+├── Results
+│   └── Screenshots
+├── Settings
+│   ├── alpine_admin_keywords.txt
+│   ├── alpine_admin_tests.txt
+│   ├── alpine_keywords.txt
+│   └── alpine_tests.txt
+└── Tests
+    ├── Admin
+    │   └── login_page.robot
+    └── Eshop
+        └── login_registration.robot
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;It’s still pretty similar to the empty project structure, you can just see more subdirectories in &lt;code class=&quot;highlighter-rouge&quot;&gt;Tests/&lt;/code&gt; where I try to keep things more structured, so I know where some particular tests are by just looking at it.&lt;/p&gt;
+
+&lt;p&gt;Anyway, this is the basis I’m gonna use in this article.&lt;/p&gt;
+
+&lt;h3 id=&quot;db-library&quot;&gt;DB Library&lt;/h3&gt;
+
+&lt;p&gt;As I said at the beginning, I want to write a library that connects to a MS SQL database and e.g. gets a number of rows for a particular sql statement. First, I didn’t know much about this, but after some time spent googling, I found &lt;code class=&quot;highlighter-rouge&quot;&gt;pyodbc&lt;/code&gt; module that does exactly what I need. So the first step would be to install it &lt;code class=&quot;highlighter-rouge&quot;&gt;pip install pyodbc&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Robot framework allows you to write custom libraries in Python (more natural since Robot is basically a wrapper around Python) and Java. You can read all the details in the &lt;a href=&quot;https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#creating-test-libraries&quot;&gt;official documentation&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Ok, I can’t use Java as efficiently as Python, so I go for Python here. However, another decision I need to make fairly early now is what scope I want to use with my library. Robot allows for either global, suite, or test case scope. Again, I’m not going to rewrite the official documentation here, just &lt;a href=&quot;https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#test-library-scope&quot;&gt;read it there&lt;/a&gt;, if you want a more detailed explanation. Since I don’t want to create a new instance for every test case where I use my library, I’m going to go for test suite scope.&lt;/p&gt;
+
+&lt;p&gt;So, a good start would be something like:&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;robot.api&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;logger&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;pyodbc&lt;/span&gt;
+
+
+&lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;AlpineDB&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;object&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+    &lt;span class=&quot;s&quot;&gt;&quot;&quot;&quot;
+    Library for connecting into AP MS SQL DB.
+
+    = Table of content =
+    - Keywords
+    &quot;&quot;&quot;&lt;/span&gt;
+
+    &lt;span class=&quot;n&quot;&gt;ROBOT_LIBRARY_VERSION&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mf&quot;&gt;1.0&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;ROBOT_LIBRARY_SCOPE&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'TEST SUITE'&lt;/span&gt;
+
+    &lt;span class=&quot;n&quot;&gt;PARAM_SUBSTITUTE&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'{}'&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;AP_SHOP_ID_CZ&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;121&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;AP_SHOP_ID_SK&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1810&lt;/span&gt;   
+
+    &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;__init__&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'https://inveo-alpineprocz.net'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'dev'&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lower&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;or&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'test'&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lower&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;():&lt;/span&gt;
+            &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;driver&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'{SQL Server}'&lt;/span&gt;
+            &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;server&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'server'&lt;/span&gt;
+            &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;database&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'database'&lt;/span&gt;
+            &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;username&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;''&lt;/span&gt;
+            &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pwd&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;''&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'alpineprosk'&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lower&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;():&lt;/span&gt;
+                &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;shop_id&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AP_SHOP_ID_SK&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+                &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;shop_id&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AP_SHOP_ID_CZ&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;elif&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'staging'&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lower&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;():&lt;/span&gt;
+            &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;driver&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'{SQL Server}'&lt;/span&gt;
+            &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;server&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'server1'&lt;/span&gt;
+            &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;username&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;''&lt;/span&gt;
+            &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pwd&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;''&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'alpineprosk'&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lower&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;():&lt;/span&gt;
+                &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;database&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'database1'&lt;/span&gt;
+                &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;shop_id&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AP_SHOP_ID_SK&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+                &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;database&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'database2'&lt;/span&gt;
+                &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;shop_id&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AP_SHOP_ID_CZ&lt;/span&gt;
+
+        &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;conn&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pyodbc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;connect&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Driver&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;driver&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                                   &lt;span class=&quot;n&quot;&gt;Server&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;server&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                                   &lt;span class=&quot;n&quot;&gt;Database&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;database&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                                   &lt;span class=&quot;n&quot;&gt;uid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;username&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                                   &lt;span class=&quot;n&quot;&gt;pwd&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pwd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;    
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;A few words about this. I’ve of course deleted all sensitive data like usernames, passwords, database names. I hope it’s still understandable enough. The point here is I want to use this library with different environments (against different databases and servers), so I need to create the right connection first. Therefore, there’s a bit of logic in the &lt;code class=&quot;highlighter-rouge&quot;&gt;__init__&lt;/code&gt; method.&lt;/p&gt;
+
+&lt;p&gt;As soon as I have the right connection into a database, I can write some methods that later become available as keywords in Robot framework. Let’s start easy with a method that counts a number of rows:&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;build_sql_statement&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sql_statement&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;params&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+        &lt;span class=&quot;s&quot;&gt;&quot;&quot;&quot;
+        Builds a SQL statemets given a SQL statements and parameters. String parameters are automatically enclosed in quotes, so no need to use quotes in params list.
+        
+        Example:
+        | @{params}= | Create List | 1234 |
+        | ${sql_statement}= | Build Sql Statement | Select * from [User] where UserId = {} | ${params} |
+        &quot;&quot;&quot;&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;# enclose strings in quotes
+&lt;/span&gt;        &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;index&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;enumerate&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;params&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;isinstance&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;str&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;params&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;index&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\'&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\'&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'&lt;/span&gt;     
+
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sql_statement&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;count&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;PARAM_SUBSTITUTE&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;len&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;params&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;logger&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'SQL statement requires different number of parameters.'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;logger&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;error&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'SQL statement requires different number of parameters.'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;raise&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;AssertionError&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'SQL statement requires different number of parameters.'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+        &lt;span class=&quot;c1&quot;&gt;# add shopid condition
+&lt;/span&gt;        &lt;span class=&quot;n&quot;&gt;sql&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sql_statement&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;' and ShopId='&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;str&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;shop_id&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sql&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;format&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;params&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;row_count&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sql_statement&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+        &lt;span class=&quot;s&quot;&gt;&quot;&quot;&quot;
+        Returns a row count given a SQL statement.
+        
+        Example:
+        | @{params}= | Create List | 1234 |
+        | ${sql_statement}= | Build Sql Statement | Select * from [User] where UserId = {} | ${params} |
+        | ${row_count}= | Row Count | ${sql_statement} |
+        &quot;&quot;&quot;&lt;/span&gt;        
+        &lt;span class=&quot;n&quot;&gt;cursor&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;conn&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cursor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;cursor&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;execute&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sql_statement&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;len&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cursor&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fetchall&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Instead of just one method, I also wrote method &lt;code class=&quot;highlighter-rouge&quot;&gt;build_sql_statement&lt;/code&gt;. That’s because I want to keep just sql templates that could be used with different conditions. I want to hard code as few things as possible. Plus the part with &lt;code class=&quot;highlighter-rouge&quot;&gt;ShopId&lt;/code&gt; is very much specific to my project. It turned out that one of the databases is shared across more than one test environment. The parameter that distinguishes whether a particular row belongs to this or that environment is &lt;code class=&quot;highlighter-rouge&quot;&gt;ShopId&lt;/code&gt;, so that’s why I have this little logic here when building sql statements.&lt;/p&gt;
+
+&lt;p&gt;Method &lt;code class=&quot;highlighter-rouge&quot;&gt;row_count&lt;/code&gt; is just a simple one, I guess no explanation is needed here.&lt;/p&gt;
+
+&lt;p&gt;Also notice that because I’m gonna use this library with Robot framework, I’m using &lt;code class=&quot;highlighter-rouge&quot;&gt;robot.api&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;logger&lt;/code&gt;. I’m also using a particular &lt;a href=&quot;https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#writing-documentation&quot;&gt;documentation style&lt;/a&gt; that allows for auto-generation of documentation for this library. It comes in handy when someone else wants to use the library after me.&lt;/p&gt;
+
+&lt;p&gt;Just to summarize, the whole library at this point looks like this:&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;robot.api&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;logger&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;pyodbc&lt;/span&gt;
+
+
+&lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;AlpineDB&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;object&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+    &lt;span class=&quot;s&quot;&gt;&quot;&quot;&quot;
+    Library for connecting into AP MS SQL DB.
+
+    = Table of content =
+    - Keywords
+    &quot;&quot;&quot;&lt;/span&gt;
+
+    &lt;span class=&quot;n&quot;&gt;ROBOT_LIBRARY_VERSION&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mf&quot;&gt;1.0&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;ROBOT_LIBRARY_SCOPE&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'TEST SUITE'&lt;/span&gt;
+
+    &lt;span class=&quot;n&quot;&gt;PARAM_SUBSTITUTE&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'{}'&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;AP_SHOP_ID_CZ&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;121&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;AP_SHOP_ID_SK&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1810&lt;/span&gt;   
+
+    &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;__init__&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'https://inveo-alpineprocz.net'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'dev'&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lower&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;or&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'test'&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lower&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;():&lt;/span&gt;
+            &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;driver&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'{SQL Server}'&lt;/span&gt;
+            &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;server&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'server'&lt;/span&gt;
+            &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;database&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'database'&lt;/span&gt;
+            &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;username&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;''&lt;/span&gt;
+            &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pwd&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;''&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'alpineprosk'&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lower&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;():&lt;/span&gt;
+                &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;shop_id&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AP_SHOP_ID_SK&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+                &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;shop_id&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AP_SHOP_ID_CZ&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;elif&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'staging'&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lower&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;():&lt;/span&gt;
+            &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;driver&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'{SQL Server}'&lt;/span&gt;
+            &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;server&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'server1'&lt;/span&gt;
+            &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;username&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;''&lt;/span&gt;
+            &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pwd&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;''&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'alpineprosk'&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lower&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;():&lt;/span&gt;
+                &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;database&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'database1'&lt;/span&gt;
+                &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;shop_id&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AP_SHOP_ID_SK&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+                &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;database&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'database2'&lt;/span&gt;
+                &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;shop_id&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AP_SHOP_ID_CZ&lt;/span&gt;
+
+        &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;conn&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pyodbc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;connect&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Driver&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;driver&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                                   &lt;span class=&quot;n&quot;&gt;Server&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;server&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                                   &lt;span class=&quot;n&quot;&gt;Database&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;database&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                                   &lt;span class=&quot;n&quot;&gt;uid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;username&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                                   &lt;span class=&quot;n&quot;&gt;pwd&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pwd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;   
+
+    &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;build_sql_statement&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sql_statement&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;params&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+        &lt;span class=&quot;s&quot;&gt;&quot;&quot;&quot;
+        Builds a SQL statemets given a SQL statements and parameters. String parameters are automatically enclosed in quotes, so no need to use quotes in params list.
+        
+        Example:
+        | @{params}= | Create List | 1234 |
+        | ${sql_statement}= | Build Sql Statement | Select * from [User] where UserId = {} | ${params} |
+        &quot;&quot;&quot;&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;# enclose strings in quotes
+&lt;/span&gt;        &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;index&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;enumerate&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;params&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;isinstance&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;str&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;params&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;index&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\'&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\'&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'&lt;/span&gt;     
+
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sql_statement&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;count&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;PARAM_SUBSTITUTE&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;len&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;params&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;logger&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'SQL statement requires different number of parameters.'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;logger&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;error&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'SQL statement requires different number of parameters.'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;raise&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;AssertionError&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'SQL statement requires different number of parameters.'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+        &lt;span class=&quot;c1&quot;&gt;# add shopid condition
+&lt;/span&gt;        &lt;span class=&quot;n&quot;&gt;sql&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sql_statement&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;' and ShopId='&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;str&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;shop_id&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sql&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;format&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;params&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;row_count&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sql_statement&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+        &lt;span class=&quot;s&quot;&gt;&quot;&quot;&quot;
+        Returns a row count given a SQL statement.
+        
+        Example:
+        | @{params}= | Create List | 1234 |
+        | ${sql_statement}= | Build Sql Statement | Select * from [User] where UserId = {} | ${params} |
+        | ${row_count}= | Row Count | ${sql_statement} |
+        &quot;&quot;&quot;&lt;/span&gt;        
+        &lt;span class=&quot;n&quot;&gt;cursor&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;conn&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cursor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;cursor&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;execute&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sql_statement&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;len&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cursor&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fetchall&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;It doesn’t do much, but it’s a good start, more methods could be easily added into this structure.&lt;/p&gt;
+
+&lt;p&gt;All I need to do is save this as a new python file inside &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;my_project&amp;gt;/Libraries/&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;One last note on this. Notice the default parameter value of &lt;code class=&quot;highlighter-rouge&quot;&gt;url&lt;/code&gt; in &lt;code class=&quot;highlighter-rouge&quot;&gt;__init__&lt;/code&gt;. That’s not so much because I really want to use it like this, but because I use Eclipse and RED as my IDEs for Robot framework and Eclipse/RED has a particular bug here that doesn’t allow for object creation (AlpineDB in my example) when no default value is not present. The symptoms of this are that the whole library would be marked as invalid when I have my project open in Eclipse/RED, which complicates things like seeing documentation for my custom library or using intellisense. However, when run, there’s no problem even without the default value. So it’s basically just a bit more comfortable to use this workaround.&lt;/p&gt;
+
+&lt;h3 id=&quot;robot-framework&quot;&gt;Robot Framework&lt;/h3&gt;
+
+&lt;p&gt;Let’s now use this library inside Robot framework.&lt;/p&gt;
+
+&lt;p&gt;To keep the structure, I’m gonna first create a new test suite inside &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;my_project&amp;gt;/Tests/&lt;/code&gt;.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;touch &lt;/span&gt;db.robot
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Then let’s create a test case that checks if only one user exists in a database using my library from above:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;*** Settings ***
+Documentation    Database checks and tests.  
+Resource    ../Settings/alpine_tests.txt
+Library    ../Libraries/AlpineDB.py    ${URL_DEV}
+
+*** Variables ***
+${no_user_in_db}=    User was not found in DB.
+${too_many_users_in_db}=    User was not found in DB.
+
+*** Test Cases ***
+One User Exists In Database
+    [Tags]    smoke    db
+    ${params}=    Create List    ${valid_username}
+    ${sql_statement}=    Build Sql Statement    ${select_user_by_email}    ${params}
+    ${number_of_users}=    Row Count    ${sql_statement}
+    Run Keyword If    ${number_of_users} == 0    Fail    ${no_user_in_db}
+    Run Keyword If    ${number_of_users} &amp;gt; 1    Fail    ${too_many_users_in_db}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;As you can see, I try to avoid hard-coded values. So I’m using variables that live inside files in &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;my_project&amp;gt;/Resources&lt;/code&gt; and are imported here via file &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;my_project&amp;gt;/Settings/alpine_tests.txt&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;I’ve also mentioned something about sql templates. That’s exactly what I’m using here. One such template is in variable &lt;code class=&quot;highlighter-rouge&quot;&gt;${select_user_by_email}&lt;/code&gt;, the value of this variable is in fact &lt;code class=&quot;highlighter-rouge&quot;&gt;select_user_by_email = 'Select * from [User] u where u.Email={}'&lt;/code&gt;, this lives inside &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;my_project&amp;gt;/Resources/alpine_sql.py&lt;/code&gt; and is again imported via &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;my_project&amp;gt;/Settings/alpine_tests.txt&lt;/code&gt;. It helps keep things organised, because I can keep all sql statements in one file, so there’s no need to look at various places if I want to change something.&lt;/p&gt;
+
+&lt;p&gt;The rest is probably clear enough, notice how my python methods have become keywords here in Robot. So I can easily call my &lt;code class=&quot;highlighter-rouge&quot;&gt;row_count&lt;/code&gt; using keyword &lt;code class=&quot;highlighter-rouge&quot;&gt;Row Count&lt;/code&gt; and my &lt;code class=&quot;highlighter-rouge&quot;&gt;build_sql_statement&lt;/code&gt; using keyword &lt;code class=&quot;highlighter-rouge&quot;&gt;Build Sql Statement&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;I’ll leave running the test case up to you, but you’d do something like this:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;robot &lt;span class=&quot;nt&quot;&gt;--argumentfile&lt;/span&gt; ../arguments.txt &lt;span class=&quot;nt&quot;&gt;--test&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;One User Exists In Database&quot;&lt;/span&gt; db.robot
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Based on how you set it up, you’d get reports and logs. In my case, I have them timestamped (&lt;code class=&quot;highlighter-rouge&quot;&gt;--timestampoutput&lt;/code&gt; option inside &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;my_project&amp;gt;/arguments.txt&lt;/code&gt;) and saved (option &lt;code class=&quot;highlighter-rouge&quot;&gt;--outputdir ../Results&lt;/code&gt; inside &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;my_project&amp;gt;/arguments.txt&lt;/code&gt;) into &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;my_project&amp;gt;/Results&lt;/code&gt;.&lt;/p&gt;
+
+&lt;h3 id=&quot;documentation&quot;&gt;Documentation&lt;/h3&gt;
+
+&lt;p&gt;I mentioned something about auto-generating the documentation for my library. It can’t be easier, all you need to do is follow the guidlines on how to write comments in the source file and then execute &lt;code class=&quot;highlighter-rouge&quot;&gt;python.libdoc&lt;/code&gt;:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;python &lt;span class=&quot;nt&quot;&gt;-m&lt;/span&gt; python.libdoc &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; html AlpineDB.py AlpineDB_Library.html
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;It will generate a file in the format that you know from &lt;a href=&quot;https://robotframework.org/robotframework/latest/libraries/BuiltIn.html&quot;&gt;official Robot documentation&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;I strongly recommend using it, especially if you’re not the only Tester that’s gonna use your libraries.&lt;/p&gt;
+
+&lt;h3 id=&quot;not-reinventing-the-wheel&quot;&gt;Not Reinventing The Wheel&lt;/h3&gt;
+
+&lt;p&gt;It’d be strange if I was the first one to think about this topic. Of course other people have done exactly that before me. But I think it’s always a good thing to take things apart and learn how they work, that’s why I wrote my own simple database library.&lt;/p&gt;
+
+&lt;p&gt;However, if you don’t want to do the same, just use what’s already done. There is a &lt;a href=&quot;https://franz-see.github.io/Robotframework-Database-Library/api/0.5/DatabaseLibrary.html&quot;&gt;database library&lt;/a&gt; already written, you can get in on &lt;a href=&quot;https://pypi.org/project/robotframework-databaselibrary/&quot;&gt;pypi.org&lt;/a&gt; and see documentation &lt;a href=&quot;https://franz-see.github.io/Robotframework-Database-Library/api/0.5/DatabaseLibrary.html&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;</content><author><name>Pavel Saman</name></author><summary type="html">Robot Framework is a useful tool for test automation. It’s mostly used, and suitable, for UI testing because it can be easily integrated with Selenium API. But there could also be many other libraries, either written by other people or we can come up with our own libraries that extend the number of use cases for which Robot could be used. I’ve recently needed to use Robot in a way when it looks into a DB and checks a few things there. I’m going to share with you a part of my outcome.</summary></entry><entry><title type="html">How to Write Bug Report in Jira</title><link href="http://localhost:4000/how-to-write-bug-report-in-jira.html" rel="alternate" type="text/html" title="How to Write Bug Report in Jira" /><published>2019-10-03T15:07:19+02:00</published><updated>2019-10-03T15:07:19+02:00</updated><id>http://localhost:4000/how-to-write-bug-report-in-jira</id><content type="html" xml:base="http://localhost:4000/how-to-write-bug-report-in-jira.html">&lt;p&gt;Jira is a popular tool for software development. One of the ways in which Jira is used for is bug reporting. I’ve recently faced a situation where there was no structure to bug reports in Jira, leaving it completely up to a Tester. I’ll try to argue for why this is not the best practice and how it could be improved.&lt;/p&gt;
 
 &lt;p&gt;The following printscreen is how bugs are added into Jira.&lt;/p&gt;
 
@@ -22,7 +336,7 @@
 
 &lt;h3 id=&quot;how-to-improve-jira&quot;&gt;How to Improve Jira&lt;/h3&gt;
 
-&lt;p&gt;Fairly easy, what I have a good experience with is adding a simple teplate that would automatically add these 4 guidlines. A Tester doesn’t need to keep everything in their head and if there’re some less experienced testers on the team, they might even use this as a reminder what not to forget when filling in new bug reports.&lt;/p&gt;
+&lt;p&gt;Fairly easy, what I have a good experience with is adding a simple template that would automatically add these 4 guidelines. A Tester doesn’t need to keep everything in their head and if there’re some less experienced testers on the team, they might even use this as a reminder what not to forget when filling in new bug reports.&lt;/p&gt;
 
 &lt;p&gt;The final Jira could look like this:&lt;/p&gt;
 
@@ -1061,124 +1375,4 @@ E: &lt;span class=&quot;nv&quot;&gt;TAGS&lt;/span&gt;&lt;span class=&quot;o&quot
 ...
 3: wlan0: &amp;lt;NO-CARRIER,BROADCAST,MULTICAST,UP&amp;gt; mtu 1500 qdisc mq state DOWN group default qlen 1000
 ...
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;</content><author><name>Pavel Saman</name></author><summary type="html">I have recently wondered about why network interfaces in Linux have these, at first glance, obscure names. I vaguely remember it used to be more like eth0, wlan0. So I found a bit more info about it, let’s summarize it here.</summary></entry><entry><title type="html">Process Connection Log with Awk</title><link href="http://localhost:4000/process-connection-log-with-awk-oneliner.html" rel="alternate" type="text/html" title="Process Connection Log with Awk" /><published>2019-09-20T14:07:19+02:00</published><updated>2019-09-20T14:07:19+02:00</updated><id>http://localhost:4000/process-connection-log-with-awk-oneliner</id><content type="html" xml:base="http://localhost:4000/process-connection-log-with-awk-oneliner.html">&lt;p&gt;Awk is a useful tool for text processing. I’ve recently wanted to process a log generated by Network Manager. I’ll show you just a simple awk script that helped me get the data I wanted. I find it useful to get some practice in awk, so I’ll try out some awk oneliners here.&lt;/p&gt;
-
-&lt;p&gt;The log is in two file in &lt;code class=&quot;highlighter-rouge&quot;&gt;/var/log&lt;/code&gt;:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nt&quot;&gt;-rw-r--r--&lt;/span&gt;   1 root   root            4.6K Sep 20 15:10 NetworkManager-dispatcher.d.log
-&lt;span class=&quot;nt&quot;&gt;-rw-r--r--&lt;/span&gt;   1 root   root             11K Sep 15 00:00 NetworkManager-dispatcher.d.log.1
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;The file content is in the following format (I deleted the real UUID of my networks):&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;2019-09-20T20:55:14,334287331+00:00 | DEVICE: wlp2s0 | STATUS: down | UUID: xxx | ID: akula | IP4_GATEWAY:  | IP4_NAMESERVERS: 
-2019-09-08T08:36:29,311656818+00:00 | DEVICE: eno1 | STATUS: up | UUID: xxx | ID: Wired connection 1 | IP4_GATEWAY: 192.168.1.1 | IP4_NAMESERVERS: 8.8.8.8
-2019-09-08T09:15:36,751701614+00:00 | DEVICE: eno1 | STATUS: down | UUID: xxx | ID: Wired connection 1 | IP4_GATEWAY:  | IP4_NAMESERVERS: 
-2019-09-08T10:03:08,171797403+00:00 | DEVICE: eno1 | STATUS: up | UUID: xxx | ID: Wired connection 1 | IP4_GATEWAY: 192.168.1.1 | IP4_NAMESERVERS: 8.8.8.8
-2019-09-08T11:37:24,046263858+00:00 | DEVICE: eno1 | STATUS: down | UUID: xxx | ID: Wired connection 1 | IP4_GATEWAY:  | IP4_NAMESERVERS: 
-2019-09-08T11:48:09,947160296+00:00 | DEVICE: eno1 | STATUS: up | UUID: xxx | ID: Wired connection 1 | IP4_GATEWAY: 192.168.1.1 | IP4_NAMESERVERS: 8.8.8.8
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;For every &lt;code class=&quot;highlighter-rouge&quot;&gt;up&lt;/code&gt; or &lt;code class=&quot;highlighter-rouge&quot;&gt;down&lt;/code&gt; status, there’s one line with date and time, device name, status, UUID of the network, ID of the network, IPv4 address, and an array of nameservers.&lt;/p&gt;
-
-&lt;p&gt;I’ll now run a few awk commands to process the file and get some interesting statistics.&lt;/p&gt;
-
-&lt;h4 id=&quot;i-want-to-know-how-many-times-ive-connected-to-a-network&quot;&gt;I want to know how many times I’ve connected to a network&lt;/h4&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;awk&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-F&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'|'&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'($3 ~ /up/) { c++ } END {print c}'&lt;/span&gt; /var/log/NetworkManager-dispatcher.d.log&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;No need to write &lt;code class=&quot;highlighter-rouge&quot;&gt;if&lt;/code&gt;, I can just type &lt;code class=&quot;highlighter-rouge&quot;&gt;(pattern)&lt;/code&gt; and apply &lt;code class=&quot;highlighter-rouge&quot;&gt;{action}&lt;/code&gt;.&lt;/p&gt;
-
-&lt;h4 id=&quot;i-want-to-know-what-networks-ive-connected-to&quot;&gt;I want to know what networks I’ve connected to&lt;/h4&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;awk&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-F&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'|'&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'($3 ~ /up/) {net[$4]++} END{for (n in net) {print substr(n,2)}}'&lt;/span&gt; /var/log/NetworkManager-dispatcher.d.log&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Awk has some functions I can use. I can even create my own functions in awk.&lt;/p&gt;
-
-&lt;h4 id=&quot;i-want-to-know-what-networks-ive-connected-to--how-many-times&quot;&gt;I want to know what networks I’ve connected to + how many times&lt;/h4&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;awk&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-F&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'|'&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'{ntw=substr($4,index($4,&quot;:&quot;)+2,length(substr($4,index($4,&quot;:&quot;)+2))-1)} ($3 ~ /up/) {net[ntw]++} END{for (n in net) {print n,net[n]}}'&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;OFS&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'|'&lt;/span&gt; /var/log/NetworkManager-dispatcher.d.log&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;OFS&lt;/code&gt; changes the Output Field Separator. I can also beautify the output by getting rif od some whitespaces etc. by using &lt;code class=&quot;highlighter-rouge&quot;&gt;substr&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;index&lt;/code&gt;, and &lt;code class=&quot;highlighter-rouge&quot;&gt;length&lt;/code&gt; functions.&lt;/p&gt;
-
-&lt;h4 id=&quot;i-want-to-add-the-network-id-to-the-previous-output&quot;&gt;I want to add the network ID to the previous output&lt;/h4&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;awk&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-F&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'|'&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'($3 ~ /up/) {net[substr($5,index($5,&quot;:&quot;)+2,length(substr($5,index($5,&quot;:&quot;)+2))-1) &quot;|&quot; substr($4,index($4,&quot;:&quot;)+2,length(substr($4,index($4,&quot;:&quot;)+2))-1)]++} END{for (n in net) {print n,net[n]}}'&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;OFS&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'|'&lt;/span&gt; /var/log/NetworkManager-dispatcher.d.log&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;In awk I can really play around with the key of an associative array.&lt;/p&gt;
-
-&lt;h4 id=&quot;if-i-want-to-put-the-previous-oneliner-into-a-script-file&quot;&gt;If I want to put the previous oneliner into a script file&lt;/h4&gt;
-
-&lt;div class=&quot;language-awk highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;#!/usr/bin/awk -f&lt;/span&gt;
-
-&lt;span class=&quot;kr&quot;&gt;BEGIN&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-	&lt;span class=&quot;kc&quot;&gt;FS&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;|&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-	&lt;span class=&quot;kc&quot;&gt;OFS&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;|&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-	&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$3&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;~&lt;/span&gt; &lt;span class=&quot;sr&quot;&gt;/up/&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-		&lt;span class=&quot;nx&quot;&gt;net&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;substr&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;index&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;:&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;length&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;substr&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;index&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;:&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;|&quot;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;substr&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;index&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;:&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;length&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;substr&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;index&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;:&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)]&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;++&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-	&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-&lt;span class=&quot;kr&quot;&gt;END&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-	&lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;n&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;net&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-		&lt;span class=&quot;k&quot;&gt;print&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;net&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-	&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Awk can be run as a script just like a bash script. This is definitely more neat when the script grows in length.&lt;/p&gt;
-
-&lt;h4 id=&quot;i-want-to-sort-the-previous-output-by-the-number-of-connections&quot;&gt;I want to sort the previous output by the number of connections&lt;/h4&gt;
-
-&lt;p&gt;Provided I saved the previous script as a file &lt;code class=&quot;highlighter-rouge&quot;&gt;network_connections.awk&lt;/code&gt;&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;./network_connections.awk /var/log/NetworkManager-dispatcher.d.log&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt; | &lt;span class=&quot;nb&quot;&gt;sort&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-t&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'|'&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-r&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-k&lt;/span&gt; 3
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;The first line is the most used network on my machine.&lt;/p&gt;
-
-&lt;h4 id=&quot;i-want-to-know-what-ip-addresses-ive-had&quot;&gt;I want to know what IP addresses I’ve had&lt;/h4&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;awk&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-F&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'|'&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'($3 ~ /up/) {net[$6]++} END{for (n in net) {print substr(n,2)}}'&lt;/span&gt; /var/log/NetworkManager-dispatcher.d.log&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Awk has associative arrays, so it’s easy to use some data as a key.&lt;/p&gt;
-
-&lt;h4 id=&quot;i-want-to-create-a-file-named-after-an-id-of-a-connection-and-save-all-times-ive-connected-to-such-a-network-into-the-file&quot;&gt;I want to create a file named after an ID of a connection and save all times I’ve connected to such a network into the file&lt;/h4&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;awk&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-F&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'|'&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'{file_name=substr($5,index($5,&quot;:&quot;)+2,length(substr($5,index($5,&quot;:&quot;)+2))-1)} ($3 ~ /up/) {print $1 &amp;gt; file_name}'&lt;/span&gt; /var/log/NetworkManager-dispatcher.d.log&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h4 id=&quot;i-want-to-print-only-lines-with-a-connection-i-hand-to-awk-in-a-variable-net&quot;&gt;I want to print only lines with a connection I hand to awk in a variable &lt;code class=&quot;highlighter-rouge&quot;&gt;NET&lt;/code&gt;&lt;/h4&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;awk&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;NET&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;akula&quot;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-F&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'|'&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'{ntw=substr($5,index($5,&quot;:&quot;)+2,length(substr($5,index($5,&quot;:&quot;)+2))-1)} ($3 ~ /up/ &amp;amp;&amp;amp; ntw == NET) {print}'&lt;/span&gt; /var/log/NetworkManager-dispatcher.d.log&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h4 id=&quot;i-want-to-know-how-many-times-ive-connected-to-a-network-and-sort-it-desc&quot;&gt;I want to know how many times I’ve connected to a network and sort it desc&lt;/h4&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;awk&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-F&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'|'&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'($3 ~ /up/) {x[substr($1, 0, index($1, &quot;T&quot;)-1)]++} END{for (n in x) {print n,x[n]}}'&lt;/span&gt; /var/log/NetworkManager-dispatcher.d.log&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt; | &lt;span class=&quot;nb&quot;&gt;sort&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-h&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-k2&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-r&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Awk can create files for me and I can use redirection in awk.&lt;/p&gt;
-
-&lt;p&gt;This is how awk works. Just a few notes at the end:&lt;/p&gt;
-&lt;ol&gt;
-  &lt;li&gt;awk uses pattern-action patters; patterns are in &lt;code class=&quot;highlighter-rouge&quot;&gt;()&lt;/code&gt;, actions in &lt;code class=&quot;highlighter-rouge&quot;&gt;{}&lt;/code&gt;, when a pattern gets evaluated to true, action is taken&lt;/li&gt;
-  &lt;li&gt;awk uses associative arrays, so it’s easy to use a piece of data as a key&lt;/li&gt;
-  &lt;li&gt;there are some built-in variables in awk:
-&lt;img src=&quot;/images/awk_vars.png&quot; alt=&quot;image&quot; /&gt;&lt;/li&gt;
-  &lt;li&gt;it’s possible to write a script in awk and save it as a file, the first line would be &lt;code class=&quot;highlighter-rouge&quot;&gt;&lt;span class=&quot;c1&quot;&gt;#!/usr/bin/awk&lt;/span&gt;&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;awk can redirect output to a file, it’s even possible to use shell from within an awk script&lt;/li&gt;
-  &lt;li&gt;awk works with regular expressions that are enclosed in &lt;code class=&quot;highlighter-rouge&quot;&gt;//&lt;/code&gt;, unlike grep for example&lt;/li&gt;
-  &lt;li&gt;to hand a variable from shell to awk, I can use option &lt;code class=&quot;highlighter-rouge&quot;&gt;-v&lt;/code&gt;, such a variable will not be available in &lt;code class=&quot;highlighter-rouge&quot;&gt;BEGIN&lt;/code&gt; block though&lt;/li&gt;
-  &lt;li&gt;awk can also read an env variable &lt;code class=&quot;highlighter-rouge&quot;&gt;ENVIRON[&quot;MY_VAR&quot;]&lt;/code&gt;, this can be used even in &lt;code class=&quot;highlighter-rouge&quot;&gt;BEGIN&lt;/code&gt; block&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;All in all, with a couple of characters, awk lets you do a lot with any text. It’s worth it to know how to use it.
-If you want to see more examples, you can go into my &lt;a href=&quot;https://github.com/pavelsaman/AwkWorkspace&quot;&gt;AwkWorkspace repository on github&lt;/a&gt; or &lt;a href=&quot;https://github.com/pavelsaman/Awk-lib&quot;&gt;see some of my awk libraries&lt;/a&gt;.&lt;/p&gt;</content><author><name>Pavel Saman</name></author><summary type="html">Awk is a useful tool for text processing. I’ve recently wanted to process a log generated by Network Manager. I’ll show you just a simple awk script that helped me get the data I wanted. I find it useful to get some practice in awk, so I’ll try out some awk oneliners here.</summary></entry></feed>
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;</content><author><name>Pavel Saman</name></author><summary type="html">I have recently wondered about why network interfaces in Linux have these, at first glance, obscure names. I vaguely remember it used to be more like eth0, wlan0. So I found a bit more info about it, let’s summarize it here.</summary></entry></feed>

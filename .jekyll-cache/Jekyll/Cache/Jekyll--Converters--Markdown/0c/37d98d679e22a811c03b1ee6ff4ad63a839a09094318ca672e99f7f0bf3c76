@@ -1,4 +1,4 @@
-I"�<p>Jira is a popular tool for software development. One of the ways in which Jira is used for is bug reporting. I’ve recently faced a situation where there was no structure to bug reports in Jira, leaving it completely up to a Tester. I’ll try to argue for why this is not the best practice and how it could be improved.</p>
+I"�<p>Jira is a popular tool for software development. One of the ways in which Jira is used for is bug reporting. I’ve recently faced a situation where there was no structure to bug reports in Jira, leaving it completely up to a Tester. I’ll try to argue for why this is not the best practice and how it could be improved.</p>
 
 <p>The following printscreen is how bugs are added into Jira.</p>
 
@@ -22,7 +22,7 @@
 
 <h3 id="how-to-improve-jira">How to Improve Jira</h3>
 
-<p>Fairly easy, what I have a good experience with is adding a simple teplate that would automatically add these 4 guidlines. A Tester doesn’t need to keep everything in their head and if there’re some less experienced testers on the team, they might even use this as a reminder what not to forget when filling in new bug reports.</p>
+<p>Fairly easy, what I have a good experience with is adding a simple template that would automatically add these 4 guidelines. A Tester doesn’t need to keep everything in their head and if there’re some less experienced testers on the team, they might even use this as a reminder what not to forget when filling in new bug reports.</p>
 
 <p>The final Jira could look like this:</p>
 

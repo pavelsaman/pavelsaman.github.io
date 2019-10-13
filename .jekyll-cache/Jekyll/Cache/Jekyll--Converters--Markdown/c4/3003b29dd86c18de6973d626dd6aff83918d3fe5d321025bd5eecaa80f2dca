@@ -1,0 +1,2 @@
+I"�<p>Robot Framework is a useful tool for test automation. It’s mostly used, and suitable, for UI testing because it can be easily integrated with Selenium API. But in Robot, there could be many other libraries, either written by other people or we can come up with our own libraries that extend the number of use cases for which Robot could be used. I’ve recently needed to use Robot in a way when it looks into a DB and checks a few things there. I’m going to share with you a part of my outcome.</p>
+:ET
