@@ -1,0 +1,37 @@
+I")<p>It’s certainly more common to upgrade software, but on those rare occasions when something breaks with a higher version, it’s useful to know how to downgrade a particular package.</p>
+
+<p>I’ve recently upgraded Eclipse and RED. I use these for writing tests in Robot framework. However, I got stuck on <a href="https://github.com/nokia/RED/issues/324">this error</a>. After searching for a while and even asking on <a href="https://sqa.stackexchange.com/q/41124/41012">stackexchange</a>, it was pretty sure I had to downgrade Eclipse.</p>
+
+<p>Since I had this issue on a Windows machine, I didn’t bother much and just installed one more version of Eclipse. It’s a solution as well, not as neat as on Linux, though.</p>
+
+<p>However, I want to share just these steps for downgrading a package on Linux.</p>
+
+<p>First, I checked if I still have an older version in cache:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">grep</span> <span class="nt">-i</span> cachedir pacman.conf
+<span class="nv">$ </span>ll /var/cache/pacman/pkg/
+</code></pre></div></div>
+
+<p>Sure enough, there was an older version of Eclipse. So let’s downgrade:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">sudo </span>pacman <span class="nt">-U</span> /var/cache/pacman/pkg/eclipse-java-4.12-1-x86_64.pkg.tar.xz
+<span class="nv">$ </span><span class="nb">sudo </span>pacman <span class="nt">-U</span> /var/cache/pacman/pkg/eclipse-common-4.12-1-x86_64.pkg.tar.xz
+</code></pre></div></div>
+
+<p>Done :) Fairly easy. There’s, however, one more step I advise you take. If you perform upgrade of your system right now, Eclipse would again be upgraded. But that’s not exactly what I want since the bug is not solved yet. Fortunately enough, I can change <code class="highlighter-rouge">/etc/pacman.conf</code> so some packages won’t be upgraded:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">grep</span> <span class="nt">-i</span> eclipse pacman.conf
+IgnorePkg   <span class="o">=</span> eclipse-common eclipse-java
+</code></pre></div></div>
+
+<p>Any time I use <code class="highlighter-rouge">pacman</code>, it will ignore these two packages. It will also warn me about the fact I choose to ignore their upgrade:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">sudo </span>pacman <span class="nt">-Syu</span>
+...
+warning: eclipse-common: ignoring package upgrade <span class="o">(</span>4.12-1 <span class="o">=&gt;</span> 4.13-1<span class="o">)</span>
+warning: eclipse-java: ignoring package upgrade <span class="o">(</span>4.12-1 <span class="o">=&gt;</span> 4.13-1<span class="o">)</span>
+...
+</code></pre></div></div>
+
+<p>Nice and easy. It’s also pretty fast, no need to install a new package, uninstall the faulty one etc.</p>
+:ET

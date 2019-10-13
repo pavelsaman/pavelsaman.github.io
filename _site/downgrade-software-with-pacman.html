@@ -32,64 +32,59 @@
 </header>
 <main class="page-content" aria-label="Content">
       <div class="wrapper">
-        <!-- This loops through the paginated posts -->
+        <article class="post">
 
-  <h1><a href="/downgrade-software-with-pacman.html">Downgrade Software with Pacman</a></h1>
+  <header class="post-header">
+    <h1 class="post-title">Downgrade Software with Pacman</h1>
+  </header>
+
   <p class="post-meta">
     <span class="date">13/10/2019</span>
-    <!--<span class="delim">•</span>
-    <span class="author">Pavel Saman</span>-->
+    <span class="delim">•</span>
+    <span class="author">Pavel Saman</span>
   </p>
-  <div class="content">
+
+  <div class="post-content">
     <p>It’s certainly more common to upgrade software, but on those rare occasions when something breaks with a higher version, it’s useful to know how to downgrade a particular package.</p>
 
+<p>I’ve recently upgraded Eclipse and RED. I use these for writing tests in Robot framework. However, I got stuck on <a href="https://github.com/nokia/RED/issues/324">this error</a>. After searching for a while and even asking on <a href="https://sqa.stackexchange.com/q/41124/41012">stackexchange</a>, it was pretty sure I had to downgrade Eclipse.</p>
+
+<p>Since I had this issue on a Windows machine, I didn’t bother much and just installed one more version of Eclipse. It’s a solution as well, not as neat as on Linux, though.</p>
+
+<p>However, I want to share these steps for downgrading a package on Linux.</p>
+
+<p>First, I checked if I still have an older version in cache:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">grep</span> <span class="nt">-i</span> cachedir pacman.conf
+<span class="nv">$ </span>ll /var/cache/pacman/pkg/
+</code></pre></div></div>
+
+<p>Sure enough, there was an older version of Eclipse. So let’s downgrade:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">sudo </span>pacman <span class="nt">-U</span> /var/cache/pacman/pkg/eclipse-java-4.12-1-x86_64.pkg.tar.xz
+<span class="nv">$ </span><span class="nb">sudo </span>pacman <span class="nt">-U</span> /var/cache/pacman/pkg/eclipse-common-4.12-1-x86_64.pkg.tar.xz
+</code></pre></div></div>
+
+<p>Done :) Fairly easy. There’s, however, one more step I advise you take. If you perform upgrade of your system right now, Eclipse would again be upgraded. But that’s not exactly what I want since the bug is not solved yet. Fortunately enough, I can change <code class="highlighter-rouge">/etc/pacman.conf</code> so some packages won’t be upgraded:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">grep</span> <span class="nt">-i</span> eclipse pacman.conf
+IgnorePkg   <span class="o">=</span> eclipse-common eclipse-java
+</code></pre></div></div>
+
+<p>Any time I use <code class="highlighter-rouge">pacman</code>, it will ignore these two packages. It will also warn me about the fact I choose to ignore their upgrade:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">sudo </span>pacman <span class="nt">-Syu</span>
+...
+warning: eclipse-common: ignoring package upgrade <span class="o">(</span>4.12-1 <span class="o">=&gt;</span> 4.13-1<span class="o">)</span>
+warning: eclipse-java: ignoring package upgrade <span class="o">(</span>4.12-1 <span class="o">=&gt;</span> 4.13-1<span class="o">)</span>
+...
+</code></pre></div></div>
+
+<p>Nice and easy. It’s also pretty fast, no need to install a new package, uninstall the faulty one etc.</p>
+
   </div>
 
-  <h1><a href="/database-library-for-mssql-in-robot-framework-and-python.html">Database Library for MS SQL in Robot Framework and Python</a></h1>
-  <p class="post-meta">
-    <span class="date">13/10/2019</span>
-    <!--<span class="delim">•</span>
-    <span class="author">Pavel Saman</span>-->
-  </p>
-  <div class="content">
-    <p>Robot Framework is a useful tool for test automation. It’s mostly used, and suitable, for UI testing because it can be easily integrated with Selenium API. But there could also be many other libraries, either written by other people or we can come up with our own libraries that extend the number of use cases for which Robot could be used. I’ve recently needed to use Robot in a way when it looks into a DB and checks a few things there. I’m going to share with you a part of my outcome.</p>
-
-  </div>
-
-  <h1><a href="/how-to-write-bug-report-in-jira.html">How to Write Bug Report in Jira</a></h1>
-  <p class="post-meta">
-    <span class="date">03/10/2019</span>
-    <!--<span class="delim">•</span>
-    <span class="author">Pavel Saman</span>-->
-  </p>
-  <div class="content">
-    <p>Jira is a popular tool for software development. One of the ways in which Jira is used for is bug reporting. I’ve recently faced a situation where there was no structure to bug reports in Jira, leaving it completely up to a Tester. I’ll try to argue for why this is not the best practice and how it could be improved.</p>
-
-  </div>
-
-  <h1><a href="/how-to-ask-good-questions.html">How To Ask Good Questions</a></h1>
-  <p class="post-meta">
-    <span class="date">30/09/2019</span>
-    <!--<span class="delim">•</span>
-    <span class="author">Pavel Saman</span>-->
-  </p>
-  <div class="content">
-    <p>I feel this topic is really important for many reasons. I also have recent experience that proves people are not that good at this, or they don’t try hard enough. I’ll try to write a bit about this and hopefully convince a few about the importance of good questions.</p>
-
-  </div>
-
-
-<!-- Pagination links -->
-<div class="pagination">
-  
-    <span class="previous">Previous</span>
-  
-  <span class="page_number ">Page: 1 of 5</span>
-  
-    <a href="/page/2/" class="next">Next</a>
-  
-</div>
-
+</article>
       </div>
     </main></footer>
 

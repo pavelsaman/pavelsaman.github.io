@@ -108,7 +108,7 @@
 
 <p>Robot framework allows you to write custom libraries in Python (more natural since Robot is basically a wrapper around Python) and Java. You can read all the details in the <a href="https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#creating-test-libraries">official documentation</a>.</p>
 
-<p>Ok, I can’t use Java as efficiently as Python, so I go for Python here. However, another decision I need to make fairly early now is what scope I want to use with my library. Robot allows for either global, suite, or test case scope. Again, I’m not going to rewrite the official documentation here, just <a href="https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#test-library-scope">read it there</a>, if you want a more detailed explanation. Since I don’t want to create a new instance for every test case where I use my library, I’m going to go for test suite scope.</p>
+<p>Ok, I can’t use Java as efficiently as Python, so I go for Python here. However, another decision I need to make fairly early now is what scope I want to use with my library. Robot allows for either global, suite, or test case scope. Again, I’m not going to rewrite the official documentation here, just <a href="https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#test-library-scope">read it there</a>, if you want a more detailed explanation. Since I don’t want to create a new instance for every test case or a test suite where I use my library, I’m going to go for global scope.</p>
 
 <p>So, a good start would be something like:</p>
 
@@ -125,7 +125,7 @@
     """</span>
 
     <span class="n">ROBOT_LIBRARY_VERSION</span> <span class="o">=</span> <span class="mf">1.0</span>
-    <span class="n">ROBOT_LIBRARY_SCOPE</span> <span class="o">=</span> <span class="s">'TEST SUITE'</span>
+    <span class="n">ROBOT_LIBRARY_SCOPE</span> <span class="o">=</span> <span class="s">'GLOBAL'</span>
 
     <span class="n">PARAM_SUBSTITUTE</span> <span class="o">=</span> <span class="s">'{}'</span>
     <span class="n">AP_SHOP_ID_CZ</span> <span class="o">=</span> <span class="mi">121</span>
@@ -223,7 +223,7 @@
     """</span>
 
     <span class="n">ROBOT_LIBRARY_VERSION</span> <span class="o">=</span> <span class="mf">1.0</span>
-    <span class="n">ROBOT_LIBRARY_SCOPE</span> <span class="o">=</span> <span class="s">'TEST SUITE'</span>
+    <span class="n">ROBOT_LIBRARY_SCOPE</span> <span class="o">=</span> <span class="s">'GLOBAL'</span>
 
     <span class="n">PARAM_SUBSTITUTE</span> <span class="o">=</span> <span class="s">'{}'</span>
     <span class="n">AP_SHOP_ID_CZ</span> <span class="o">=</span> <span class="mi">121</span>

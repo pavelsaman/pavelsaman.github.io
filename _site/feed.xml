@@ -1,4 +1,39 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.0.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2019-10-13T13:23:16+02:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">pavelsaman</title><subtitle>Personal blog about technology, mostly Linux and testing.</subtitle><entry><title type="html">Database Library for MS SQL in Robot Framework and Python</title><link href="http://localhost:4000/database-library-for-mssql-in-robot-framework-and-python.html" rel="alternate" type="text/html" title="Database Library for MS SQL in Robot Framework and Python" /><published>2019-10-13T09:07:19+02:00</published><updated>2019-10-13T09:07:19+02:00</updated><id>http://localhost:4000/database-library-for-mssql-in-robot-framework-and-python</id><content type="html" xml:base="http://localhost:4000/database-library-for-mssql-in-robot-framework-and-python.html">&lt;p&gt;Robot Framework is a useful tool for test automation. It’s mostly used, and suitable, for UI testing because it can be easily integrated with Selenium API. But there could also be many other libraries, either written by other people or we can come up with our own libraries that extend the number of use cases for which Robot could be used. I’ve recently needed to use Robot in a way when it looks into a DB and checks a few things there. I’m going to share with you a part of my outcome.&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.0.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2019-10-13T20:19:36+02:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">pavelsaman</title><subtitle>Personal blog about technology, mostly Linux and testing.</subtitle><entry><title type="html">Downgrade Software with Pacman</title><link href="http://localhost:4000/downgrade-software-with-pacman.html" rel="alternate" type="text/html" title="Downgrade Software with Pacman" /><published>2019-10-13T15:07:19+02:00</published><updated>2019-10-13T15:07:19+02:00</updated><id>http://localhost:4000/downgrade-software-with-pacman</id><content type="html" xml:base="http://localhost:4000/downgrade-software-with-pacman.html">&lt;p&gt;It’s certainly more common to upgrade software, but on those rare occasions when something breaks with a higher version, it’s useful to know how to downgrade a particular package.&lt;/p&gt;
+
+&lt;p&gt;I’ve recently upgraded Eclipse and RED. I use these for writing tests in Robot framework. However, I got stuck on &lt;a href=&quot;https://github.com/nokia/RED/issues/324&quot;&gt;this error&lt;/a&gt;. After searching for a while and even asking on &lt;a href=&quot;https://sqa.stackexchange.com/q/41124/41012&quot;&gt;stackexchange&lt;/a&gt;, it was pretty sure I had to downgrade Eclipse.&lt;/p&gt;
+
+&lt;p&gt;Since I had this issue on a Windows machine, I didn’t bother much and just installed one more version of Eclipse. It’s a solution as well, not as neat as on Linux, though.&lt;/p&gt;
+
+&lt;p&gt;However, I want to share these steps for downgrading a package on Linux.&lt;/p&gt;
+
+&lt;p&gt;First, I checked if I still have an older version in cache:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;grep&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-i&lt;/span&gt; cachedir pacman.conf
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;ll /var/cache/pacman/pkg/
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Sure enough, there was an older version of Eclipse. So let’s downgrade:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;pacman &lt;span class=&quot;nt&quot;&gt;-U&lt;/span&gt; /var/cache/pacman/pkg/eclipse-java-4.12-1-x86_64.pkg.tar.xz
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;pacman &lt;span class=&quot;nt&quot;&gt;-U&lt;/span&gt; /var/cache/pacman/pkg/eclipse-common-4.12-1-x86_64.pkg.tar.xz
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Done :) Fairly easy. There’s, however, one more step I advise you take. If you perform upgrade of your system right now, Eclipse would again be upgraded. But that’s not exactly what I want since the bug is not solved yet. Fortunately enough, I can change &lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/pacman.conf&lt;/code&gt; so some packages won’t be upgraded:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;grep&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-i&lt;/span&gt; eclipse pacman.conf
+IgnorePkg   &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; eclipse-common eclipse-java
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Any time I use &lt;code class=&quot;highlighter-rouge&quot;&gt;pacman&lt;/code&gt;, it will ignore these two packages. It will also warn me about the fact I choose to ignore their upgrade:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;pacman &lt;span class=&quot;nt&quot;&gt;-Syu&lt;/span&gt;
+...
+warning: eclipse-common: ignoring package upgrade &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;4.12-1 &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; 4.13-1&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+warning: eclipse-java: ignoring package upgrade &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;4.12-1 &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; 4.13-1&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+...
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Nice and easy. It’s also pretty fast, no need to install a new package, uninstall the faulty one etc.&lt;/p&gt;</content><author><name>Pavel Saman</name></author><summary type="html">It’s certainly more common to upgrade software, but on those rare occasions when something breaks with a higher version, it’s useful to know how to downgrade a particular package.</summary></entry><entry><title type="html">Database Library for MS SQL in Robot Framework and Python</title><link href="http://localhost:4000/database-library-for-mssql-in-robot-framework-and-python.html" rel="alternate" type="text/html" title="Database Library for MS SQL in Robot Framework and Python" /><published>2019-10-13T09:07:19+02:00</published><updated>2019-10-13T09:07:19+02:00</updated><id>http://localhost:4000/database-library-for-mssql-in-robot-framework-and-python</id><content type="html" xml:base="http://localhost:4000/database-library-for-mssql-in-robot-framework-and-python.html">&lt;p&gt;Robot Framework is a useful tool for test automation. It’s mostly used, and suitable, for UI testing because it can be easily integrated with Selenium API. But there could also be many other libraries, either written by other people or we can come up with our own libraries that extend the number of use cases for which Robot could be used. I’ve recently needed to use Robot in a way when it looks into a DB and checks a few things there. I’m going to share with you a part of my outcome.&lt;/p&gt;
 
 &lt;h3 id=&quot;structure&quot;&gt;Structure&lt;/h3&gt;
 
@@ -61,7 +96,7 @@
 
 &lt;p&gt;Robot framework allows you to write custom libraries in Python (more natural since Robot is basically a wrapper around Python) and Java. You can read all the details in the &lt;a href=&quot;https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#creating-test-libraries&quot;&gt;official documentation&lt;/a&gt;.&lt;/p&gt;
 
-&lt;p&gt;Ok, I can’t use Java as efficiently as Python, so I go for Python here. However, another decision I need to make fairly early now is what scope I want to use with my library. Robot allows for either global, suite, or test case scope. Again, I’m not going to rewrite the official documentation here, just &lt;a href=&quot;https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#test-library-scope&quot;&gt;read it there&lt;/a&gt;, if you want a more detailed explanation. Since I don’t want to create a new instance for every test case where I use my library, I’m going to go for test suite scope.&lt;/p&gt;
+&lt;p&gt;Ok, I can’t use Java as efficiently as Python, so I go for Python here. However, another decision I need to make fairly early now is what scope I want to use with my library. Robot allows for either global, suite, or test case scope. Again, I’m not going to rewrite the official documentation here, just &lt;a href=&quot;https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#test-library-scope&quot;&gt;read it there&lt;/a&gt;, if you want a more detailed explanation. Since I don’t want to create a new instance for every test case or a test suite where I use my library, I’m going to go for global scope.&lt;/p&gt;
 
 &lt;p&gt;So, a good start would be something like:&lt;/p&gt;
 
@@ -78,7 +113,7 @@
     &quot;&quot;&quot;&lt;/span&gt;
 
     &lt;span class=&quot;n&quot;&gt;ROBOT_LIBRARY_VERSION&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mf&quot;&gt;1.0&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;ROBOT_LIBRARY_SCOPE&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'TEST SUITE'&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;ROBOT_LIBRARY_SCOPE&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'GLOBAL'&lt;/span&gt;
 
     &lt;span class=&quot;n&quot;&gt;PARAM_SUBSTITUTE&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'{}'&lt;/span&gt;
     &lt;span class=&quot;n&quot;&gt;AP_SHOP_ID_CZ&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;121&lt;/span&gt;
@@ -176,7 +211,7 @@
     &quot;&quot;&quot;&lt;/span&gt;
 
     &lt;span class=&quot;n&quot;&gt;ROBOT_LIBRARY_VERSION&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mf&quot;&gt;1.0&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;ROBOT_LIBRARY_SCOPE&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'TEST SUITE'&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;ROBOT_LIBRARY_SCOPE&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'GLOBAL'&lt;/span&gt;
 
     &lt;span class=&quot;n&quot;&gt;PARAM_SUBSTITUTE&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'{}'&lt;/span&gt;
     &lt;span class=&quot;n&quot;&gt;AP_SHOP_ID_CZ&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;121&lt;/span&gt;
@@ -1230,149 +1265,4 @@ A21
 &lt;div class=&quot;language-sql highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;select&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;moz_cookies&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;t&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;where&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;isSecure&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;&lt;img src=&quot;/images/sqlitebrowser.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;</content><author><name>Pavel Saman</name></author><summary type="html">This is just a quick tip on how to see all cookies stored in Firefox.</summary></entry><entry><title type="html">wlp2s0, eno1 - where do they come from?</title><link href="http://localhost:4000/wlp2s0-eno1-where-do-they-come-from.html" rel="alternate" type="text/html" title="wlp2s0, eno1 - where do they come from?" /><published>2019-09-22T09:07:19+02:00</published><updated>2019-09-22T09:07:19+02:00</updated><id>http://localhost:4000/wlp2s0-eno1-where-do-they-come-from</id><content type="html" xml:base="http://localhost:4000/wlp2s0-eno1-where-do-they-come-from.html">&lt;p&gt;I have recently wondered about why network interfaces in Linux have these, at first glance, obscure names. I vaguely remember it used to be more like eth0, wlan0. So I found a bit more info about it, let’s summarize it here.&lt;/p&gt;
-
-&lt;p&gt;First of all, it really is true that the names used to be simple like eth0, wlan0. These names used to be assigned by the kernel. The problem, however, was that if more interfaces were present (say more enthernet interfaces), the names could change from boot to boot. And that is not very useful since other settings like firewall rules could rely on stable naming schemes.&lt;/p&gt;
-
-&lt;p&gt;Alright, so there’s obviously a need for stable names that do not change from boot to boot. Therefore there’s udev that is nowadays used for assigning persistent names to network interfaces. There’s a &lt;a href=&quot;https://www.freedesktop.org/wiki/Software/systemd/PredictableNetworkInterfaceNames/&quot;&gt;good document&lt;/a&gt; about it.&lt;/p&gt;
-
-&lt;p&gt;I think the key part is the algorithm used for determining the names:&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;1. Names incorporating Firmware/BIOS provided index numbers for on-board devices (example: eno1)
-2. Names incorporating Firmware/BIOS provided PCI Express hotplug slot index numbers (example: ens1)
-3. Names incorporating physical/geographical location of the connector of the hardware (example: enp2s0)
-4. Names incorporating the interfaces's MAC address (example: enx78e7d1ea46da)
-5. Classic, unpredictable kernel-native ethX naming (example: eth0)
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;It would also be useful to see this in more detail, let’s have a look into the &lt;a href=&quot;https://github.com/systemd/systemd/blob/master/src/udev/net/link-config.c#L403&quot;&gt;code&lt;/a&gt;. There I can see the case statement that goes like this:&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;1. ID_NET_NAME_FROM_DATABASE
-2. ID_NET_NAME_ONBOARD
-3. ID_NET_NAME_SLOT
-4. ID_NET_NAME_PATH
-5. ID_NET_NAME_MAC
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Knowing this, I’ll find out what’s the situation on my system. I’ll show the process for my wifi interface.&lt;/p&gt;
-
-&lt;p&gt;First, I get the name of such an interface:&lt;/p&gt;
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;ip a
-...
-3: wlp2s0: &amp;lt;NO-CARRIER,BROADCAST,MULTICAST,UP&amp;gt; mtu 1500 qdisc mq state DOWN group default qlen 1000
-...
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Then, I will find out more about my interface using utility &lt;code class=&quot;highlighter-rouge&quot;&gt;udevadm&lt;/code&gt;:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;udevadm info &lt;span class=&quot;nt&quot;&gt;--path&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/sys/class/net/wlp2s0
-P: /devices/pci0000:00/0000:00:1c.3/0000:02:00.0/net/wlp2s0
-L: 0
-E: &lt;span class=&quot;nv&quot;&gt;DEVPATH&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/devices/pci0000:00/0000:00:1c.3/0000:02:00.0/net/wlp2s0
-E: &lt;span class=&quot;nv&quot;&gt;DEVTYPE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;wlan
-E: &lt;span class=&quot;nv&quot;&gt;INTERFACE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;wlp2s0
-E: &lt;span class=&quot;nv&quot;&gt;IFINDEX&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;3
-E: &lt;span class=&quot;nv&quot;&gt;SUBSYSTEM&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;net
-E: &lt;span class=&quot;nv&quot;&gt;USEC_INITIALIZED&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;4181766
-E: &lt;span class=&quot;nv&quot;&gt;ID_NET_NAMING_SCHEME&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;v240
-E: &lt;span class=&quot;nv&quot;&gt;ID_NET_NAME_MAC&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;wlx94659c7f5855
-E: &lt;span class=&quot;nv&quot;&gt;ID_OUI_FROM_DATABASE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;Intel Corporate
-E: &lt;span class=&quot;nv&quot;&gt;ID_NET_NAME_PATH&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;wlp2s0
-E: &lt;span class=&quot;nv&quot;&gt;ID_BUS&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;pci
-E: &lt;span class=&quot;nv&quot;&gt;ID_VENDOR_ID&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;0x8086
-E: &lt;span class=&quot;nv&quot;&gt;ID_MODEL_ID&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;0x095a
-E: &lt;span class=&quot;nv&quot;&gt;ID_PCI_CLASS_FROM_DATABASE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;Network controller
-E: &lt;span class=&quot;nv&quot;&gt;ID_PCI_SUBCLASS_FROM_DATABASE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;Network controller
-E: &lt;span class=&quot;nv&quot;&gt;ID_VENDOR_FROM_DATABASE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;Intel Corporation
-E: &lt;span class=&quot;nv&quot;&gt;ID_MODEL_FROM_DATABASE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;Wireless 7265 &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;Dual Band Wireless-AC 7265&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-E: &lt;span class=&quot;nv&quot;&gt;ID_MM_CANDIDATE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;1
-E: &lt;span class=&quot;nv&quot;&gt;ID_PATH&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;pci-0000:02:00.0
-E: &lt;span class=&quot;nv&quot;&gt;ID_PATH_TAG&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;pci-0000_02_00_0
-E: &lt;span class=&quot;nv&quot;&gt;ID_NET_DRIVER&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;iwlwifi
-E: &lt;span class=&quot;nv&quot;&gt;ID_NET_LINK_FILE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/usr/lib/systemd/network/99-default.link
-E: &lt;span class=&quot;nv&quot;&gt;ID_NET_NAME&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;wlp2s0
-E: &lt;span class=&quot;nv&quot;&gt;SYSTEMD_ALIAS&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/sys/subsystem/net/devices/wlp2s0 /sys/subsystem/net/devices/wlp2s0
-E: &lt;span class=&quot;nv&quot;&gt;TAGS&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;:systemd:
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;I can already see that the first match is &lt;code class=&quot;highlighter-rouge&quot;&gt;ID_NET_NAME_PATH&lt;/code&gt;, therefore such a name is used. If I look into &lt;code class=&quot;highlighter-rouge&quot;&gt;lspci&lt;/code&gt;:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;lspci
-...
-02:00.0 Network controller: Intel Corporation Wireless 7265 &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;rev 59&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-...
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;I can see the interface is on bus 2, slot 0, so then I just need to figure out how udev worked from that to &lt;code class=&quot;highlighter-rouge&quot;&gt;wlp2s0&lt;/code&gt;.&lt;/p&gt;
-
-&lt;p&gt;It turns out the naming scheme works like this:&lt;/p&gt;
-&lt;ol&gt;
-  &lt;li&gt;if it’s ethernet, the prefix will be &lt;code class=&quot;highlighter-rouge&quot;&gt;en&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;if it’s wlan, the prefix will be &lt;code class=&quot;highlighter-rouge&quot;&gt;wl&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;if it’s wwlan, the prefix will be &lt;code class=&quot;highlighter-rouge&quot;&gt;ww&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;there could also be &lt;code class=&quot;highlighter-rouge&quot;&gt;sl&lt;/code&gt; for serial line IP (slip), which I don’t really know what it means now&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;Then the other letters will be:&lt;/p&gt;
-&lt;ol&gt;
-  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;p&lt;/code&gt; for bus&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;s&lt;/code&gt; for slot&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;f&lt;/code&gt; for function&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;x&lt;/code&gt; for MAC address&lt;/li&gt;
-  &lt;li&gt;and some other options as well that I’m not familiarized with for now&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;In my case, it’s a wlan interface, therefore we start with &lt;code class=&quot;highlighter-rouge&quot;&gt;wl&lt;/code&gt; prefix, then the name is determined based on rule number 4 (&lt;code class=&quot;highlighter-rouge&quot;&gt;ID_NET_NAME_PATH&lt;/code&gt;) from the above algorithm. The bus number is 2, therefore &lt;code class=&quot;highlighter-rouge&quot;&gt;p2&lt;/code&gt; and the slot is 0, therefore &lt;code class=&quot;highlighter-rouge&quot;&gt;s0&lt;/code&gt;. It leaves me with the name &lt;code class=&quot;highlighter-rouge&quot;&gt;wlp2s0&lt;/code&gt;.&lt;/p&gt;
-
-&lt;h3 id=&quot;changing-the-name&quot;&gt;Changing the Name&lt;/h3&gt;
-
-&lt;p&gt;The names should be persistent just based on the automatic procedure described above, yet for my home use on my laptop, I’d like to have a different name, preferably like the historic names (wlan0 etc.).&lt;/p&gt;
-
-&lt;p&gt;Udev also allows for custom naming schemes that take precedence over the algorithm described above. I did exactly that.&lt;/p&gt;
-
-&lt;p&gt;It really boils down to only one file in &lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/udev/rules.d&lt;/code&gt;:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cat &lt;/span&gt;20-wlan.rules 
-&lt;span class=&quot;nv&quot;&gt;SUBSYSTEM&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;==&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;net&quot;&lt;/span&gt;, &lt;span class=&quot;nv&quot;&gt;DEVPATH&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;==&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;/devices/pci0000:00/0000:00:1c.3/0000:02:00.0/net/*&quot;&lt;/span&gt;, &lt;span class=&quot;nv&quot;&gt;NAME&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;wlan0&quot;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;I just used information provided by &lt;code class=&quot;highlighter-rouge&quot;&gt;udevadm&lt;/code&gt; utility. It’s already shown above.&lt;/p&gt;
-
-&lt;p&gt;On next boot, my wlan interface will be again named &lt;code class=&quot;highlighter-rouge&quot;&gt;wlan0&lt;/code&gt;. Another look with &lt;code class=&quot;highlighter-rouge&quot;&gt;udevadm&lt;/code&gt; shows an alias:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;udevadm info &lt;span class=&quot;nt&quot;&gt;--path&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/sys/class/net/wlan0
-P: /devices/pci0000:00/0000:00:1c.3/0000:02:00.0/net/wlan0
-L: 0
-E: &lt;span class=&quot;nv&quot;&gt;DEVPATH&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/devices/pci0000:00/0000:00:1c.3/0000:02:00.0/net/wlan0
-E: &lt;span class=&quot;nv&quot;&gt;DEVTYPE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;wlan
-E: &lt;span class=&quot;nv&quot;&gt;INTERFACE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;wlan0
-E: &lt;span class=&quot;nv&quot;&gt;IFINDEX&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;3
-E: &lt;span class=&quot;nv&quot;&gt;SUBSYSTEM&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;net
-E: &lt;span class=&quot;nv&quot;&gt;USEC_INITIALIZED&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;4285178
-E: &lt;span class=&quot;nv&quot;&gt;ID_NET_NAMING_SCHEME&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;v240
-E: &lt;span class=&quot;nv&quot;&gt;ID_NET_NAME_MAC&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;wlx94659c7f5855
-E: &lt;span class=&quot;nv&quot;&gt;ID_OUI_FROM_DATABASE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;Intel Corporate
-E: &lt;span class=&quot;nv&quot;&gt;ID_NET_NAME_PATH&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;wlp2s0
-E: &lt;span class=&quot;nv&quot;&gt;ID_BUS&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;pci
-E: &lt;span class=&quot;nv&quot;&gt;ID_VENDOR_ID&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;0x8086
-E: &lt;span class=&quot;nv&quot;&gt;ID_MODEL_ID&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;0x095a
-E: &lt;span class=&quot;nv&quot;&gt;ID_PCI_CLASS_FROM_DATABASE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;Network controller
-E: &lt;span class=&quot;nv&quot;&gt;ID_PCI_SUBCLASS_FROM_DATABASE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;Network controller
-E: &lt;span class=&quot;nv&quot;&gt;ID_VENDOR_FROM_DATABASE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;Intel Corporation
-E: &lt;span class=&quot;nv&quot;&gt;ID_MODEL_FROM_DATABASE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;Wireless 7265 &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;Dual Band Wireless-AC 7265&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-E: &lt;span class=&quot;nv&quot;&gt;ID_MM_CANDIDATE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;1
-E: &lt;span class=&quot;nv&quot;&gt;ID_PATH&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;pci-0000:02:00.0
-E: &lt;span class=&quot;nv&quot;&gt;ID_PATH_TAG&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;pci-0000_02_00_0
-E: &lt;span class=&quot;nv&quot;&gt;ID_NET_DRIVER&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;iwlwifi
-E: &lt;span class=&quot;nv&quot;&gt;ID_NET_LINK_FILE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/usr/lib/systemd/network/99-default.link
-E: &lt;span class=&quot;nv&quot;&gt;ID_NET_NAME&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;wlp2s0
-E: &lt;span class=&quot;nv&quot;&gt;SYSTEMD_ALIAS&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/sys/subsystem/net/devices/wlan0
-E: &lt;span class=&quot;nv&quot;&gt;TAGS&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;:systemd:
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;And my interface is renamed:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;ip a
-...
-3: wlan0: &amp;lt;NO-CARRIER,BROADCAST,MULTICAST,UP&amp;gt; mtu 1500 qdisc mq state DOWN group default qlen 1000
-...
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;</content><author><name>Pavel Saman</name></author><summary type="html">I have recently wondered about why network interfaces in Linux have these, at first glance, obscure names. I vaguely remember it used to be more like eth0, wlan0. So I found a bit more info about it, let’s summarize it here.</summary></entry></feed>
+&lt;p&gt;&lt;img src=&quot;/images/sqlitebrowser.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;</content><author><name>Pavel Saman</name></author><summary type="html">This is just a quick tip on how to see all cookies stored in Firefox.</summary></entry></feed>
