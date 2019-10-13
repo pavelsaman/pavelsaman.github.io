@@ -70,7 +70,7 @@ As I said at the beginning, I want to write a library that connects to a MS SQL 
 
 Robot framework allows you to write custom libraries in Python (more natural since Robot is basically a wrapper around Python) and Java. You can read all the details in the [official documentation](https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#creating-test-libraries).
 
-Ok, I can't use Java as efficiently as Python, so I go for Python here. However, another decision I need to make fairly early now is what scope I want to use with my library. Robot allows for either global, suite, or test case scope. Again, I'm not going to rewrite the official documentation here, just [read it there](https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#test-library-scope), if you want a more detailed explanation. Since I don't want to create a new instance for every test case where I use my library, I'm going to go for test suite scope.
+Ok, I can't use Java as efficiently as Python, so I go for Python here. However, another decision I need to make fairly early now is what scope I want to use with my library. Robot allows for either global, suite, or test case scope. Again, I'm not going to rewrite the official documentation here, just [read it there](https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#test-library-scope), if you want a more detailed explanation. Since I don't want to create a new instance for every test case or a test suite where I use my library, I'm going to go for global scope.
 
 So, a good start would be something like:
 
@@ -88,7 +88,7 @@ class AlpineDB(object):
     """
 
     ROBOT_LIBRARY_VERSION = 1.0
-    ROBOT_LIBRARY_SCOPE = 'TEST SUITE'
+    ROBOT_LIBRARY_SCOPE = 'GLOBAL'
 
     PARAM_SUBSTITUTE = '{}'
     AP_SHOP_ID_CZ = 121
