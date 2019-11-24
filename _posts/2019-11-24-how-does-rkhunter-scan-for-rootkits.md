@@ -7,7 +7,7 @@ categories: linux security
 
 Not long time ago, I used a useful tool `rkhunter` to scan my system for possible rootkits and other vulnerabilities. The first time I came across rkhunter was on [Arch wiki site](https://wiki.archlinux.org/index.php/Rkhunter). However, I had not much idea about how the scan for rootkits actually works. After some time spent reading, I'd like to share a thing or two about how rkhunter actually works. It might shed some light on the whole idea of rootkits as well.
 
-### Install Rkhunter
+### Install rkhunter
 
 First, let's get rkhunter on your machine. I'm using Manjaro, so it's easy via its pacman package manager:
 
