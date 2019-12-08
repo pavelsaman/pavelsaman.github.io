@@ -1,4 +1,3 @@
-
 ---
 layout: page
 title:  "Where To Start a Testing Career"
