@@ -126,7 +126,7 @@ Use characters, digits, and special characters as a basis for the string generat
 
 And so on...
 
-### s
+### Limitations
 
 A number of limitations that are not limitations to me, but better mention them here:
 
