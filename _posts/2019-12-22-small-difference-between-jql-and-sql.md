@@ -53,7 +53,7 @@ project in ("Bambule CZ E-commerce", "Alpine Pro CZ&SK E-commerce", "Asko CZ&SK 
 
 And Jira returned status code 400:
 
-![image](/images/jira_req.png)
+![image](/images/jira_req_nok.png)
 
 So it turns out that if one of the values in the list of values after `in` operator is e.g. mispelled, the result will always be "bad query". But why? What if I had, that's exactly my situation actually, tickets that meet the condition, but just one project is mispelled or non-existing? Why do I need to check the whole query, correct it, and try it again?
 
