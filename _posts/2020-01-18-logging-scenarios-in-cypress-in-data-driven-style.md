@@ -13,7 +13,7 @@ For the following example, I'll use something easy, straighforward. I've chosen 
 
 I won't explain some basics like how to set up node, npm, Cypress, how to find what requests go to the server, so we can use them in tests etc. I'll just show a working example (well, I won't show any links and credentials as this is an example from my place of work :)), and explain a thing or two.
 
-However, it's reasonable to say that some of the ideas in my example come from [one of the official examples provided my Cypress](https://github.com/cypress-io/cypress-example-recipes/tree/master/examples/logging-in__single-sign-on), especially the custom Cypress command:
+However, it's reasonable to say that some of the ideas in my example come from [one of the official examples provided by Cypress](https://github.com/cypress-io/cypress-example-recipes/tree/master/examples/logging-in__single-sign-on), especially the custom Cypress command:
 
 ```javascript
 const _ = Cypress._
