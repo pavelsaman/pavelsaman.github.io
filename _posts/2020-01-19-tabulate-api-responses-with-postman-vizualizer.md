@@ -130,4 +130,4 @@ And that really is all :)
 
 ### Conclusion
 
-Personally, this is not a feature I couldn't live without. It might be nice to have it for some edge use cases, but in my example, pretty json is already pretty enough, so I can read it like that with no need to make a table out of the data. On the other hand, if you need to share the results with somebody, it might come in handy to be able to transform it into such a tabular format.
+Personally, this is a feature I can live without. It might be nice to have it for some edge use cases, but in my example, pretty json is already pretty enough, so I can read it like that with no need to make a table out of the data. On the other hand, if you need to share the results with somebody, it might come in handy to be able to transform it into such a tabular format.
