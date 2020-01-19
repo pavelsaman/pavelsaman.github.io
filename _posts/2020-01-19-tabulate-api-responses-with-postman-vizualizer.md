@@ -58,7 +58,7 @@ I'm already showing it in a pretty format, so it's easy to read.
 
 Now, within Postman's visualizer, you can also show the same data in a table:
 
-![image](/images/postman_visualizer_panel.png)
+![image](/images/postman_visualizer_example.png)
 
 Actually, you can use more data visual representations, not only tables. Postman has [other examples on their official site](https://learning.getpostman.com/docs/postman/sending-api-requests/visualizer/).
 
