@@ -109,7 +109,7 @@ sudo dd bs=4096 skip=44077824 count=256 if=/dev/mapper/luks-11e54aef-4128-4301-9
 We can actually see the data from the file here. There's only one line, but the `*` symbolizes the same data just repeats.
 5. I'll delete the file, perform some synchonization and run 4. command again:
 ```bash
-$ trim.test 
+$ rm trim.test 
 removed 'trim.test'
 $ sync
 $ echo 1 > /proc/sys/vm/drop_caches
@@ -123,7 +123,7 @@ $ sudo dd bs=4096 skip=44077824 count=256 if=/dev/mapper/luks-11e54aef-4128-4301
 ```
 **As you can see, I've deleted the file first, but I'm still reading the same data from the device.** How come? That's exactly because I have turned off continuous trimming. How? There's no `discard` option for this filesystem in `/etc/fstab`.
 
-In order for the continuous trim to be enabled, `discard` option has to be put in for those partitions in `/etc/fstab` for which you want to enable the command. If you're working with encrypted , you need to consider `/etc/crypttab` as well and put in the `discard` option there as well.
+In order for the continuous trim to be enabled, `discard` option has to be put in for those partitions in `/etc/fstab` for which you want to enable the command. If you're working with encrypted partitions, you need to consider `/etc/crypttab` as well and put in the `discard` option there as well.
 I'll do the change now, reboot and simulate this scenario again.
 
 When I delete the file and read from the address with `dd` command, I get a different output this time:
