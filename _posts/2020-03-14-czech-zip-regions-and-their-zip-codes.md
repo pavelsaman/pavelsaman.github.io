@@ -7,7 +7,7 @@ categories: other
 
 The Czech Republic currently consists of [14 regions](https://en.wikipedia.org/wiki/Regions_of_the_Czech_Republic). Zip codes in the CZE consist of 5 digits, first 2 - 3 of them representing a city, or (city) district. After first 3 digits, a space is usually written. It's a common trap to think that it's easy to go from a zip code to region. It'd make sense, but due to historical reasons, it's not the reality.
 
-First, one usually stumbles upon [this psc.cz site](https://www.psc.cz/). On the first glance, it looks pretty straigforward:
+First, one usually stumbles upon [this psc.cz site](https://www.psc.cz/). On the first glance, it looks pretty straightforward:
 
 ```
 1 – PSČ Prahy
