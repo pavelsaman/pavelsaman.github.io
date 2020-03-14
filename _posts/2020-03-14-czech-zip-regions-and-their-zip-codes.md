@@ -1,6 +1,6 @@
 ---
 layout: page
-title:  "Czech Regions and its Zip Codes"
+title:  "Czech Regions and their Zip Codes"
 date:   2020-03-14 13:07:19 +0200
 categories: other
 ---
