@@ -37,11 +37,11 @@ If you click on the last link, there's actually the following picture of the CZE
 
 However, we do not really use districts anymore, so again, such a mapping between zip code digits and districts is not the most valid method today.
 
-Finally, after a few more minutes of googling, this wiki page comes up: https://en.wikipedia.org/wiki/List_of_postal_codes_in_the_Czech_Republic It's finally a pretty detailed list of zip code ranges and what regions they belong to. What seems obvious looking at the list:
+Finally, after a few more minutes of googling, [this wiki page comes up](https://en.wikipedia.org/wiki/List_of_postal_codes_in_the_Czech_Republic). It's finally a pretty detailed list of zip code ranges and what regions they belong to. What seems obvious looking at the list:
 
 - the ranges of some regions are not really ordered, e.g. Zlín region seems to have a range of 750 00 - 769 99, but zip code 754** doesn't really exist, and range 686 00 - 688 99 belongs to Zlín as well
 
-So, the only chance is to focus on all those zip code ranges belonging to certain districts and then rellying on the fact that each district belongs to a particular region. This way, one can create something like I did in awk, a function that makes this mapping happen:
+So, the only chance is to focus on all those zip code ranges belonging to certain districts and then rellying on the fact that each district belongs to a particular region. This way, one can create something like I did in awk, a function that makes this mapping between zip codes and their regions happen:
 
 ```awk
 #!/usr/bin/awk
@@ -160,7 +160,7 @@ function region(zip) {
 }
 ```
 
-You can see that among my awk libraries on github: https://github.com/pavelsaman/Awk-lib/blob/master/czech_regions.awk
+You can see that among my [awk libraries on github](https://github.com/pavelsaman/Awk-lib/blob/master/czech_regions.awk).
 
 I've tested this function on roughly 26 000 entries from a real ecommerce database:
 
@@ -187,7 +187,7 @@ END {
 }
 ```
 
-I focused on those entries that very not mapped with my `region()` function, this is a complete (not aggregated) list:
+I focused on those entries that were not mapped with my `region()` function, this is a complete (not aggregated) list:
 
 ```
 35493
