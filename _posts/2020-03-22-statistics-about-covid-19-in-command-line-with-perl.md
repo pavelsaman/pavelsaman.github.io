@@ -477,9 +477,12 @@ sub countries_list {
     # build a list from list of jsons
     my @list_countries = ();
     foreach my $country (@$ref_countries) {
-        my $data = [$country->{countryname}, $country->{confirmed},
+        my $data = [
+                    $country->{countryname}, $country->{confirmed},
                     $country->{recovered}, $country->{deaths},
-                    $country->{lastupdate}];
+                    $country->{lastupdate}
+                   ]
+                   ;
         push @list_countries, $data; 
     }
 
@@ -566,9 +569,12 @@ sub countries_list {
     # build a list from list of jsons
     my @list_countries = ();
     foreach my $country (@$ref_countries) {
-        my $data = [$country->{countryname}, $country->{confirmed},
+        my $data = [
+                    $country->{countryname}, $country->{confirmed},
                     $country->{recovered}, $country->{deaths},
-                    $country->{lastupdate}];
+                    $country->{lastupdate}
+                   ]
+                   ;
         push @list_countries, $data; 
     }
 
