@@ -1,6 +1,6 @@
 ---
 layout: page
-title:  "Statistics About COVID-19 in Command Line With Perl"
+title:  "Statistics about COVID-19 in Command Line With Perl"
 date:   2020-03-22 13:07:19 +0200
 categories: perl
 ---
