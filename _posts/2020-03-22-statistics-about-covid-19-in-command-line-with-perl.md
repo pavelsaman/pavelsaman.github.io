@@ -466,7 +466,6 @@ Back to the frontend part. So far, I've built command line switches using the `G
 
 use strict;
 use warnings;
-use lib '.';
 use Getopt::Long;
 use Corona::Corona;
 use feature 'say';
