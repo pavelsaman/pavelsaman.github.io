@@ -227,13 +227,13 @@ package Corona;
 use strict;
 use warnings;
 
+$Corona::Corona::VERSION = "1.00";
+
 use constant BASE_URL     => "wuhan-coronavirus-api.laeyoung.endpoint.ainize.ai";
 use constant ENDPOINT     => "/jhu-edu/latest";
 use constant SUCCESS      => 1;
 use constant FAIL         => 0;
 use constant DATA_PRESENT => 0;
-
-our $VERSION = 1.0.0;
 
 sub new {
     my $class = shift;
@@ -467,7 +467,7 @@ Back to the frontend part. So far, I've built command line switches using the `G
 use strict;
 use warnings;
 use Getopt::Long;
-use Corona::Corona;
+use Corona::Corona 1.00;
 use feature 'say';
 
 # transforms a json to a list needed for Term::Table
