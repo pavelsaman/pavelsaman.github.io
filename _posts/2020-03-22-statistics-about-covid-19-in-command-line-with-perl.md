@@ -48,13 +48,13 @@ Let's think about what I want from my little utility in the first place:
 The main flow could look something like this:
 
 ```perl
-my $corona = Corona->new();
+my $corona = Corona::Statistics->new();
 
 # getting data
-$corona->get_data();
+$corona->get_all_stats();
 
 # filtering only countries I want
-my $selected_countries = $corona->get_country_data(\@countries);
+my $selected_countries = $corona->get_country_stats(\@countries);
 die "No country found\n" if not @$selected_countries;
 
 # pretty print everything to STDOUT
@@ -67,31 +67,34 @@ First the constructor:
 
 ```perl
 sub new {
-    my $class = shift;
+    my $class          = shift;   
+    my $iso2_filename  = shift;
+    my $iso3_filename  = shift; 
 
-    my $self = {};
+    # because ConfigReader::Simple can't interpret '~' in path
+    $iso2_filename =~ s/^~/$ENV{HOME}/ if $iso2_filename and $ENV{HOME};
+    $iso3_filename =~ s/^~/$ENV{HOME}/ if $iso3_filename and $ENV{HOME};
 
-    bless $self, $class;
-
-    return $self;
+    return bless { "iso2" => $iso2_filename,
+                   "iso3" => $iso3_filename, countries => {}
+                 } => $class;
 }
 ```
 
 Then the subroutine for getting data from the endpoint. This block will use module `Net::HTTPS` which you most likely need to install with your package manager or using [CPAN](https://metacpan.org/pod/Net::HTTPS).
 
 ```perl
-sub get_data {
+sub get_all_stats {
     my $self = shift;
 
     # if I already have data, don't call the endpoint again
-    return DATA_PRESENT if keys %$self;  
+    return DATA_IS_PRESENT if keys %{ $self->{countries} };  
 
-    # new request
-    use Net::HTTPS;
+    # new request    
     my $req = Net::HTTPS->new(Host => BASE_URL)
-        or die "Cannot connect to the server\n";
-    $req->write_request(GET => ENDPOINT, 'Accept' => 'application/json');   
-    die "Cannot get answer from the server\n"
+        or croak __PACKAGE__ . "::get_data(): Cannot connect to the server\n";
+    $req->write_request(GET => COUNTRY_STATS, 'Accept' => 'application/json');   
+    croak __PACKAGE__ . "::get_data(): Cannot get answer from the server\n"
         if not $req->read_response_headers;
 
     my $response_body = "";
@@ -99,9 +102,10 @@ sub get_data {
     # read response body as long as there's some data
     while (1) {
         my $buf;
-        my $n = $req->read_entity_body($buf, 1024); 
-        die "Error reading the response\n" if not defined $n;  
-        last if not $n;
+        my $body = $req->read_entity_body($buf, 1024); 
+        croak __PACKAGE__ . "get_data(): Error reading the response\n"
+            if not defined $body;  
+        last if not $body;
         $response_body .= $buf;
     }
 
@@ -116,29 +120,53 @@ The subroutine `_parse_response_body()` is the key, so let's show its content he
 
 ```perl
 sub _parse_response_body {
-    my $self          = shift;
-    my $response_body = shift;
+    my $self              = shift;
+    my $response_body_ref = shift;
     
-    # http response is a json
-    use JSON::Parse ':all';
-    my $perl_struct = parse_json($$response_body);
+    # http response is a json    
+    my $corona_stats = parse_json($$response_body_ref);    
 
-    foreach my $obj (@$perl_struct) {   
-        my $countryname = lc $obj->{countryregion};  
-        $self->{$countryname}->{countryname} = $obj->{countryregion};
-        $self->{$countryname}->{lastupdate} = $obj->{lastupdate};        
-        $self->{$countryname}->{confirmed} += $obj->{confirmed} 
-            if defined $obj->{confirmed};
-        $self->{$countryname}->{recovered} += $obj->{recovered} 
-            if defined $obj->{recovered};
-        $self->{$countryname}->{deaths} += $obj->{deaths} 
-            if defined $obj->{deaths};
-        my $iso2 = lc $obj->{countrycode}->{iso2} 
-            if defined $obj->{countrycode}->{iso2};
-        my $iso3 = lc $obj->{countrycode}->{iso3}
-            if defined $obj->{countrycode}->{iso3};
-        $self->{$countryname}->{iso2} = $iso2 if defined $iso2;
-        $self->{$countryname}->{iso3} = $iso3 if defined $iso3;               
+    # also try to look up country codes in dot files in $HOME    
+    my $iso2_file = ConfigReader::Simple->new($self->{iso2});
+    my $iso3_file = ConfigReader::Simple->new($self->{iso3});
+
+    foreach my $country (@$corona_stats) {  
+        my $countryname = lc $country->{countryregion};  
+        $self->{countries}->{$countryname}->{countryname}
+            = $country->{countryregion};
+        $self->{countries}->{$countryname}->{lastupdate}
+            = $country->{lastupdate};        
+        $self->{countries}->{$countryname}->{confirmed}
+            += $country->{confirmed} 
+                if defined $country->{confirmed};
+        $self->{countries}->{$countryname}->{recovered}
+            += $country->{recovered} 
+                if defined $country->{recovered};
+        $self->{countries}->{$countryname}->{deaths}
+            += $country->{deaths} 
+                if defined $country->{deaths};
+        
+        if (defined $country->{countrycode}->{iso2}) {
+            $self->{countries}->{$countryname}->{iso2}
+                = lc $country->{countrycode}->{iso2};
+        }
+        # try to look up country codes in config files
+        else {            
+            $self->{countries}->{$countryname}->{iso2}
+                = lc $iso2_file->get($countryname)
+                    if $iso2_file->get($countryname) and $iso2_file;
+        }
+
+        if (defined $country->{countrycode}->{iso3}) {
+            $self->{countries}->{$countryname}->{iso3}
+                = lc $country->{countrycode}->{iso3};
+        }  
+        # try to look up country codes in config files
+        else {
+            $self->{countries}->{$countryname}->{iso3}
+                = lc $iso3_file->get($countryname)
+                    if $iso3_file->get($countryname) and $iso3_file;
+        }           
     }        
 }
 ```
@@ -150,17 +178,19 @@ Now I have all the data in a structure that Perl understands, so the next step w
 ```perl
 # get command line switches
 my $result = GetOptions(
-              'help|h'       => \ my $help,
-              'country|c=s@' => \ my @countries
+              'help|h'       => \ my $requested_help,
+              'country|c=s@' => \ my @selected_countries_by_user
              );
 ```
 
-I'll also make the list given by the user unique, so no value will be there more times:
+I'll also make the list given by the user unique (and lowercase), so no value will be there more times:
 
 ```perl
-# make the list of countries unique
 use List::MoreUtils qw(uniq);
-@countries = uniq @countries;
+@selected_countries_by_user = uniq @selected_countries_by_user;
+# make the values lower case
+@selected_countries_by_user
+    = map { tr/[A-Z]/[a-z]/; $_ } @selected_countries_by_user;
 ```
 
 Module `List::MoreUtils` will likely have to be installed as well.
@@ -168,22 +198,22 @@ Module `List::MoreUtils` will likely have to be installed as well.
 Finally, I have everything needed for building the subroutine `get_country_data()`:
 
 ```perl
-sub get_country_data {
-    my $self      = shift;
-    my $countries = shift;    
+sub get_country_stats {
+    my $self                     = shift;
+    my $user_given_countries_ref = shift;    
 
     my @selected_countries = ();
 
     # if user requested all countries
-    if ($countries->[0] =~ /^all$/i) {
-        my @all_countries = keys %$self;        
-        $countries = \@all_countries;
+    if ($user_given_countries_ref->[0] =~ /^all$/i) {
+        my @all_countries = keys %{ $self->{countries} };        
+        $user_given_countries_ref = \@all_countries;
     }
 
-    foreach my $country (@$countries) {
+    foreach my $country (@$user_given_countries_ref) {
         # find by key first
-        if ($self->{$country}) {
-            push @selected_countries, $self->{$country};
+        if ($self->{countries}->{$country}) {
+            push @selected_countries, $self->{countries}->{$country};
         }
         # find by iso2 or iso3
         else {
@@ -204,62 +234,71 @@ It will return a reference to a list of objects (statistics). I primarily search
 sub _get_country_data_by_iso {
     my $self = shift;
     my $iso  = shift;   
-
-    foreach my $country (%$self) {   
+    
+    foreach my $country (keys %{ $self->{countries} }) {   
         # skip if a country doesn't have iso2 or iso3 attributes     
-        next if not $self->{$country}->{iso2};
-        next if not $self->{$country}->{iso3};
+        next if not $self->{countries}->{$country}->{iso2};
+        next if not $self->{countries}->{$country}->{iso3};
 
         # return a reference to a particular object found by iso2 or iso3
-        return $self->{$country} if $self->{$country}->{iso2} eq $iso;        
-        return $self->{$country} if $self->{$country}->{iso3} eq $iso;
+        return $self->{countries}->{$country}
+            if $self->{countries}->{$country}->{iso2} eq $iso;        
+        return $self->{countries}->{$country}
+            if $self->{countries}->{$country}->{iso3} eq $iso;
     }
 
-    return FAIL;
+    return FAILURE;
 }
 ```
 
 That's all, the whole module looks like this:
 
 ```perl
-package Corona;
+package Corona::Statistics;
 
 use strict;
 use warnings;
+use Net::HTTPS;
+use Carp qw(croak);
+use JSON::Parse qw(parse_json);
+use ConfigReader::Simple qw(get);
 
-$Corona::Corona::VERSION = "1.00";
+our $VERSION = '1.03';
 
-use constant BASE_URL     => "wuhan-coronavirus-api.laeyoung.endpoint.ainize.ai";
-use constant ENDPOINT     => "/jhu-edu/latest";
-use constant SUCCESS      => 1;
-use constant FAIL         => 0;
-use constant DATA_PRESENT => 0;
+use constant BASE_URL        => "wuhan-coronavirus-api.laeyoung.endpoint.ainize.ai";
+use constant COUNTRY_STATS   => "/jhu-edu/latest";
+use constant SUCCESS         => 1;
+use constant FAILURE         => 0;
+use constant DATA_IS_PRESENT => 0;
 
 sub new {
-    my $class = shift;
+    my $class          = shift;   
+    my $iso2_filename  = shift;
+    my $iso3_filename  = shift; 
 
-    my $self = {};
+    # because ConfigReader::Simple can't interpret '~' in path
+    $iso2_filename =~ s/^~/$ENV{HOME}/ if $iso2_filename and $ENV{HOME};
+    $iso3_filename =~ s/^~/$ENV{HOME}/ if $iso3_filename and $ENV{HOME};
 
-    bless $self, $class;
-
-    return $self;
+    return bless { "iso2" => $iso2_filename,
+                   "iso3" => $iso3_filename, countries => {}
+                 } => $class;
 }
 
 # gets data from the endpoint
 # calls _parse_response_body() for parsing of the data
 # returns 1 if there's no error
-sub get_data {
+sub get_all_stats {
     my $self = shift;
 
     # if I already have data, don't call the endpoint again
-    return DATA_PRESENT if keys %$self;  
+    return DATA_IS_PRESENT if keys %{ $self->{countries} };  
 
-    # new request
-    use Net::HTTPS;
+    # new request    
     my $req = Net::HTTPS->new(Host => BASE_URL)
-        or die "Cannot connect to the server\n";
-    $req->write_request(GET => ENDPOINT, 'Accept' => 'application/json');   
-    die "Cannot get answer from the server\n"
+        or croak __PACKAGE__ . "::get_data(): Cannot connect to the server\n";
+    $req->write_request(GET => COUNTRY_STATS, 'Accept' => 'application/json');   
+    croak __PACKAGE__ . "::get_data(): Cannot get answer from the server\n"
         if not $req->read_response_headers;
 
     my $response_body = "";
@@ -267,9 +306,10 @@ sub get_data {
     # read response body as long as there's some data
     while (1) {
         my $buf;
-        my $n = $req->read_entity_body($buf, 1024); 
-        die "Error reading the response\n" if not defined $n;  
-        last if not $n;
+        my $body = $req->read_entity_body($buf, 1024); 
+        croak __PACKAGE__ . "get_data(): Error reading the response\n"
+            if not defined $body;  
+        last if not $body;
         $response_body .= $buf;
     }
 
@@ -296,50 +336,74 @@ sub get_data {
 # { ... }
 #]
 sub _parse_response_body {
-    my $self          = shift;
-    my $response_body = shift;
+    my $self              = shift;
+    my $response_body_ref = shift;
     
-    # http response is a json
-    use JSON::Parse ':all';
-    my $perl_struct = parse_json($$response_body);
+    # http response is a json    
+    my $corona_stats = parse_json($$response_body_ref);    
 
-    foreach my $obj (@$perl_struct) {   
-        my $countryname = lc $obj->{countryregion};  
-        $self->{$countryname}->{countryname} = $obj->{countryregion};
-        $self->{$countryname}->{lastupdate} = $obj->{lastupdate};        
-        $self->{$countryname}->{confirmed} += $obj->{confirmed} 
-            if defined $obj->{confirmed};
-        $self->{$countryname}->{recovered} += $obj->{recovered} 
-            if defined $obj->{recovered};
-        $self->{$countryname}->{deaths} += $obj->{deaths} 
-            if defined $obj->{deaths};
-        my $iso2 = lc $obj->{countrycode}->{iso2} 
-            if defined $obj->{countrycode}->{iso2};
-        my $iso3 = lc $obj->{countrycode}->{iso3}
-            if defined $obj->{countrycode}->{iso3};
-        $self->{$countryname}->{iso2} = $iso2 if defined $iso2;
-        $self->{$countryname}->{iso3} = $iso3 if defined $iso3;               
+    # also try to look up country codes in dot files in $HOME    
+    my $iso2_file = ConfigReader::Simple->new($self->{iso2});
+    my $iso3_file = ConfigReader::Simple->new($self->{iso3});
+
+    foreach my $country (@$corona_stats) {  
+        my $countryname = lc $country->{countryregion};  
+        $self->{countries}->{$countryname}->{countryname}
+            = $country->{countryregion};
+        $self->{countries}->{$countryname}->{lastupdate}
+            = $country->{lastupdate};        
+        $self->{countries}->{$countryname}->{confirmed}
+            += $country->{confirmed} 
+                if defined $country->{confirmed};
+        $self->{countries}->{$countryname}->{recovered}
+            += $country->{recovered} 
+                if defined $country->{recovered};
+        $self->{countries}->{$countryname}->{deaths}
+            += $country->{deaths} 
+                if defined $country->{deaths};
+        
+        if (defined $country->{countrycode}->{iso2}) {
+            $self->{countries}->{$countryname}->{iso2}
+                = lc $country->{countrycode}->{iso2};
+        }
+        # try to look up country codes in config files
+        else {            
+            $self->{countries}->{$countryname}->{iso2}
+                = lc $iso2_file->get($countryname)
+                    if $iso2_file->get($countryname) and $iso2_file;
+        }
+
+        if (defined $country->{countrycode}->{iso3}) {
+            $self->{countries}->{$countryname}->{iso3}
+                = lc $country->{countrycode}->{iso3};
+        }  
+        # try to look up country codes in config files
+        else {
+            $self->{countries}->{$countryname}->{iso3}
+                = lc $iso3_file->get($countryname)
+                    if $iso3_file->get($countryname) and $iso3_file;
+        }           
     }        
 }
 
 # selects some country data out of all country data returned by the endpoint
 # returns a reference to a list of objects
-sub get_country_data {
-    my $self      = shift;
-    my $countries = shift;    
+sub get_country_stats {
+    my $self                     = shift;
+    my $user_given_countries_ref = shift;    
 
     my @selected_countries = ();
 
     # if user requested all countries
-    if ($countries->[0] =~ /^all$/i) {
-        my @all_countries = keys %$self;        
-        $countries = \@all_countries;
+    if ($user_given_countries_ref->[0] =~ /^all$/i) {
+        my @all_countries = keys %{ $self->{countries} };        
+        $user_given_countries_ref = \@all_countries;
     }
 
-    foreach my $country (@$countries) {
+    foreach my $country (@$user_given_countries_ref) {
         # find by key first
-        if ($self->{$country}) {
-            push @selected_countries, $self->{$country};
+        if ($self->{countries}->{$country}) {
+            push @selected_countries, $self->{countries}->{$country};
         }
         # find by iso2 or iso3
         else {
@@ -360,18 +424,20 @@ sub get_country_data {
 sub _get_country_data_by_iso {
     my $self = shift;
     my $iso  = shift;   
-
-    foreach my $country (%$self) {   
+    
+    foreach my $country (keys %{ $self->{countries} }) {   
         # skip if a country doesn't have iso2 or iso3 attributes     
-        next if not $self->{$country}->{iso2};
-        next if not $self->{$country}->{iso3};
+        next if not $self->{countries}->{$country}->{iso2};
+        next if not $self->{countries}->{$country}->{iso3};
 
         # return a reference to a particular object found by iso2 or iso3
-        return $self->{$country} if $self->{$country}->{iso2} eq $iso;        
-        return $self->{$country} if $self->{$country}->{iso3} eq $iso;
+        return $self->{countries}->{$country}
+            if $self->{countries}->{$country}->{iso2} eq $iso;        
+        return $self->{countries}->{$country}
+            if $self->{countries}->{$country}->{iso3} eq $iso;
     }
 
-    return FAIL;
+    return FAILURE;
 }
 
 
@@ -381,22 +447,23 @@ __END__
 
 =head1 NAME
 
-Corona - get statistics about COVID-19
+Corona::Statistics - get statistics about COVID-19
 
 =head1 SYNOPSIS
 
     # initialize
-    my $corona = Corona->new();
+    my $corona = Corona::Statistics->new();
 
     # get all available data about COVID-19 in different countries    
-    $corona->get_data();
+    $corona->get_all_stats();
     # if called again, the endpoint won't be called because you already have
     # data, so if you need a new set of data, create a new object
-    $corona->get_data();
+    $corona->get_all_stats();
 
     # get data for only those countries you're interested in
     # pass a ref to a list of country names (or iso2 or iso3 abbreviations)
-    my $selected_countries = $corona->get_country_data(\@countries);
+    my $selected_countries
+        = $corona->get_country_stats(\@selected_countries_by_user);
 
     # if the list is empty, nothing has been found
     # otherwise a list of objects is returned:
@@ -416,7 +483,8 @@ Corona - get statistics about COVID-19
 
 =head1 DESCRIPTION
 
-Corona module provides data about COVID-19 pandemic for different countries.
+Corona::Statistics module provides data about COVID-19 pandemic for different
+ countries.
 
 The following endpoint is used for getting the data:
 
@@ -434,11 +502,19 @@ The following Perl modules are required for this Corona module to work:
 
 =item Net::HTTPS
 
-For getting data from endpoint in get_data().
+For getting data from endpoint in get_all_stats().
 
 =item JSON::Parse
 
 For parsing a http response body in _parse_response_body().
+
+=item ConfigReader::Simple
+
+Reading country codes from a config file.
+
+=item Carp
+
+For more informative error messages.
 
 =back
 
@@ -460,46 +536,48 @@ Back to the frontend part. So far, I've built command line switches using the `G
 ```perl
 #!/usr/bin/env perl
 
-# frontend part for Corona::Corona module
-# modules Getopt::Long, Corona::Corona, 
+# frontend part for Corona::Statistics module
+# modules Getopt::Long, Corona::Statistics, 
 # List::MoreUtils, and Term::Table required
 
 use strict;
 use warnings;
 use Getopt::Long;
-use Corona::Corona 1.00;
+use Corona::Statistics 1.03;
 use feature 'say';
 
 # transforms a json to a list needed for Term::Table
-sub countries_list {
-    my $ref_countries = shift;    
+sub put_country_stats_to_list {
+    my $all_country_stats_ref = shift;    
 
     # build a list from list of jsons
-    my @list_countries = ();
-    foreach my $country (@$ref_countries) {
-        my $data = [
-                    $country->{countryname}, $country->{confirmed},
-                    $country->{recovered}, $country->{deaths},
-                    $country->{lastupdate}
-                   ]
-                   ;
-        push @list_countries, $data; 
+    my @country_stats_list = ();
+    foreach my $country (@$all_country_stats_ref) {
+        my $country_stats = [
+                             $country->{countryname}, $country->{confirmed},
+                             $country->{recovered}, $country->{deaths},
+                             $country->{lastupdate}
+                            ]
+                            ;
+        push @country_stats_list, $country_stats; 
     }
 
-    return \@list_countries;
+    return \@country_stats_list;
 }
 
 # gets number of columns for the current terminal window
-sub cols {
+sub get_number_of_columns {
+    return undef if $^O =~ /Win32$/;
+
     open COL, "tput cols|";
-    my $number_of_columns = <COL>;
+    my $number_of_columns_in_terminal = <COL>;
     close COL;
     
-    return $number_of_columns;
+    return $number_of_columns_in_terminal;
 }
 
 sub print_help {
-    my $help_msg = <<"END_MSG";
+    print <<'END_MSG';
 corona.pl -c|--country Estonia [-c|--country Italy ...]
 corona.pl -c|--country all|ALL
 
@@ -509,53 +587,54 @@ Prints all country statistics if -c|--coutry all is given.
 Print this help with -h|--help option.
 END_MSG
 
-    printf "%s", $help_msg;
 }
 
 ###############################################################################
 
 # get command line switches
 my $result = GetOptions(
-              'help|h'       => \ my $help,
-              'country|c=s@' => \ my @countries
+              'help|h'       => \ my $requested_help,
+              'country|c=s@' => \ my @selected_countries_by_user
              );
 
 # only print help
-if ($help or not @countries) {
+if ($requested_help or not @selected_countries_by_user) {
     print_help();
     exit 0;
 }
 
 # corona object
-my $corona = Corona->new();
+my $corona = Corona::Statistics->new("~/.2country", "~/.3country");
 
 # get all data; it will die inside get_data() if the call is unsuccessful
-$corona->get_data();
+$corona->get_all_stats();
 
 # make the list of countries unique
 use List::MoreUtils qw(uniq);
-@countries = uniq @countries;
+@selected_countries_by_user = uniq @selected_countries_by_user;
 # make the values lower case
-@countries = map { tr/[A-Z]/[a-z]/; $_ } @countries;
+@selected_countries_by_user
+    = map { tr/[A-Z]/[a-z]/; $_ } @selected_countries_by_user;
 
 # get desired countries
-my $selected_countries = $corona->get_country_data(\@countries);
+my $selected_countries
+    = $corona->get_country_stats(\@selected_countries_by_user);
 die "No country found\n" if not @$selected_countries;
 
 # pretty print everything to STDOUT
 use Term::Table;
-my $table = Term::Table->new(
-                             max_width      => cols() // 80,
-                             pad            => 4,
-                             allow_overflow => 0,
-                             collapse       => 1,
-                             header => ['country', 'total cases',
-                                        'recovered', 'deaths',
-                                        'last updated'],
-                             rows   => countries_list($selected_countries),
-                            )
-                            ;
-say $_ for $table->render;
+my $corona_stats_table = Term::Table->new(
+    max_width      => get_number_of_columns() || 80,
+    pad            => 4,
+    allow_overflow => 0,
+    collapse       => 1,
+    header         => ['country', 'total cases',
+                       'recovered', 'deaths', 'last updated'],
+    rows           => put_country_stats_to_list($selected_countries),
+)
+;
+
+say $_ for $corona_stats_table->render;
 
 exit 0;
 ```
@@ -563,51 +642,52 @@ exit 0;
 For pretty printing, I'm using module `Term::Table` that gets a list reference as data for the table rows. That's a little trouble since my Corona module returns data as a reference to a list of objects. Therefore, I need to transform the data into a desired format for the `Term:Table` module:
 
 ```perl
-sub countries_list {
-    my $ref_countries = shift;    
+sub put_country_stats_to_list {
+    my $all_country_stats_ref = shift;    
 
     # build a list from list of jsons
-    my @list_countries = ();
-    foreach my $country (@$ref_countries) {
-        my $data = [
-                    $country->{countryname}, $country->{confirmed},
-                    $country->{recovered}, $country->{deaths},
-                    $country->{lastupdate}
-                   ]
-                   ;
-        push @list_countries, $data; 
+    my @country_stats_list = ();
+    foreach my $country (@$all_country_stats_ref) {
+        my $country_stats = [
+                             $country->{countryname}, $country->{confirmed},
+                             $country->{recovered}, $country->{deaths},
+                             $country->{lastupdate}
+                            ]
+                            ;
+        push @country_stats_list, $country_stats; 
     }
 
-    return \@list_countries;
+    return \@country_stats_list;
 }
 ```
 
 I'm also making the table wider if it's possible:
 
 ```perl
-sub cols {
+sub get_number_of_columns {
+    return undef if $^O =~ /Win32$/;
+
     open COL, "tput cols|";
-    my $number_of_columns = <COL>;
+    my $number_of_columns_in_terminal = <COL>;
     close COL;
     
-    return $number_of_columns;
+    return $number_of_columns_in_terminal;
 }
 ```
 
 and
 
 ```perl
-my $table = Term::Table->new(
-                             max_width      => cols() // 80,
-                             pad            => 4,
-                             allow_overflow => 0,
-                             collapse       => 1,
-                             header => ['country', 'total cases',
-                                        'recovered', 'deaths',
-                                        'last updated'],
-                             rows   => countries_list($selected_countries),
-                            )
-                            ;
+my $corona_stats_table = Term::Table->new(
+    max_width      => get_number_of_columns() || 80,
+    pad            => 4,
+    allow_overflow => 0,
+    collapse       => 1,
+    header         => ['country', 'total cases',
+                       'recovered', 'deaths', 'last updated'],
+    rows           => put_country_stats_to_list($selected_countries),
+)
+;
 ```
 
 And that's basically all.
@@ -818,3 +898,14 @@ $ corona.pl -c all
 You can print help with `-h` or `--help` switch.
 
 The whole module and the frontend part could be found on [github here](https://github.com/pavelsaman/PerlModules).
+
+**EDIT:**
+
+Based on my latest learnings of Perl, I've updated the code, so it should be free of some obvious mistakes I made back then. Some things I updated are:
+
+- better names of variables etc. based [Perl Best Practises](https://en.wikipedia.org/wiki/Perl_Best_Practices) book, chapter 2
+- renamed `Corona::Corona` to `Corona::Statistics`, tha former didn't make much sense and it crated more problems with e.g. `$VERSION` variable
+- started using `Carp` module and `croak()` function, this is purely because I wanted to try it out, but there's not much changed in terms of functionality, you just get a bit more info in case of problems
+- it can read config files with key value pairs of iso2 and iso3 country codes, the config files could be passed into the constructor
+- started using `our $VERSION` syntax
+. changed `max_width      => get_number_of_columns() // 80` to `max_width      => get_number_of_columns() || 80` because I want it to be 80 even for e.g. value 0 returned (from whatever reason it might happen)
