@@ -171,8 +171,8 @@ You can see that Requested IP Address is still filled in with the wrong (previou
 
 After the server processes the message, it will not reply straight away, it will do the following:
 
-1) check the local pool
-2) check that an IP from the pool is not assigned yet
+1. check the local pool
+2. check that an IP from the pool is not assigned yet
 
 The second step is where ICMP protocol and ping comes into play. The default number of ping packets is 2, so if no ICMP response comes within these 2 packets, the router will assume it's safe to assing such an IP address, otherwise it'll delete the IP address from the pool in order to avoid conflicts (same IP addresses on the network). However, there's no ICMP packet in the capture. Well, it has something to do with the fact that the router doesn't know where to send the frame with the ICMP packet wrapped inside, so it has to use ARP in the hope it will map the IP address to a hardware address. However, it will never happen, so in turn there'll be no ICMP traffic in the capture.
 
