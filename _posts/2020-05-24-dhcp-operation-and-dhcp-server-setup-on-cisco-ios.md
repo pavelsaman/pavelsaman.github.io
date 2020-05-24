@@ -172,15 +172,23 @@ You can see that Requested IP Address is still filled in with the wrong (previou
 After the server processes the message, it will not reply straight away, it will do the following:
 
 1) check the local pool
-2) check that IP from the pool is not assigned yet
+2) check that an IP from the pool is not assigned yet
 
-The second step is where ARP protocol comes into play. The router sends a broadcast ARP message asking for the exact IP address it wants to offer to the client. If there is no answer to the ARP request, the router assumes that such an IP address is available (no other device on the network is using it) and therefore it could be assigned to the client.
+The second step is where ICMP protocol and ping comes into play. The default number of ping packets is 2, so if no ICMP response comes within these 2 packets, the router will assume it's safe to assing such an IP address, otherwise it'll delete the IP address from the pool in order to avoid conflicts (same IP addresses on the network). However, there's no ICMP packet in the capture. Well, it has something to do with the fact that the router doesn't know where to send the frame with the ICMP packet wrapped inside, so it has to use ARP in the hope it will map the IP address to a hardware address. However, it will never happen, so in turn there'll be no ICMP traffic in the capture.
 
 ![image](/images/captures/arp.png)
 
-When no ARP Response arrives, the router sends a **DHCP Offer** with this very IP address:
+No response for pings (well, no pings in the first place) came, so the router assumes this IP is safe (not used yet) and sends a **DHCP Offer** with this very IP address:
 
 ![image](/images/captures/dhcp_offer.png)
+
+If you by any chance want to change the default value of pings, it could be done:
+
+```
+table(config)#ip dhcp ping packets 1
+```
+
+If you choose 0, the router won't try to check whether an address from the pool already exists on the network. You will save some traffic and make the assignment process faster, but you're running the risk that there'll be conflicts.
 
 It might seem this is the end, but there're two more steps. One is that the client sends another **DHCP Request** broadcast message, this time, there's a different Requested IP Address, that's the one the client received as part of the previous **DHCP Offer**:
 
