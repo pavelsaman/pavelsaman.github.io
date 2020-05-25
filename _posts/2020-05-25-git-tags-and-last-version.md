@@ -9,13 +9,13 @@ One of the features git supports is tags (see `$ man git-tag`), which is another
 
 Every revision in git is assigned a unique SHA-1 hash, that's often enough to identify a concrete point in the history. But it's not very human-readable, so there's another feature that allows for creating names/identifiers that are associated with certain revisions.
 
-By default, tags are not listed in `git log`, but I can type:
+I can see tags in `git log`:
 
 ```
 $ git log --tags
 ```
 
-which allows me to see even tags assigned to certain commins:
+which allows me to see all commits from the newest tag back:
 
 ```
 8ddb026 (tag: 2.14.0, origin/master, master) Merge branch 'release/2.14.0'
