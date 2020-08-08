@@ -1,7 +1,7 @@
 ---
 layout: page
 title:  "Resolving Common Problems With R Package Installation"
-date:   2020-08-08 22:30 +0200
+date:   2020-08-08 19:30 +0200
 categories: linux
 ---
 
