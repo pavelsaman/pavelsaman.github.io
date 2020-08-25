@@ -1,6 +1,6 @@
 ---
 layout: page
-title:  "Rouding Is Not Always Straightforward"
+title:  "Rounding Is Not Always Straightforward"
 date:   2020-08-24 19:30 +0200
 categories: testing
 ---
@@ -10,10 +10,10 @@ Many people have a well-formed expectation when it comes to rounding. We've all 
 When we think of rounding, many will automatically come up with the following rules which I show on a few examples:
 
 - 5.5 => 6
-- 5.55 => rouding to one decimal place => 5.6
-- 5.65 => rouding to one decimal place => 5.7
-- 4.946 => rouding to 2 decimal places => 4.95
-- 4.945 => rouding to 2 decimal places => 4.95
+- 5.55 => rounding to one decimal place => 5.6
+- 5.65 => rounding to one decimal place => 5.7
+- 4.946 => rounding to 2 decimal places => 4.95
+- 4.945 => rounding to 2 decimal places => 4.95
 
 and so on and so forth. In other words, many assume that 0 - 4 are rounded down and 5 - 9 are rounded up. That's probably how most of us have learnt it in school and we go on thinking this is the only way.
 
@@ -39,7 +39,7 @@ public class Program
 
 At this point, you probably start writing on stackoverflow thinking you've just found a bug in .NET Core. There have been such people as you can see [here](https://stackoverflow.com/questions/977796/why-does-math-round2-5-return-2-instead-of-3) for example.
 
-If you are lucky and read the stackoverflow discussion before submitting a duplicate and getting downvoted into oblivion, you find out that all your expectations about there being only one type of rouding are wrong. There's no bug in .NET Core or similar, but the point is that `Math.Round()` uses so called [Banker's Rouding](https://en.wikipedia.org/wiki/Rounding) by default. It's even explained in the [ducumentation](https://docs.microsoft.com/en-us/dotnet/api/system.math.round?view=netcore-3.1), but no one usually reads that, which is the reason why there's a production bug in the first place.
+If you are lucky and read the stackoverflow discussion before submitting a duplicate and getting downvoted into oblivion, you find out that all your expectations about there being only one type of rounding are wrong. There's no bug in .NET Core or similar, but the point is that `Math.Round()` uses so called [Banker's Rounding](https://en.wikipedia.org/wiki/Rounding) by default. It's even explained in the [ducumentation](https://docs.microsoft.com/en-us/dotnet/api/system.math.round?view=netcore-3.1), but no one usually reads that, which is the reason why there's a production bug in the first place.
 
 Then you go and fix it with an additional argument:
 
