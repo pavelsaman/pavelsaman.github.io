@@ -1,7 +1,7 @@
 ---
 layout: page
 title:  "Auto-generating JavaScript Documentation"
-date:   2020-12-05 17:30 +0200
+date:   2020-12-07 11:30 +0200
 categories: other
 ---
 
