@@ -16,7 +16,7 @@ Probably the easies way is to install an add-on to Firefox, something like [Foxy
 But let's say you want to use the proxy for other HTTP traffic. Perhaps you want to send a request to some web service, e.g. to get current weather in Tallin:
 
 ```
-$ curl http://wttr.in/Tallin?0
+$ curl http://wttr.in/Tallinn?0
 ```
 
 There's no add-on that will direct the traffic to your proxy. Sure, you can issue the following command and it will go first to your proxy:
