@@ -60,7 +60,7 @@ keycode  66 = NoSymbol Caps_Lock Caps_Lock
 keycode  77 = NoSymbol Num_Lock Num_Lock
 ```
 
-That basically means that if I press `CapsLock` or `NumLock`, nothing will happen, but I can still switch to capital letters or turn keyboard on and off when I press `Shift + CapsLock` and `Shift + NumLock`.
+That basically means that if I press `CapsLock` or `NumLock`, nothing will happen, but I can still switch to capital letters or turn numpad on and off when I press `Shift + CapsLock` and `Shift + NumLock`.
 
 Finally I just need to make sure this mapping gets used, so let's have a look into `.xinitrc` file (again, I'm showing just a bit of the whole file):
 
