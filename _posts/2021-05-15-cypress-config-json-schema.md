@@ -1,7 +1,7 @@
 ---
 layout: page
 title:  "Cypress Help in Config File"
-date:   2021-03-14 17:30 +0200
+date:   2021-05-15 10:30 +0200
 categories: testing
 ---
 
