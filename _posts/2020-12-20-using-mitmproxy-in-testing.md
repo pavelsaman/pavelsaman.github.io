@@ -1,6 +1,6 @@
 ---
 layout: page
-title:  "Using mitmproxy in testing"
+title:  "Using Mitmproxy in Testing"
 date:   2020-12-20 11:30 +0200
 categories: testing
 ---
