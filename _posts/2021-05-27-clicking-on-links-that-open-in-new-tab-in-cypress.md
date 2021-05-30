@@ -1,6 +1,6 @@
 ---
 layout: page
-title:  "Cypress: Clicing on Links That Open in New Tab"
+title:  "Cypress: Clicking on Links That Open in New Tab"
 date:   2021-05-27 09:50 +0200
 categories: testing
 ---
