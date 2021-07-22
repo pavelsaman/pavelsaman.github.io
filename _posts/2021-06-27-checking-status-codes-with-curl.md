@@ -89,4 +89,4 @@ $ ENV=prod ./healthcheck
 
 which will exit with exit code of 1 if the site did not return 200. That could be useful in that I can for example stop a pipeline from running because now I know the site is not accessible, so it makes no sense to continue working with it. That can save some time.
 
-A little bash script with a curl command can go a long way if it's used appropriately. The same task could of course be accomplished in various programming or scripting languages, but that only makes it more complicated and dependent on a particular environment (e.g. I'd have to install some packages like axios from npm registry when scripting this in JavaScript.)
+A little bash script with a curl command can go a long way if it's used appropriately. The same task could of course be accomplished in various programming or scripting languages, but that only makes it more complicated and dependent on a particular environment (e.g. I'd have to install some packages like axios from npm registry when scripting this in JavaScript).
