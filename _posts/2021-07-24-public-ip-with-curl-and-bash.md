@@ -9,10 +9,10 @@ Getting a private IP address is just a command away in Linux. But often that pri
 
 There are numerous online services you can use to figure out your public IP address. I list some of them here:
 
-- https://ifconfig.me/
-- https://ipecho.net/plain
-- https://icanhazip.com
-- https://ident.me/
+- [https://ifconfig.me/](https://ifconfig.me/)
+- [https://ipecho.net/plain](https://ipecho.net/plain)
+- [https://icanhazip.com](https://icanhazip.com)
+- [https://ident.me/](https://ident.me/)
 
 Let's try to use one of them with curl:
 
@@ -32,7 +32,7 @@ $ curl -s --socks5-hostname 127.0.0.1:9100 ifconfig.me
 
 That will work if tor is running on localhost on port 9100. If it doesn't work for you, check the tor config in `/etc/tor/torrc`.
 
-This second curl command with tor can return an IP address like `217.79.178.53`. I can check that, for example on https://ipinfo.io/217.79.178.53, and see it does really belong to tor. There is also a website provided by Tor Project that tells you whether or not you're using tor at the moment. Check that here: https://check.torproject.org/.
+This second curl command with tor can return an IP address like `217.79.178.53`. I can check that, for example on [https://ipinfo.io/217.79.178.53](https://ipinfo.io/217.79.178.53), and see it does really belong to tor. There is also a website provided by Tor Project that tells you whether or not you're using tor at the moment. Check that here: [https://check.torproject.org/](https://check.torproject.org/).
 
 To put everything together, I wrote a tiny bash function:
 
@@ -53,4 +53,4 @@ $ publicip
 217.79.178.53
 ```
 
-Then even a public IP address is just a comman away :)
+Then even a public IP address is just a command away :)
