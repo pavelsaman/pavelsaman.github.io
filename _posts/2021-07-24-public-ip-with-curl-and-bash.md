@@ -39,7 +39,7 @@ To put everything together, I wrote a tiny bash function:
 ```bash
 publicip () {
     ip=$(curl -s ifconfig.me)
-    ip_proxy=$(curl -s --socks5-hostname 127.0.0.1:9009 ifconfig.me)
+    ip_proxy=$(curl -s --socks5-hostname 127.0.0.1:9100 ifconfig.me)
     [[ -n $ip ]] && printf "%s\n" $ip
     [[ -n $ip_proxy ]] && printf "%s\n" $ip_proxy
     return 0
