@@ -10,8 +10,8 @@ First of all, when you start digging into files like `/etc/profile`, `~/.bash_pr
 
 ```
 When  bash is invoked as an interactive login shell, or as a non-interactive shell with the --login option, it first reads and executes commands from the
-file /etc/profile, if that file exists.  After reading that file, it looks for ~/.bash_profile, ~/.bash_login, and ~/.profile, in that order,  and  reads
-and  executes  commands from the first one that exists and is readable.  The --noprofile option may be used when the shell is started to inhibit this be‐
+file /etc/profile, if that file exists. After reading that file, it looks for ~/.bash_profile, ~/.bash_login, and ~/.profile, in that order, and reads
+and executes commands from the first one that exists and is readable. The --noprofile option may be used when the shell is started to inhibit this be‐
 havior.
 
 When an interactive login shell exits, or a non-interactive login shell executes the exit builtin command, bash reads and executes commands from the file

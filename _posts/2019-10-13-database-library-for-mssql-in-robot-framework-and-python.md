@@ -280,7 +280,7 @@ Then let's create a test case that checks if only one user exists in a database 
 
 ```
 *** Settings ***
-Documentation    Database checks and tests.  
+Documentation    Database checks and tests.
 Resource    ../Settings/alpine_tests.txt
 Library    ../Libraries/AlpineDB.py    ${URL_DEV}
 
