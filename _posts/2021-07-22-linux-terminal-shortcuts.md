@@ -23,5 +23,6 @@ In any Linux terminal, there are some shortcuts that help you achieve more in le
 * `Ctrl + W` - delete previous word
 * `Ctrl + L` - clear terminal screen; much faster than typing `clear` command
 * `Ctrl + R` - search for previous commands
+* `Ctrl + G` - leaves history search initiated with `Ctrl + R`
 
 I use these shortcuts on a daily basis. There are not the only ones; you can search and learn other ones if you feel the need to become even more efficient in your work.
