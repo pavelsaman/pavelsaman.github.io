@@ -71,13 +71,12 @@ After confirmation, the file looks like this:
 
 ![image](../images/vim-solution.png)
 
-It is now a valid Python source file, so I can continue with my checking task.
+It is a valid Python source file now, so I can continue with my checking task.
 
 Similarly, I can use stream editor (sed):
 
 ```
 $ sed '3,34s/https/"https/;3,34s/$/",/' file.py
-
 
 urls = [
     "https://duckduckgo.com/",
