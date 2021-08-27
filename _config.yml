@@ -34,6 +34,7 @@ plugins:
   - jekyll-seo-tag
 
 minima:
+  skin: dark
   date_format: "%m/%d/%Y"
 
 paginate: 7
