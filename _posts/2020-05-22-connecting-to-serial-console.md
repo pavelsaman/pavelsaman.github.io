@@ -15,7 +15,7 @@ So the grey/black cable is exactly the usb-to-serial adapter. The blue cable is 
 
 ![image](/images/serial_port_2.png)
 
-So step one is done, another minor trouble might be to get everything working. Under Windows, you actually might have a working setup at this point, all you need to do is find a serial interface amoung your devices (named something like COM1 or COM2 etc.) and use some software like Putty.
+So step one is done, another minor trouble might be to get everything working. Under Windows, you actually might have a working setup at this point, all you need to do is find a serial interface amoung your devices (named something like COM1 or COM2, etc.) and use some software like Putty.
 
 Under Linux, it's basically just as easy, but you'll also find out a bit more in the process because it might not work out of the box every single time. So from now on, I'll show the basic steps that also might be used to troubleshoot what's going on.
 

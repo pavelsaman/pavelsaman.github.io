@@ -7,7 +7,7 @@ categories: other
 
 [Git log](https://git-scm.com/docs/git-log) command offers a variety of things to set up, it can be overwhelming to read the whole man page and to use it effectively when you just want to print out some commit history. I've recently read up on git log a bit more, so I can share how my git log outcome looks like at the moment.
 
-For many months, I was accustomed to using `git log --oneline`, which was good enough, but it also drove me mad at times (like having to press q for quitting when there're too many lines of outcome etc.). So the only option was to read a bit more about how I can tweak the outcome of git log.
+For many months, I was accustomed to using `git log --oneline`, which was good enough, but it also drove me mad at times (like having to press q for quitting when there're too many lines of outcome, etc.). So the only option was to read a bit more about how I can tweak the outcome of git log.
 
 First of all, there're a few requirements I have for my git log:
 

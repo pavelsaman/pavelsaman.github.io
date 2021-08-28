@@ -18,7 +18,7 @@ A new bug is simply described in field: That't exactly what I want to write abou
 A bug needs to be described somehow. Depending on a context, it could be a long report or one sentence. However, in any situation, what needs to be described is at least:
 
 1. environment, app version
-2. what data was used - like testing users, values in input fields etc.
+2. what data was used - like testing users, values in input fields, etc.
 3. how to reproduce the bug, so some steps
 4. what the current state is
 5. what the desired state is

@@ -23,7 +23,7 @@ In almost any app you come across there'll be things you can count. That's anoth
 
 ### Size
 
-Size is another nice variable. One example that comes to mind is uploading/downloading files. If the system allows file upload, what if you try to upload a file of 50 MB, 100 MB etc.? Will it still be processed in a proper and timely manner? If not, will the error be handled gracefully without any stack trace on the screen?
+Size is another nice variable. One example that comes to mind is uploading/downloading files. If the system allows file upload, what if you try to upload a file of 50 MB, 100 MB, etc.? Will it still be processed in a proper and timely manner? If not, will the error be handled gracefully without any stack trace on the screen?
 
 How about screen size? If you open a web app on a mobile device instead of on a desktop/laptop screen, what will you see?
 

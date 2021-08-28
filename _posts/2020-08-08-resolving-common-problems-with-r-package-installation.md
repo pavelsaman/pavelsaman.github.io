@@ -7,7 +7,7 @@ categories: linux
 
 I've recently started playing around with R, which also translates into installing additional R packages. Right at the beginning, I ran into two problems which I'll explain here now.
 
-I'm not using any conventional linux distibution like Red Hat, Ubuntu, openSUSE etc. so some installation tasks might take a bit longer because I need to resolve some dependencies etc. I don't know if this was the case here or it's just the way I use my system.
+I'm not using any conventional linux distibution like Red Hat, Ubuntu, openSUSE, etc. so some installation tasks might take a bit longer because I need to resolve some dependencies, etc. I don't know if this was the case here or it's just the way I use my system.
 
 ### tcl/tk
 

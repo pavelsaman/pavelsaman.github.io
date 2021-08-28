@@ -9,7 +9,7 @@ Like it or not, a lot of time as a tester will be spent checking inputs and whet
 
 ### Input Field Under Test
 
-Not surprisingly, there are many different fields a web page or any other app (mobile, desktop) can have. There're input fields for text, for numbers, checkboxs, radio buttons etc. For each of them, you need to consider a bit different set of checks/tests.
+Not surprisingly, there are many different fields a web page or any other app (mobile, desktop) can have. There're input fields for text, for numbers, checkboxs, radio buttons, etc. For each of them, you need to consider a bit different set of checks/tests.
 
 For this article, I'll choose as an example a simple search field as shown here:
 
@@ -75,6 +75,6 @@ Focus – go to a different window and back, where is the focus? Have the field 
 
 As you've figured out, not all these tests are applicable for every input field. When testing a search field, I don't need to check for different ways to enter a file path. Again, take this as a general guidance and use your own judgement.
 
-There might be more to it, no I might have missed something. One interesting input field is the one for telephone numbers... when you consider all these formats one might input their phone number (722222222, 722 222 222, 0042722222222, 0042 722 222 222, +420722222222, +420 722 222 222, foreign phone numbers, how about leading and trailing white characters (someone might press space by mistake) etc.), on the other hand, I consider all these nuances under the "different data type" row. That's where your creativity and judgement come in.
+There might be more to it, no I might have missed something. One interesting input field is the one for telephone numbers. When you consider all these formats one might input their phone number (722222222, 722 222 222, 0042722222222, 0042 722 222 222, +420722222222, +420 722 222 222, foreign phone numbers, how about leading and trailing white characters (someone might press space by mistake), etc.), on the other hand, I consider all these nuances under the "different data type" row. That's where your creativity and judgement come in.
 
 Hope it will make you consider more tests in the future. If you want to download a spreadsheet with the table, [get it here](/files/input_fields_checkbox.ods).

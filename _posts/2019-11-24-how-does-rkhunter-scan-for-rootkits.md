@@ -42,7 +42,7 @@ Advice number one on how not to get any rootkits:
 Once a rootkit is on your machine, it might do various things depending on what the attackers want it to do. I guess everyone can name a few, but to make this article complete, let's come up with a few ideas:
 
 - it can create a backdoor into your system as in the example of [Beastkit](https://ossec-docs.readthedocs.io/en/latest/rootcheck/analysis-beastkit.html#analysis-beastkit) that installed its own daemon that would be started at boot on a certain port (again, configure your firewall)
-- it can tamper with some valid binaries on your system; it turns out this is a standard practise of rootkits because the attacker wants them to be hidden (for obvious reasons), so the rootkits might use their own versions of programs such as `ps`, `top`, `find`, `md5sum` etc. that don't give you real results; some of these tampered versions are created with `$ touch -acmr` options, so you have no way of finding a tampered binary by comparing its time
+- it can tamper with some valid binaries on your system; it turns out this is a standard practise of rootkits because the attacker wants them to be hidden (for obvious reasons), so the rootkits might use their own versions of programs such as `ps`, `top`, `find`, `md5sum`, etc. that don't give you real results; some of these tampered versions are created with `$ touch -acmr` options, so you have no way of finding a tampered binary by comparing its time
 - it can send information found on your system to the attacker
 - it can tamper with your files, delete them, add something into them
 - it can replicate itself by scanning suitable ports and ip addresses; again, this seems to be a common behaviour of rootkits

@@ -28,7 +28,7 @@ because they just didn't hold with such nonsense.
 
 When I have a look at the file, there're a few problems with the text:
 1. some words use both `[A-Z]` and `[a-z]` ranges
-2. there are some numbers (page numbers etc.) that I don't consider as numbers
+2. there are some numbers (page numbers, etc.) that I don't consider as numbers
 3. there are empty lines
 4. there's punctuation that can spoil individual words
 5. but not all `[[:punct:]]` is problematic - e.g. `you've` is alright
@@ -219,7 +219,7 @@ $ wc -l hpps_frequency_sorted
 
 Again, there are "words" like `pomfrey's` which are not ideal from at least two reasons:
 1. they contain names
-2. they contain short forms (`'s`, `'ve` etc.)
+2. they contain short forms (`'s`, `'ve`, etc.)
 
 However, I still consider this list a pretty decent approximation.
 

@@ -50,7 +50,7 @@ Awk has some functions I can use. I can even create my own functions in awk.
 ```bash
 $ awk -F'|' '{ntw=substr($4,index($4,":")+2,length(substr($4,index($4,":")+2))-1)} ($3 ~ /up/) {net[ntw]++} END{for (n in net) {print n,net[n]}}' OFS='|' /var/log/NetworkManager-dispatcher.d.log*
 ```
-`OFS` changes the Output Field Separator. I can also beautify the output by getting rif od some whitespaces etc. by using `substr`, `index`, and `length` functions.
+`OFS` changes the Output Field Separator. I can also beautify the output by getting rif od some whitespaces, etc. by using `substr`, `index`, and `length` functions.
 
 #### I want to add the network ID to the previous output
 

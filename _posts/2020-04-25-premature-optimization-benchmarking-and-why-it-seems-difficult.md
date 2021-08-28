@@ -7,7 +7,7 @@ categories: perl
 
 It's a widespead notion that [premature optimization](https://softwareengineering.stackexchange.com/questions/80084/is-premature-optimization-really-the-root-of-all-evil) is bad, or as many say, the root of all evil. Some add other bits into the discussion such as optimization without prior measurement is always premature. I don't have specific developer advice in this area (well, I'm not a developer after all), but I'll share my personal opinion on why I think IT world seems difficult to many in regard to this very topic.
 
-If you've gone to an IT high school just like me, you were probably tought some programming language. Many times we did just some basics such as learning the syntax, some basic stuctures of the language, so we were able to piece together some useless stuff such as various ways to sort a list etc.
+If you've gone to an IT high school just like me, you were probably tought some programming language. Many times we did just some basics such as learning the syntax, some basic stuctures of the language, so we were able to piece together some useless stuff such as various ways to sort a list, etc.
 
 To be a bit more specific, a typical way we were tought to use any programming language (we mostly learnt some C, C#) was something like this (I'll show all these examples in Perl):
 
@@ -131,7 +131,7 @@ To take this a step further, it's not only about "low-level" code as in these ex
 - your company decides to create their own CRM system instead of using some other product already on the market
 - you hire programmers to create a new eshop for you instead of [googling for 10 seconds](https://www.ecommerceceo.com/open-source-ecommerce/) and reusing an existing solution
 
-The results in such cases are similar to the results in my little examples - the final outcome is messy, buggy, expensive, not scalable, slow etc.
+The results in such cases are similar to the results in my little examples - the final outcome is messy, buggy, expensive, not scalable, slow, etc.
 
 The programmers I know do not really use much of "their" code either. Most of their work is somewhere in the following areas:
 
@@ -139,7 +139,7 @@ The programmers I know do not really use much of "their" code either. Most of th
 - finding appropriate solutions they can reuse
 - focusing on business logic == solving the client's problem, **not trying to solve how to sort a list**
 - finding a good (project) structure for those bits and pieces they're gonna reuse
-- setting up their environment, server's environment, working with scaling (e.g. in Azure) etc.
+- setting up their environment, server's environment, working with scaling (e.g. in Azure), etc.
 - writing documentation
 
 I don't really see them focusing on low-level code. I'm sure such programmers/projects do exist, but the vast majority of today's jobs in this area are not on this side.

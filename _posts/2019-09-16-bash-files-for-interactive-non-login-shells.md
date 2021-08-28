@@ -20,7 +20,7 @@ When an interactive login shell exits, or a non-interactive login shell executes
 
 But what the hell is login, interactive and non-interactive shell?
 
-**Interactive shell** is simply the one you type your commands into. **Non-interactive** shell is your scripts you just execute and then wait for the recult code, the commands inside your script are run by a non-interactive shell. **Login shells** are usually interactive, they are those shells that you use for logging into a console (F2 etc.), trough SSH, or via `su -`.
+**Interactive shell** is simply the one you type your commands into. **Non-interactive** shell is your scripts you just execute and then wait for the recult code, the commands inside your script are run by a non-interactive shell. **Login shells** are usually interactive, they are those shells that you use for logging into a console (F2, etc.), trough SSH, or via `su -`.
 
 Having said that, there're different files that get read and executed for these shells.
 
@@ -31,7 +31,7 @@ When an interactive shell that is not a login shell is started, bash reads and e
 
 I also think that interactive non login shell is the most common for home users. Such a shell will probably be started more often than any other shell, so let's stick to this option to show how I organise the files that get executed after this shell is started.
 
-`~/.bashrc` could be really long, but the point is that when you want to add some other commands (tweak your command prompt etc.), it should most likely go into this file. As you add more commands, it can grow so much that you lose yourself in it. That's where some organisation comes in.
+`~/.bashrc` could be really long, but the point is that when you want to add some other commands (tweak your command prompt, etc.), it should most likely go into this file. As you add more commands, it can grow so much that you lose yourself in it. That's where some organisation comes in.
 
 I simply create `~/.bash_aliases` and `~/.bash_export` files. It could be already obvious what I put in them, but let's have a look at oth of them:
 

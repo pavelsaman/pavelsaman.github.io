@@ -44,4 +44,4 @@ warning: eclipse-java: ignoring package upgrade (4.12-1 => 4.13-1)
 ...
 ```
 
-Nice and easy. It's also pretty fast, no need to install a new package, uninstall the faulty one etc.
+Nice and easy. It's also pretty fast, no need to install a new package, uninstall the faulty one, etc.

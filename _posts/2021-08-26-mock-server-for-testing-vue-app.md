@@ -143,7 +143,7 @@ At this point, it's more about finding out what I want to test, and creating suc
 public enum AdStatus
 {
     /// <summary>
-    /// Not yet published but should be. For cases when advertisement won't pass publishing flow (image resize etc.)
+    /// Not yet published but should be. For cases when advertisement won't pass publishing flow (image resize, etc.)
     /// </summary>
     [EnumMember(Value = "New")]
     New = 1,

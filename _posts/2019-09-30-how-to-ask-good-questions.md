@@ -9,7 +9,7 @@ I feel this topic is really important for many reasons. I also have recent exper
 
 ### Why To Ask Good Questions?
 
-I'll dive right in and say a few words about why I think this is absolutely crucial to ask good questions. It turns out that people ask questions when they need something. So a useful answer is usually what they hope for. However, does really anybody feel like helping other people when they pose a stupid, broad, vague etc. question? I don't think so! Such questions tend to be avoided, answered in a similar manner, handed to somebody else or, at best, people who ask such dumb questions get, instead of an answer, a question in return. Any of these waste time and nothing gets solved.
+I'll dive right in and say a few words about why I think this is absolutely crucial to ask good questions. It turns out that people ask questions when they need something. So a useful answer is usually what they hope for. However, does really anybody feel like helping other people when they pose a stupid, broad, vague, etc. question? I don't think so! Such questions tend to be avoided, answered in a similar manner, handed to somebody else or, at best, people who ask such dumb questions get, instead of an answer, a question in return. Any of these waste time and nothing gets solved.
 
 
 ### Attributes of Good Question
@@ -22,7 +22,7 @@ When we know why to ask good questions, let's have a look at what you should do 
 4. Present what you have already tried and why it didn't work or what results you got - it shows you're not lazy and that you actually try to solve your problems first, that's always a good strategy
 5. Say where you have tried to look for an answer - people won't point you towards the same resource, so you're not wasting anybody's time
 6. Suggest what direction you'd take next and even ask if one of them might be the right one - it shows you're thinking about the problem and that you try to be an active participant in finding the solution
-7. If your question is written, read it after yourself, correct typos, grammatical errors etc. - you show you're not illiterate :)
+7. If your question is written, read it after yourself, correct typos, grammatical errors, etc. - you show you're not illiterate :)
 8. Don't put the blame on anybody, rather assume you've missed something - it's easy to point a finger on other people, but the odds are that you're likely to be wrong and that you've missed something important
 
 There might be more points, but I'm sure that following just these will dramatically improve your questions, and in turn the way people respond to them. You will simply get relevant answers faster!

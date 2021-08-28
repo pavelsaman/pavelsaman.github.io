@@ -243,7 +243,7 @@ Pool table-router-dhcp-2 :
  100.1.1.3            100.1.1.1        - 100.1.1.14        1
 ```
 
-I can see the IP address range, the current index, number of leased addresses etc.
+I can see the IP address range, the current index, number of leased addresses, etc.
 
 Or I can see server statistics:
 

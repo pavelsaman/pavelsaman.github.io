@@ -17,11 +17,11 @@ This is an obvious source of information. A Tester goes through the app and noti
 
 #### Logs
 
-Every app generates some logs (or at least it should, at least on test environments). It could be a text file in a certain format on a FTP server, it could be a table in a database etc. Find where the logs are and focus on them as well.
+Every app generates some logs (or at least it should, at least on test environments). It could be a text file in a certain format on a FTP server, it could be a table in a database, etc. Find where the logs are and focus on them as well.
 
 #### Database
 
-Many apps work with some data which is stored in some sort of repository. It could be a relational DB, some other non-relational DB like Mongo or Redis. Whatever the storage, there'll likely be one (unless you test something specific, or some embedded device etc.). As a Tester, you should be able to follow the data as you interact with the app. Then you might uncover some interesting things that happen to the data.
+Many apps work with some data which is stored in some sort of repository. It could be a relational DB, some other non-relational DB like Mongo or Redis. Whatever the storage, there'll likely be one (unless you test something specific, or some embedded device, etc.). As a Tester, you should be able to follow the data as you interact with the app. Then you might uncover some interesting things that happen to the data.
 
 #### Code
 
@@ -33,7 +33,7 @@ You can use some additional monitoring tools. If you're testing an app that has 
 
 #### APIs
 
-An API can sometimes give you an answer to your questions much faster than other ways. If your system should have sent an email, but the email gets sent by a different system, maybe that different system has an API you can call and ask what's going on with your email. It might give you the email status, when it was sent etc. This might be better than waiting at your email client pressing a refresh button every 5 seconds and hoping it will be received soon.
+An API can sometimes give you an answer to your questions much faster than other ways. If your system should have sent an email, but the email gets sent by a different system, maybe that different system has an API you can call and ask what's going on with your email. It might give you the email status, when it was sent, etc. This might be better than waiting at your email client pressing a refresh button every 5 seconds and hoping it will be received soon.
 
 #### People
 

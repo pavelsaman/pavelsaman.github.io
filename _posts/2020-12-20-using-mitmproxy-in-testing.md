@@ -7,7 +7,7 @@ categories: testing
 
 [Mitmproxy](https://mitmproxy.org/) is an open source HTTPS proxy. Something like this could be extremely useful when doing technical testing of web applications. Let's have a look at how to make everything work so you can leverage the power of proxies in your testing as well.
 
-First off, why use proxies in testing? Simply speaking, it's another source of informating for you as a Tester. Sure, you can always use DevTools where you see what's going on on the network, but it doesn't always give you the power you need - filtering, changing requests etc.
+First off, why use proxies in testing? Simply speaking, it's another source of informating for you as a Tester. Sure, you can always use DevTools where you see what's going on on the network, but it doesn't always give you the power you need - filtering, changing requests, etc.
 
 Alright, so when you understand why proxies might be important for you as a Web-app Tester, let's see some options you have.
 

@@ -41,7 +41,7 @@ NAME
 
 That seems promissing.
 
-If I need bc to only perform some basic additions etc., I can dive straight in and experiment a bit.
+If I need bc to only perform some basic additions, etc., I can dive straight in and experiment a bit.
 
 ```bash
 $ echo "2+2" | bc

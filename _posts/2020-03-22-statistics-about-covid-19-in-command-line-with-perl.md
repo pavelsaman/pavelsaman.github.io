@@ -903,7 +903,7 @@ The whole module and the frontend part could be found on [github here](https://g
 
 Based on my latest learnings of Perl, I've updated the code, so it should be free of some obvious mistakes I made back then. Some things I updated are:
 
-- better names of variables etc. based [Perl Best Practises](https://en.wikipedia.org/wiki/Perl_Best_Practices) book, chapter 2
+- better names of variables, etc. based [Perl Best Practises](https://en.wikipedia.org/wiki/Perl_Best_Practices) book, chapter 2
 - renamed `Corona::Corona` to `Corona::Statistics`, tha former didn't make much sense and it crated more problems with e.g. `$VERSION` variable
 - started using `Carp` module and `croak()` function, this is purely because I wanted to try it out, but there's not much changed in terms of functionality, you just get a bit more info in case of problems
 - it can read config files with key value pairs of iso2 and iso3 country codes, the config files could be passed into the constructor

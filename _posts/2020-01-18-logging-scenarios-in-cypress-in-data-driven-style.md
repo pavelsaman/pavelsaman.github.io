@@ -11,7 +11,7 @@ Data driven style of writing tests is popular in many different testing tools an
 
 For the following example, I'll use something easy, straighforward. I've chosen an example of logging into a web page.
 
-I won't explain some basics like how to set up node, npm, Cypress, how to find what requests go to the server, so we can use them in tests etc. I'll just show a working example (well, I won't show any links and credentials as this is an example from my place of work :)), and explain a thing or two.
+I won't explain some basics like how to set up node, npm, Cypress, how to find what requests go to the server, so we can use them in tests, etc. I'll just show a working example (well, I won't show any links and credentials as this is an example from my place of work :)), and explain a thing or two.
 
 However, it's reasonable to say that some of the ideas in my example come from [one of the official examples provided by Cypress](https://github.com/cypress-io/cypress-example-recipes/tree/master/examples/logging-in__single-sign-on), especially the custom Cypress command:
 

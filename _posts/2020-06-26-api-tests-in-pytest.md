@@ -33,7 +33,7 @@ In my case, I can answer many of these:
 Project structure requires a little bit more thoughts in my opinion, some key points I have identified:
 
 - I want to separate test data, tests (test cases), config values, helpe functions, custom libraries; ideally, I want to only use variables and parametrization, plus perhaps some constants, but no hard-coded values in my tests
-- I want to keep a config file somewhere separately, where I can e.g. store values needed for DB connection etc.
+- I want to keep a config file somewhere separately, where I can e.g. store values needed for DB connection, etc.
 - I tend to choose the following project dir structure:
 
 ```

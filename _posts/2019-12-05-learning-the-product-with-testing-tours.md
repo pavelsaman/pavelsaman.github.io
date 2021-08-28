@@ -17,7 +17,7 @@ Well, I'd set off on a few tours with the sole purpose of exploring the app and 
 
 Going through the app and enlisting functionalities. I'd keep this high-level so not to get bogged down on details. Example of an ecommerce site could be:
 
-- customer can buy a product (this can be later broken down to several functinalities such as adding an item into cart, increasing quantity etc.)
+- customer can buy a product (this can be later broken down to several functinalities such as adding an item into cart, increasing quantity, etc.)
 - customer can create a personal account using their email and/or social media account
 - customer can log in and see their personal information
 - customer can change their personal information in their profile

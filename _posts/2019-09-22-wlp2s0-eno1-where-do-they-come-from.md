@@ -101,7 +101,7 @@ In my case, it's a wlan interface, therefore we start with `wl` prefix, then the
 
 ### Changing the Name
 
-The names should be persistent just based on the automatic procedure described above, yet for my home use on my laptop, I'd like to have a different name, preferably like the historic names (wlan0 etc.).
+The names should be persistent just based on the automatic procedure described above, yet for my home use on my laptop, I'd like to have a different name, preferably like the historic names (wlan0, etc.).
 
 Udev also allows for custom naming schemes that take precedence over the algorithm described above. I did exactly that.
 
