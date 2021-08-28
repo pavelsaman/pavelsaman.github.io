@@ -325,7 +325,7 @@ That's what I mentioned at the beginning, rootkits reside somewhere on your file
 	AJAKIT_KSYMS=
 ```
 
-In function `scanrootkit`, this list of files and locations is looped over and if such a file is found found and not whitelisted, it will report not ok status on the output, e.g. it can look like this in the log file:
+In function `scanrootkit`, this list of files and locations is looped over and if such a file is found and not whitelisted, it will report not ok status on the output, e.g. it can look like this in the log file:
 
 ```
 [12:11:05] Checking for Apache Worm...
