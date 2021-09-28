@@ -74,7 +74,7 @@ $ ls -l /dev/ttyUSB*
 crw-rw---- 1 root uucp 188, 0 May 21 15:02 /dev/ttyUSB0
 ```
 
-When we know where the device is and what's its name, we need a software to connect to it. There're a varienty of different utilities you can use, if you're using an Arch system, you can have a look at some [here](https://wiki.archlinux.org/index.php/Working_with_the_serial_console#Making_Connections). Namely, you can use minicom, picocom, screen, serialclient, dterm, and more.
+When we know where the device is and what's its name, we need a software to connect to it. There're a variety of different utilities you can use, if you're using an Arch system, you can have a look at some [here](https://wiki.archlinux.org/index.php/Working_with_the_serial_console#Making_Connections). Namely, you can use minicom, picocom, screen, serialclient, dterm, and more.
 
 For its simplicity, I've been using picocom, that's really simple, you just give it options and a device to connect to:
 
@@ -82,7 +82,7 @@ For its simplicity, I've been using picocom, that's really simple, you just give
 picocom [options] device
 ```
 
-So I can be excplicit and specify options (boud rate, flow control, parity, stop and data bits) and try it out:
+So I can be excplicit and specify options (boud rate, flow control, parity, stop, and data bits) and try it out:
 
 ```
  picocom -b 9600 -f n -y n -p 1 -d 8 /dev/ttyUSB0 
