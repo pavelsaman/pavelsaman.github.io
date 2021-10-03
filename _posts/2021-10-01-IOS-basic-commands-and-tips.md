@@ -1,7 +1,7 @@
 ---
 layout: page
 title:  "IOS Basic Commands and Tips"
-date:   2021-12-01 21:00 +0200
+date:   2021-10-01 21:00 +0200
 categories: networking
 ---
 
