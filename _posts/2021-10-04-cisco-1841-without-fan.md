@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Cisco 1841 without Fan"
-date: 2021-10-04 21:00 +0200
+date: 2021-10-04 20:15 +0200
 categories: networking
 ---
 
