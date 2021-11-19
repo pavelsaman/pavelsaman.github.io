@@ -47,7 +47,15 @@ Without running the docker service, you will receive an error when you try to us
 
 If you use a different system, you need to find out how to start services on it. You need admin or root permissions for that.
 
-When the service is running, it's time to explore some of the most important commands.
+When the service is running, there might be another thing to do, and that is to add your user to `docker` group. Without that you might receive a permission error when running docker command.
+
+```
+$ sudo usermod -aG docker pavel
+```
+
+This should solve the problem. Or you can manually, or with `vigr` command, edit `/etc/group`, but that's more error prone.
+
+Finally, it's time to explore some of the most important commands.
 
 ```
 $ docker 
